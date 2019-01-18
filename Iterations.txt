@@ -1,7 +1,7 @@
 Iteration 0 Requirements
   - Assume no errors
   - Create three programs, one for each subsystem based on assignment 1
-  - Floor subsystem
+  - Floor subsystem (Bram, Tri)
     - Send + Receive to/from the Scheduler
     - Read in events using following format:
       - Time
@@ -10,8 +10,9 @@ Iteration 0 Requirements
       - Each line of input is sent to the Scheduler to be forwarded to the Elevator. 
         Elevator forwards it to the Scheduler, which then passes it to the Elevator.
       - Develop data structure for sending info to the scheduler.
-  - Scheduler Subsystem
+  - Scheduler Subsystem (Haseeb)
     - Send + Receive to/from Elevators
+  - Elevator Subsystem (Samy, Hashim)
   - Project should be configurable in terms of the following:
     - # floors
     - # elevators
