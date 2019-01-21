@@ -1,7 +1,3 @@
-
-public class Scheduler {
-
-}
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -56,8 +52,8 @@ public class Scheduler {
 	}
 
 	private void recieveAndSendData() {
-		try {SCHEDULER_PORT_NUM
-			recieveSocket = new DatagramSocket();
+		try {
+			recieveSocket = new DatagramSocket(SCHEDULER_PORT_NUM);
 			sendSocket = new DatagramSocket();
 		} catch (SocketException e) {
 			e.printStackTrace();
