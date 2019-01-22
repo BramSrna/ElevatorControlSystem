@@ -1,6 +1,7 @@
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,7 +32,7 @@ public class Scheduler {
 	 * HOW TO DECODE MESSAGES:
 	 * 
 	 * <pre>
-	 * [MODE, MODE, MODE, MESSAGE, MESSAGE, MESSAGE]
+	 * [MODE, MODE, MODE, MESSAGE, MESSAGE, MESSAGE, MESSAGE]
 	 * </pre>
 	 */
 
@@ -39,14 +40,20 @@ public class Scheduler {
 	private DatagramPacket recievePacket, sendPacket;
 	private final int SCHEDULER_PORT_NUM = 420;
 	private final int MAX_BYTE_ARRAY_SIZE = 100;
-	private int sendPortNum;
 	private List<Integer> floorsToVisit;
 	private final byte[] FLOOR_BUTTON_HIT_MODE = { 1, 2, 3 };
 	private final byte[] REACHED_FLOOR_MESSAGE = { 4, 5, 6 };
-	private final byte[] ERROR_DECODING_MESSAGE = { 83, 79, 83 };
+	private final byte[] STOP_ELEVATOR = { 83, 84, 79, 90 }; // STOP in ASCII
+	private final byte[] OPEN_DOOR = { 81, 80, 69, 78 }; // OPEN IN ASCII
+	private ElevatorDirection elevatorDirection;
+
+	enum ElevatorDirection {
+		UP, DOWN, STATIONARY
+	}
 
 	private Scheduler() {
 		floorsToVisit = new ArrayList<Integer>();
+		elevatorDirection = ElevatorDirection.STATIONARY;
 	}
 
 	public static void main(String[] args) {
@@ -59,12 +66,10 @@ public class Scheduler {
 	private void recieveAndSendData() {
 		try {
 			recieveSocket = new DatagramSocket(SCHEDULER_PORT_NUM);
-			sendSocket = new DatagramSocket();
 		} catch (SocketException e) {
 			e.printStackTrace();
 			System.exit(1);
 		}
-		// Recieve data
 		byte[] data = new byte[MAX_BYTE_ARRAY_SIZE];
 		recievePacket = new DatagramPacket(data, data.length);
 		try {
@@ -75,14 +80,59 @@ public class Scheduler {
 			e.printStackTrace();
 			System.exit(1);
 		}
-		// Decode message and create response
-		byte[] responseData = new byte[MAX_BYTE_ARRAY_SIZE];
-		responseData = decodeMessageAndGetResponse(recievePacket);
+		readMessageAndGenerateResponseMessageAndActions(recievePacket);
+		recieveSocket.close();
+		sendSocket.close();
+	}
 
-		// Send appropriate response
-		// TODO
-		sendPacket = new DatagramPacket(responseData, recievePacket.getLength(), recievePacket.getAddress(),
-				sendPortNum);
+	private void readMessageAndGenerateResponseMessageAndActions(DatagramPacket dataPacket) {
+		byte[] recievedData = dataPacket.getData();
+		byte[] mode = { recievedData[0], recievedData[1], recievedData[2] };
+		if (mode.equals(FLOOR_BUTTON_HIT_MODE)) {
+			extractFloorButtonAndGenerateResponseMessageAndActions(recievedData);
+		} else if (mode.equals(REACHED_FLOOR_MESSAGE)) {
+			extractFloorNumberAndGenerateResponseMessageAndActions(recievedData);
+		}
+	}
+
+	private void extractFloorButtonAndGenerateResponseMessageAndActions(byte[] recievedData) {
+		byte[] floorButtonPressed = { recievedData[3], recievedData[4], recievedData[5], recievedData[6] };
+		int buttonPressed = Integer.parseInt(new String(floorButtonPressed));
+		floorButtonPressed(buttonPressed);
+		// Generate and send necessary messages using sendMessage function
+
+	}
+
+	private void extractFloorNumberAndGenerateResponseMessageAndActions(byte[] recievedData) {
+		byte[] currentFloorNumber = { recievedData[3], recievedData[4], recievedData[5], recievedData[6] };
+		int currentFloor = Integer.parseInt(new String(currentFloorNumber));
+		if (floorsToVisit.contains(currentFloor)) {
+			// Stop the motor
+
+			// Open the door
+		}
+		reachedFloor(currentFloor);
+	}
+
+	private void floorButtonPressed(int floor) {
+		if (!floorsToVisit.contains(floor)) {
+			floorsToVisit.add(floor);
+			Collections.sort(floorsToVisit);
+		}
+	}
+
+	private void reachedFloor(int floor) {
+		floorsToVisit.removeAll(Arrays.asList(floor));
+	}
+
+	private void sendMessage(byte[] responseData, int packetLength, InetAddress destAddress, int destPortNum) {
+		try {
+			sendSocket = new DatagramSocket();
+		} catch (SocketException e1) {
+			e1.printStackTrace();
+			System.exit(1);
+		}
+		sendPacket = new DatagramPacket(responseData, packetLength, destAddress, destPortNum);
 		try {
 			System.out.println("Scheduler is sending data...");
 			sendSocket.send(sendPacket);
@@ -91,72 +141,6 @@ public class Scheduler {
 			e.printStackTrace();
 			System.exit(1);
 		}
-
-		recieveSocket.close();
-		sendSocket.close();
-	}
-
-	/**
-	 * Decode the message sent in order to create the proper response message.
-	 * 
-	 * @param dataPacket Data send to the Scheduler.
-	 * @return
-	 */
-	private byte[] decodeMessageAndGetResponse(DatagramPacket dataPacket) {
-		byte[] recievedData = dataPacket.getData();
-		byte[] mode = { recievedData[0], recievedData[1], recievedData[2] };
-		// TODO
-		if (mode.equals(FLOOR_BUTTON_HIT_MODE)) {
-			return extractDataForFloorButtonHitAndGenerateResponse(recievedData);
-		} else if (mode.equals(REACHED_FLOOR_MESSAGE)) {
-			return extractDataForReachingFloorAndGenerateResponse(recievedData);
-		}
-
-		return ERROR_DECODING_MESSAGE;
-	}
-
-	private byte[] extractDataForFloorButtonHitAndGenerateResponse(byte[] recievedData) {
-		// TODO
-		int buttonPressed = 0;
-		floorButtonPressed(buttonPressed);
-		return recievedData;
-	}
-
-	/**
-	 * This method gets the details of the message in the case that the mode of the
-	 * message was that it reached a certain floor.
-	 * 
-	 * @param recievedData Data containing the details of the message
-	 * @return Response message
-	 */
-	private byte[] extractDataForReachingFloorAndGenerateResponse(byte[] recievedData) {
-		// TODO
-		int currentFloor = 0;
-		reachedFloor(currentFloor);
-		return recievedData;
-	}
-
-	/**
-	 * If a floor button in the elevator is hit and it is not already in the
-	 * floorsToVisit list, then add it to the list and organize the list
-	 * numerically.
-	 * 
-	 * @param floor The floor button pressed in the elevator.
-	 */
-	private void floorButtonPressed(int floor) {
-		if (!floorsToVisit.contains(floor)) {
-			floorsToVisit.add(floor);
-			Collections.sort(floorsToVisit);
-		}
-	}
-
-	/**
-	 * If the elevator has arrived at a floor, remove it from the floors to visit.
-	 * 
-	 * @param floor The floor we arrived on.
-	 */
-	private void reachedFloor(int floor) {
-		floorsToVisit.removeAll(Arrays.asList(floor));
 	}
 
 }
