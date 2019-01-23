@@ -119,12 +119,41 @@ public class Scheduler {
 
 	private void moveToFloor(DatagramPacket packet) {
 		if (elevatorDirection.equals(ElevatorDirection.STATIONARY)) {
-			sendMessage(CLOSE_DOOR, CLOSE_DOOR.length, packet.getAddress(), ELEVATOR_PORT_NUM);
+			if (!floorsToVisit.isEmpty()) {
+				sendMessage(CLOSE_DOOR, CLOSE_DOOR.length, packet.getAddress(), ELEVATOR_PORT_NUM);
+				if (elevatorShouldGoUp()) {
+					sendMessage(GO_UP, CLOSE_DOOR.length, packet.getAddress(), ELEVATOR_PORT_NUM);
+				} else {
+					sendMessage(GO_DOWN, CLOSE_DOOR.length, packet.getAddress(), ELEVATOR_PORT_NUM);
+				}
+			}
+
 		} else if (elevatorDirection.equals(ElevatorDirection.UP)) {
 			sendMessage(CLOSE_DOOR, CLOSE_DOOR.length, packet.getAddress(), ELEVATOR_PORT_NUM);
+			sendMessage(GO_UP, CLOSE_DOOR.length, packet.getAddress(), ELEVATOR_PORT_NUM);
 		} else if (elevatorDirection.equals(ElevatorDirection.DOWN)) {
 			sendMessage(CLOSE_DOOR, CLOSE_DOOR.length, packet.getAddress(), ELEVATOR_PORT_NUM);
+			sendMessage(GO_DOWN, CLOSE_DOOR.length, packet.getAddress(), ELEVATOR_PORT_NUM);
 		}
+	}
+
+	private boolean elevatorShouldGoUp() {
+		int difference;
+		int currentClosestDistance = Integer.MAX_VALUE;
+		int closestFloor = 0;
+
+		for (int tempFloor : floorsToVisit) {
+			difference = Math.abs(floorElevatorIsCurrentlyOn - tempFloor);
+			if (difference < currentClosestDistance) {
+				currentClosestDistance = difference;
+				closestFloor = tempFloor;
+			}
+		}
+		if (closestFloor > floorElevatorIsCurrentlyOn) {
+			return true;
+		}
+		return false;
+
 	}
 
 	/**
@@ -137,7 +166,6 @@ public class Scheduler {
 		byte[] floorButtonPressed = { recievedData[3], recievedData[4], recievedData[5], recievedData[6] };
 		int buttonPressed = Integer.parseInt(new String(floorButtonPressed));
 		floorButtonPressed(buttonPressed);
-		// Generate and send necessary messages using sendMessage function
 
 	}
 
@@ -152,11 +180,11 @@ public class Scheduler {
 		int currentFloor = Integer.parseInt(new String(currentFloorNumber));
 		floorElevatorIsCurrentlyOn = currentFloor;
 		if (floorsToVisit.contains(currentFloor)) {
-			// Stop the motor
-
-			// Open the door
+			sendMessage(STOP_ELEVATOR, CLOSE_DOOR.length, recievedPacket.getAddress(), ELEVATOR_PORT_NUM);
+			sendMessage(OPEN_DOOR, CLOSE_DOOR.length, recievedPacket.getAddress(), ELEVATOR_PORT_NUM);
 		}
 		reachedFloor(currentFloor);
+		moveToFloor(recievedPacket);
 	}
 
 	private void floorButtonPressed(int floor) {
