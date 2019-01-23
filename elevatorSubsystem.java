@@ -2,6 +2,7 @@ package groupProject;
 
 import java.io.*;
 import java.net.*;
+import java.util.*;
 
 /*
  * SYSC 3303 Elevator Group Project
@@ -28,122 +29,178 @@ import java.net.*;
  */
 public class elevatorSubsystem {
 	DatagramPacket sendPacket, receivePacket;
-	   DatagramSocket sendSocket, receiveSocket;
+	DatagramSocket sendSocket, receiveSocket;
 
-	   public elevatorSubsystem(){
-	      try {
-	         // Construct a datagram socket and bind it to any available 
-	         // port on the local host machine. This socket will be used to
-	         // send UDP Datagram packets.
-	         sendSocket = new DatagramSocket();
+	public elevatorSubsystem() {
+		try {
+			// Construct a datagram socket and bind it to any available
+			// port on the local host machine. This socket will be used to
+			// send UDP Datagram packets.
+			sendSocket = new DatagramSocket();
 
-	         // Construct a datagram socket and bind it to port 5000 
-	         // on the local host machine. This socket will be used to
-	         // receive UDP Datagram packets.
-	         receiveSocket = new DatagramSocket(4789);
-	         
-	         // to test socket timeout (2 seconds)
-	         //receiveSocket.setSoTimeout(2000);
-	      } catch (SocketException se) {
-	         se.printStackTrace();
-	         System.exit(1);
-	      } 
-	   }
+			// Construct a datagram socket and bind it to port 5000
+			// on the local host machine. This socket will be used to
+			// receive UDP Datagram packets.
+			receiveSocket = new DatagramSocket(4789);
 
-	   public void exchangeData(){
-	      // Construct a DatagramPacket for receiving packets up 
-	      // to 100 bytes long (the length of the byte array).
-		  // Receiveing Data from the Scheduler
+			// to test socket timeout (2 seconds)
+			// receiveSocket.setSoTimeout(2000);
+		} catch (SocketException se) {
+			se.printStackTrace();
+			System.exit(1);
+		}
+	}
 
-	      byte data[] = new byte[100];
-	      receivePacket = new DatagramPacket(data, data.length); 
-	      System.out.println("Server: Waiting for Packet.\n");
+	public void openDoors() {
+		// ASK the Ta about logic for doors how does he wat us to represent it
+	}
 
-	      // Block until a datagram packet is received from receiveSocket.
-	      try {        
-	         System.out.println("Waiting..."); // so we know we're waiting
-	         receiveSocket.receive(receivePacket);
-	      } catch (IOException e) {
-	         System.out.print("IO Exception: likely:");
-	         System.out.println("Receive Socket Timed Out.\n" + e);
-	         e.printStackTrace();
-	         System.exit(1);
-	      }
+	public void closeDoors() {
 
-	      // Process the received datagram.
-	      System.out.println("Server: Packet received:");
-	      System.out.println("From host: " + receivePacket.getAddress());
-	      System.out.println("Host port: " + receivePacket.getPort());
-	      int len = receivePacket.getLength();
-	      System.out.println("Length: " + len);
-	      System.out.print("Containing: " );
+	}
+	
+	// Method to validate the form of the array of bytes received from the Scheduler
+	public String validPacket(byte[] data) {
+		//simple example
+		for(int s=2; s<data.length;s++) {
+			// Eclipse uses ISO/IEC 8859-1, all English characters are encoded as byte values less than 127.
+			if(data[s] > 127 && data[s]<0) {
+				return "invalid";
+			}
+		}
+		if(data[data.length-1]==0) { // if the last number in the array is a 0 and there are more that 4 zeros in the array of bytes.
+			if(data[0] == 0 && data[1]==1) { // if the first two bytes are 01, then it is a read request.
+				return "read";
+			}
+			else if(data[0]==0 && data[1]==2) { // if the first two bytes are 02, then it is a write request.
+				return "write";
+			}
+		}
+		return "invalid"; // anything else is an invalid request.
+	}
+	
+	// Validates that the text sent to the Elevator from the Scheduler is a valid "command"
+	public boolean validRequest(String str) {
+		List<String> messageReceived = Arrays.asList(str.split(","));
+		//simple example
+		if(str.equals("open door")) {
+			return true;
+		}else if(str.equals("go up")) { //no clue for now just filler to show
+			return true;
+		}
+		return false;
+	}
 
-	      // Form a String from the byte array.
-	      String received = new String(data,0,len);   
-	      System.out.println(received + "\n");
-	      
-	      // Slow things down (wait 5 seconds)
-	      try {
-	          Thread.sleep(5000);
-	      } catch (InterruptedException e ) {
-	          e.printStackTrace();
-	          System.exit(1);
-	      }
-	 
-	      // Create a new datagram packet containing the string received from the client.
+	public void exchangeData() {
+		// Construct a DatagramPacket for receiving packets up
+		// to 100 bytes long (the length of the byte array).
+		// Receiving Data from the Scheduler to Control the Motor and Open the doors
 
-	      // Construct a datagram packet that is to be sent to a specified port 
-	      // on a specified host.
-	      // The arguments are:
-	      //  data - the packet data (a byte array). This is the packet data
-	      //         that was received from the client.
-	      //  receivePacket.getLength() - the length of the packet data.
-	      //    Since we are echoing the received packet, this is the length 
-	      //    of the received packet's data. 
-	      //    This value is <= data.length (the length of the byte array).
-	      //  receivePacket.getAddress() - the Internet address of the 
-	      //     destination host. Since we want to send a packet back to the 
-	      //     client, we extract the address of the machine where the
-	      //     client is running from the datagram that was sent to us by 
-	      //     the client.
-	      //  receivePacket.getPort() - the destination port number on the 
-	      //     destination host where the client is running. The client
-	      //     sends and receives datagrams through the same socket/port,
-	      //     so we extract the port that the client used to send us the
-	      //     datagram, and use that as the destination port for the echoed
-	      //     packet.
+		byte data[] = new byte[100];
+		receivePacket = new DatagramPacket(data, data.length);
+		System.out.println("Elevater: Waiting for Packet.\n");
 
-	      sendPacket = new DatagramPacket(data, receivePacket.getLength(),
-	                               receivePacket.getAddress(), receivePacket.getPort());
+		// Block until a datagram packet is received from receiveSocket.
+		try {
+			System.out.println("Waiting..."); // so we know we're waiting
+			receiveSocket.receive(receivePacket);
+		} catch (IOException e) {
+			System.out.print("IO Exception: likely:");
+			System.out.println("Receive Socket Timed Out.\n" + e);
+			e.printStackTrace();
+			System.exit(1);
+		}
 
-	      System.out.println( "Server: Sending packet:");
-	      System.out.println("To host: " + sendPacket.getAddress());
-	      System.out.println("Destination host port: " + sendPacket.getPort());
-	      len = sendPacket.getLength();
-	      System.out.println("Length: " + len);
-	      System.out.print("Containing: ");
-	      System.out.println(new String(sendPacket.getData(),0,len));
-	      // or (as we should be sending back the same thing)
-	      // System.out.println(received); 
-	        
-	      // Send the datagram packet to the client via the send socket. 
-	      try {
-	         sendSocket.send(sendPacket);
-	      } catch (IOException e) {
-	         e.printStackTrace();
-	         System.exit(1);
-	      }
+		// Process the received datagram.
+		System.out.println("Elevator: Packet received:");
+		System.out.println("From host: " + receivePacket.getAddress());
+		System.out.println("Host port: " + receivePacket.getPort());
+		int len = receivePacket.getLength();
+		System.out.println("Length: " + len);
+		System.out.print("Containing: ");
 
-	      System.out.println("Server: packet sent");
+		// Form a String from the byte array.
+		String received = new String(data, 0, len);
+		System.out.println(received + "\n");
 
-	      // We're finished, so close the sockets.
-	      sendSocket.close();
-	      receiveSocket.close();
-	   }
+		// Slow things down (wait 5 seconds)
+		try {
+			Thread.sleep(5000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+		
+		// if it is an invalid packet, then exit
+		if(this.validPacket(data).equals("invalid")) {
+			System.out.println("Invalid Packet Format");
+			System.exit(1); // invalid
+		}
+		// if it is an invalid request, then exit
+		if(this.validRequest(received) == false) {
+			System.out.println("Invalid Request Format");
+			System.exit(1); // invalid
+		}
+		
+		// List of Strings (data received) split at a each comma (CSV) to store the different items needed
+		// messageReceived[0] = WHAT IT WILL BE
+		// messageReceived[1] = WHAT IT WILL BE
+		// messageReceived[2] = WHAT IT WILL BE...
+		
 
-	   public static void main( String args[] )
-	   {
-		   elevatorSubsystem elevator = new elevatorSubsystem();
-		   elevator.exchangeData();
-	   }
+		// Create a new datagram packet containing the string received from the client.
+
+		// Construct a datagram packet that is to be sent to a specified port
+		// on a specified host.
+		// The arguments are:
+		// data - the packet data (a byte array). This is the packet data
+		// that was received from the client.
+		// receivePacket.getLength() - the length of the packet data.
+		// Since we are echoing the received packet, this is the length
+		// of the received packet's data.
+		// This value is <= data.length (the length of the byte array).
+		// receivePacket.getAddress() - the Internet address of the
+		// destination host. Since we want to send a packet back to the
+		// client, we extract the address of the machine where the
+		// client is running from the datagram that was sent to us by
+		// the client.
+		// receivePacket.getPort() - the destination port number on the
+		// destination host where the client is running. The client
+		// sends and receives datagrams through the same socket/port,
+		// so we extract the port that the client used to send us the
+		// datagram, and use that as the destination port for the echoed
+		// packet.
+
+		sendPacket = new DatagramPacket(data, receivePacket.getLength(), receivePacket.getAddress(),
+				receivePacket.getPort());
+
+		System.out.println("Elevator: Sending packet:");
+		System.out.println("To host: " + sendPacket.getAddress());
+		System.out.println("Destination host port: " + sendPacket.getPort());
+		len = sendPacket.getLength();
+		System.out.println("Length: " + len);
+		System.out.print("Containing: ");
+		System.out.println(new String(sendPacket.getData(), 0, len));
+		// or (as we should be sending back the same thing)
+		// System.out.println(received);
+
+		// Send the datagram packet to the client via the send socket.
+		try {
+			sendSocket.send(sendPacket);
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+
+		System.out.println("Server: packet sent");
+
+		// We're finished, so close the sockets.
+		sendSocket.close();
+		receiveSocket.close();
+	}
+
+	public static void main(String args[]) {
+		elevatorSubsystem elevator = new elevatorSubsystem();
+		elevator.exchangeData();
+	}
 }
