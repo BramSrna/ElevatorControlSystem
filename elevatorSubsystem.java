@@ -101,7 +101,7 @@ public class elevatorSubsystem {
 				return "invalid";
 			}
 		}
-		if(data[data.length-1]==0) { // if the last number in the array is a 0 and there are more that 4 zeros in the array of bytes.
+		if(data[data.length-1]==0) { 
 			if(data[0] == 0 && data[1]==1) { // if the first two bytes are 01, then it is a read request.
 				return "read";
 			}
