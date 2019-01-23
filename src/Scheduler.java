@@ -39,13 +39,20 @@ public class Scheduler {
 	private DatagramSocket recieveSocket, sendSocket;
 	private DatagramPacket recievePacket, sendPacket;
 	private final int SCHEDULER_PORT_NUM = 420;
+	private final int ELEVATOR_PORT_NUM = 69;
+	private final int FLOOR_PORT_NUM = 666;
 	private final int MAX_BYTE_ARRAY_SIZE = 100;
 	private List<Integer> floorsToVisit;
-	private final byte[] FLOOR_BUTTON_HIT_MODE = { 1, 2, 3 };
-	private final byte[] REACHED_FLOOR_MESSAGE = { 4, 5, 6 };
+	private final byte[] FLOOR_BUTTON_HIT_MODE = { 0, 0, 0 };
+	private final byte[] REACHED_FLOOR_MESSAGE_MODE = { 0, 0, 1 };
+	private final byte[] ELEVATOR_REQUESTED_MODE = { 0, 0, 2 };
 	private final byte[] STOP_ELEVATOR = { 83, 84, 79, 90 }; // STOP in ASCII
-	private final byte[] OPEN_DOOR = { 81, 80, 69, 78 }; // OPEN IN ASCII
+	private final byte[] OPEN_DOOR = { 81, 80, 69, 78 }; // OPEN in ASCII
+	private final byte[] CLOSE_DOOR = { 67, 76, 79, 83, 69 }; // CLOSE in ASCII
+	private final byte[] GO_UP = { 0, 0, 85, 80 }; // UP in ASCII
+	private final byte[] GO_DOWN = { 68, 79, 87, 78 }; // DOWN in ASCII
 	private ElevatorDirection elevatorDirection;
+	private int floorElevatorIsCurrentlyOn;
 
 	enum ElevatorDirection {
 		UP, DOWN, STATIONARY
@@ -85,17 +92,48 @@ public class Scheduler {
 		sendSocket.close();
 	}
 
-	private void readMessageAndGenerateResponseMessageAndActions(DatagramPacket dataPacket) {
-		byte[] recievedData = dataPacket.getData();
+	// TODO
+	private void readMessageAndGenerateResponseMessageAndActions(DatagramPacket recievedPacket) {
+		byte[] recievedData = recievedPacket.getData();
 		byte[] mode = { recievedData[0], recievedData[1], recievedData[2] };
 		if (mode.equals(FLOOR_BUTTON_HIT_MODE)) {
-			extractFloorButtonAndGenerateResponseMessageAndActions(recievedData);
-		} else if (mode.equals(REACHED_FLOOR_MESSAGE)) {
-			extractFloorNumberAndGenerateResponseMessageAndActions(recievedData);
+			extractElevatorButtonFloorAndGenerateResponseMessageAndActions(recievedPacket);
+		} else if (mode.equals(REACHED_FLOOR_MESSAGE_MODE)) {
+			extractFloorReachedNumberAndGenerateResponseMessageAndActions(recievedPacket);
+		} else if (mode.equals(ELEVATOR_REQUESTED_MODE)) {
+			extractFloorRequestedNumberAndGenerateResponseMessageAndActions(recievedPacket);
 		}
 	}
 
-	private void extractFloorButtonAndGenerateResponseMessageAndActions(byte[] recievedData) {
+	/**
+	 * For when someone on a Floor presses the button for an elevator request.
+	 * 
+	 * @param recievedData
+	 */
+	private void extractFloorRequestedNumberAndGenerateResponseMessageAndActions(DatagramPacket recievedPacket) {
+		byte[] recievedData = recievedPacket.getData();
+		byte[] requestFloor = { recievedData[3], recievedData[4], recievedData[5], recievedData[6] };
+		int floorWhereRequestCameFrom = Integer.parseInt(new String(requestFloor));
+		floorButtonPressed(floorWhereRequestCameFrom);
+	}
+
+	private void moveToFloor(DatagramPacket packet) {
+		if (elevatorDirection.equals(ElevatorDirection.STATIONARY)) {
+			sendMessage(CLOSE_DOOR, CLOSE_DOOR.length, packet.getAddress(), ELEVATOR_PORT_NUM);
+		} else if (elevatorDirection.equals(ElevatorDirection.UP)) {
+			sendMessage(CLOSE_DOOR, CLOSE_DOOR.length, packet.getAddress(), ELEVATOR_PORT_NUM);
+		} else if (elevatorDirection.equals(ElevatorDirection.DOWN)) {
+			sendMessage(CLOSE_DOOR, CLOSE_DOOR.length, packet.getAddress(), ELEVATOR_PORT_NUM);
+		}
+	}
+
+	/**
+	 * For when someone on the Elevator presses a button
+	 * 
+	 * @param recievedData
+	 */
+	private void extractElevatorButtonFloorAndGenerateResponseMessageAndActions(DatagramPacket recievedPacket) {
+		byte[] recievedData = recievedPacket.getData();
 		byte[] floorButtonPressed = { recievedData[3], recievedData[4], recievedData[5], recievedData[6] };
 		int buttonPressed = Integer.parseInt(new String(floorButtonPressed));
 		floorButtonPressed(buttonPressed);
@@ -103,9 +141,16 @@ public class Scheduler {
 
 	}
 
-	private void extractFloorNumberAndGenerateResponseMessageAndActions(byte[] recievedData) {
+	/**
+	 * For when the Floor sends message to Scheduler saying it has arrived.
+	 * 
+	 * @param recievedData
+	 */
+	private void extractFloorReachedNumberAndGenerateResponseMessageAndActions(DatagramPacket recievedPacket) {
+		byte[] recievedData = recievedPacket.getData();
 		byte[] currentFloorNumber = { recievedData[3], recievedData[4], recievedData[5], recievedData[6] };
 		int currentFloor = Integer.parseInt(new String(currentFloorNumber));
+		floorElevatorIsCurrentlyOn = currentFloor;
 		if (floorsToVisit.contains(currentFloor)) {
 			// Stop the motor
 
