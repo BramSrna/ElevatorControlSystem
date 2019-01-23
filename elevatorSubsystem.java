@@ -23,6 +23,13 @@ import java.util.*;
  * corresponding lamp. When the elevator reaches a floor, the scheduling subsystem signals the elevator subsystem to
  * turn the lamp of
  * 
+ * PORT Numbers:
+ * 	Receiving from Scheduler on Port xxxx
+ * 	Sending to ? on Port xxxx
+ * 
+ * MESSAGE ENCODING:
+ * 	Bytes[x,y] = 
+ * 
  * (Currently the class only carries simple server features).
  * Last Edited January 22,2019
  * 
@@ -30,6 +37,13 @@ import java.util.*;
 public class elevatorSubsystem {
 	DatagramPacket sendPacket, receivePacket;
 	DatagramSocket sendSocket, receiveSocket;
+	
+	//The current floor the elevator is on
+	private int elevatorNumber = 1;
+	private int currentFloor = 1;
+	private Button[] allButtons = {new Button("Emergency"), new Button("Close Door"), new Button("Open Door"),
+			new Button("1"), new Button("2"), new Button("3"), new Button("4")}; // and so on
+	
 
 	public elevatorSubsystem() {
 		try {
@@ -50,14 +64,33 @@ public class elevatorSubsystem {
 			System.exit(1);
 		}
 	}
-
-	public void openDoors() {
-		// ASK the Ta about logic for doors how does he wat us to represent it
+	
+	public int getElevatorNumber() {
+		return this.elevatorNumber;
+	}
+	public int getCurrentFloor() {
+		return this.currentFloor;
+	}
+	public void display() {
+		System.out.println("Elevator " + this.getElevatorNumber());
+		System.out.println("Floor # " + this.getCurrentFloor());
+		//ideally we want lights lighting up by whatever floor it is, not sure how we wil implement that yet
 	}
 
-	public void closeDoors() {
-
+	public void doSomething(String str) {
+		this.display();
+		if(str.equals("open door")) {
+			// open door
+		}
+		if(str.equals("close door")) {
+			// close door
+		}
+		if(str.equals("go up")) {
+			// go up x floors, etc...
+		}
+		this.display();
 	}
+	
 	
 	// Method to validate the form of the array of bytes received from the Scheduler
 	public String validPacket(byte[] data) {
@@ -81,7 +114,13 @@ public class elevatorSubsystem {
 	
 	// Validates that the text sent to the Elevator from the Scheduler is a valid "command"
 	public boolean validRequest(String str) {
+	
+		// List of Strings (data received) split at a each comma (CSV) to store the different items needed
+		// messageReceived[0] = WHAT IT WILL BE
+		// messageReceived[1] = WHAT IT WILL BE
+		// messageReceived[2] = WHAT IT WILL BE...
 		List<String> messageReceived = Arrays.asList(str.split(","));
+		
 		//simple example
 		if(str.equals("open door")) {
 			return true;
@@ -95,7 +134,7 @@ public class elevatorSubsystem {
 		// Construct a DatagramPacket for receiving packets up
 		// to 100 bytes long (the length of the byte array).
 		// Receiving Data from the Scheduler to Control the Motor and Open the doors
-
+		this.display();
 		byte data[] = new byte[100];
 		receivePacket = new DatagramPacket(data, data.length);
 		System.out.println("Elevater: Waiting for Packet.\n");
@@ -141,11 +180,6 @@ public class elevatorSubsystem {
 			System.out.println("Invalid Request Format");
 			System.exit(1); // invalid
 		}
-		
-		// List of Strings (data received) split at a each comma (CSV) to store the different items needed
-		// messageReceived[0] = WHAT IT WILL BE
-		// messageReceived[1] = WHAT IT WILL BE
-		// messageReceived[2] = WHAT IT WILL BE...
 		
 
 		// Create a new datagram packet containing the string received from the client.
@@ -201,6 +235,9 @@ public class elevatorSubsystem {
 
 	public static void main(String args[]) {
 		elevatorSubsystem elevator = new elevatorSubsystem();
-		elevator.exchangeData();
+		for(;;) {
+			elevator.exchangeData();
+		}
+		
 	}
 }
