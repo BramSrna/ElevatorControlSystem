@@ -26,6 +26,7 @@ import java.util.*;
  * Message 1 from Scheduler
  * 
  * PORT Numbers:
+ * Elevator port 69
  * 	Receiving from Scheduler on Port xxxx
  * 	Sending to ? on Port xxxx
  * 
@@ -43,6 +44,9 @@ public class elevatorSubsystem {
 	//The current floor the elevator is on
 	private int elevatorNumber = 1;
 	private int currentFloor = 1;
+	private int numberOfElevators = 0;
+	private int numberOfFloors = 0;
+	
 	
 	private enum lampState {
         OFF,
@@ -82,16 +86,29 @@ public class elevatorSubsystem {
 		System.out.println("Floor # " + this.getCurrentFloor());
 		//ideally we want lights lighting up by whatever floor it is, not sure how we wil implement that yet
 	}
+	
+	public void start() {
+		
+	}
+	public void stop() {
+		
+	}
+	public void goUp() {
+		
+	}
+	public void goDown() {
+		
+	}
 
-	public void doSomething(String str) {
+	public void performAction(String data) {
 		this.display();
-		if(str.equals("open door")) {
-			// open door
+		if(data.equals("config")) {
+			
 		}
-		if(str.equals("close door")) {
-			// close door
+		if(data.equals("start/stop")) {
+			
 		}
-		if(str.equals("go up")) {
+		if(data.equals("open/close")) {
 			// go up x floors, etc...
 		}
 		this.display();
@@ -100,42 +117,16 @@ public class elevatorSubsystem {
 	
 	// Method to validate the form of the array of bytes received from the Scheduler
 	public String validPacket(byte[] data) {
-		//simple example
-		for(int s=2; s<data.length;s++) {
-			// Eclipse uses ISO/IEC 8859-1, all English characters are encoded as byte values less than 127.
-			if(data[s] > 127 && data[s]<0) {
-				return "invalid";
-			}
-		}
-		if(data[data.length-1]==0) { 
-			if(data[0] == 0 && data[1]==1) { // if the first two bytes are 01, then it is a read request.
-				return "read";
-			}
-			else if(data[0]==0 && data[1]==2) { // if the first two bytes are 02, then it is a write request.
-				return "write";
-			}
+		if(data[0]==0) {
+			return "config";
+		}else if(data[0]== 4) {
+			return "start/stop";
+		}else if(data[0]==5) {
+			return "close/open";
 		}
 		return "invalid"; // anything else is an invalid request.
 	}
 	
-	// Validates that the text sent to the Elevator from the Scheduler is a valid "command"
-	public boolean validRequest(String str) {
-	
-		// List of Strings (data received) split at a each comma (CSV) to store the different items needed
-		// messageReceived[0] = WHAT IT WILL BE
-		// messageReceived[1] = WHAT IT WILL BE
-		// messageReceived[2] = WHAT IT WILL BE...
-		List<String> messageReceived = Arrays.asList(str.split(","));
-		
-		//simple example
-		if(str.equals("open door")) {
-			return true;
-		}else if(str.equals("go up")) { //no clue for now just filler to show
-			return true;
-		}
-		return false;
-	}
-
 	public void exchangeData() {
 		// receive config layer out the elevators and the floors (once)
 		// receive command to move 
@@ -143,12 +134,15 @@ public class elevatorSubsystem {
 		
 		// Construct a DatagramPacket for receiving packets up
 		// to 100 bytes long (the length of the byte array).
+		
+		
 		// Receiving Data from the Scheduler to Control the Motor and Open the doors
 		this.display();
+		
 		byte data[] = new byte[100];
 		receivePacket = new DatagramPacket(data, data.length);
 		System.out.println("Elevater: Waiting for Packet.\n");
-
+		
 		// Block until a datagram packet is received from receiveSocket.
 		try {
 			System.out.println("Waiting..."); // so we know we're waiting
@@ -182,14 +176,15 @@ public class elevatorSubsystem {
 		
 		String request = this.validPacket(data);
 		// if it is an invalid packet, then exit
+		
+		//Add delay 
+		
 		if(request.equals("invalid")) {
 			System.out.println("Invalid Packet Format");
 			System.exit(1); // invalid
 		}
-		// if it is an invalid request, then exit
-		if(this.validRequest(received) == false) {
-			System.out.println("Invalid Request Format");
-			System.exit(1); // invalid
+		if (request.equals("config")) {
+			
 		}
 		
 
@@ -249,6 +244,7 @@ public class elevatorSubsystem {
 		for(;;) {
 			elevator1.exchangeData();
 		}
+		
 		
 	}
 }
