@@ -6,5 +6,5 @@ index : Representation
 1 : 				No. Elevators 		Floor number 			Source floor				
 2 : 				No. Floors		Elevator Shaft No.		Direction, 1 = up, 0 = down
 3 :				-1			-1				Destination
-4 :											-1 
-
+4: start/stop (4, destinationfloor, current floor, start(0)/stop(1) bit, -1)
+5: open/close doors (5,open(1)/close(0), -1)
