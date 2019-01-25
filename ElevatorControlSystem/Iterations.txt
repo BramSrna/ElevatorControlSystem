@@ -1,0 +1,36 @@
+Iteration 0 Requirements
+  - Assume no errors
+  - Create three programs, one for each subsystem based on assignment 1
+  - Floor subsystem (Bram, Tri)
+    - Send + Receive to/from the Scheduler
+    - Read in events using following format:
+      - Time
+      - Floor or Elevator Number
+      - Button
+      - Each line of input is sent to the Scheduler to be forwarded to the Elevator. 
+        Elevator forwards it to the Scheduler, which then passes it to the Elevator.
+      - Develop data structure for sending info to the scheduler.
+  - Scheduler Subsystem (Haseeb)
+    - Send + Receive to/from Elevators
+  - Elevator Subsystem (Samy, Hashim)
+  - Project should be configurable in terms of the following:
+    - # floors
+    - # elevators
+    - Time to open + close doors
+    - Time to move between floors
+    - Should time elevator system to get these vals (Canal Building)
+  - Deliverables: Submitted with Iteration 1
+  
+Iteration 1 Requirements
+  - Add state machines for the scheduler and elevator subsystms assuming one elevator.
+  - Bear in mind that futures iterations should coordinate elevators to maximize # of passengers carried over time
+  - Floor subsystem notifies scheduler that an elevator has reach a floor.
+    Once an elevator has been told to move, the floor subsystem needs to be informed so that it cand send out messages back to the scheduler to denote the arrival of an elevatorr.
+  - Can either maintain a single event list or have sparate tasks for each elevator
+  - Deliverables:
+    - “README.txt” file explaining the names of your files, set up instructions, etc.
+    - Breakdown of responsibilities of each team member for this iteration
+    - UML class diagram
+    - State machine diagram for the scheduler and elevator subsystems.
+    - Detailed set up and test instructions, including test files used
+    - Code (.java files, all required Eclipse files, etc.) 
