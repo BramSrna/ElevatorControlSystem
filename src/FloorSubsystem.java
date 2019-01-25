@@ -15,8 +15,10 @@ public class FloorSubsystem {
     // Sorted in order of time that requests are made
     ArrayList<byte[]> serviceRequests;
     
+    ArrayList<Floor> floors;
+    
     // Possible directions for the requests
-    private enum Direction {
+    public enum Direction {
         DOWN,
         UP
     }
@@ -34,10 +36,16 @@ public class FloorSubsystem {
      * 
      * @return  void
      */
-    public FloorSubsystem(int numFloors) {
+    public FloorSubsystem(int numFloors, int numElevators) {
         this.setNumFloors(numFloors);
         
         serviceRequests = new ArrayList<byte[]>();
+        
+        floors = new ArrayList<Floor>();
+        
+        for (int i = 0; i < numFloors; i++) {
+            floors.add(new Floor(this, i, numElevators));
+        }
     }
     
     /**
@@ -301,5 +309,9 @@ public class FloorSubsystem {
      */
     public ArrayList<byte[]> getRequests(){
         return(serviceRequests);
+    }
+    
+    public void sendArrivalSensorSignal(int elevatorShaftNum, int floorNum) {
+        
     }
 }

@@ -54,7 +54,7 @@ class FloorSubsystemTests {
         writer.close();
         
         // Parse the created file
-        FloorSubsystem testFloors = new FloorSubsystem(10);
+        FloorSubsystem testFloors = new FloorSubsystem(10, 1);
         
         testFloors.parseInputFile(filePath);
         
