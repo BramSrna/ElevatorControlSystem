@@ -27,7 +27,7 @@ import java.util.*;
  * 
  * PORT Numbers:
  * Elevator port 69
- * 	Receiving from Scheduler on Port xxxx
+ * 	Receiving from Scheduler on Port 420
  * 	Sending to ? on Port xxxx
  * 
  * MESSAGE ENCODING:
@@ -47,6 +47,8 @@ public class elevatorSubsystem {
 	private int numberOfElevators = 0;
 	private int numberOfFloors = 0;
 	
+	private lampState[] allButtons;
+	
 	
 	private enum lampState {
         OFF,
@@ -65,7 +67,7 @@ public class elevatorSubsystem {
 			// Construct a datagram socket and bind it to port 5000
 			// on the local host machine. This socket will be used to
 			// receive UDP Datagram packets.
-			receiveSocket = new DatagramSocket(4789);
+			receiveSocket = new DatagramSocket(420);
 
 			// to test socket timeout (2 seconds)
 			// receiveSocket.setSoTimeout(2000);
@@ -81,6 +83,8 @@ public class elevatorSubsystem {
 	public int getCurrentFloor() {
 		return this.currentFloor;
 	}
+	
+	// Interior Elevator Display
 	public void display() {
 		System.out.println("Elevator " + this.getElevatorNumber());
 		System.out.println("Floor # " + this.getCurrentFloor());
@@ -88,37 +92,62 @@ public class elevatorSubsystem {
 	}
 	
 	public void start() {
-		
+		// start elevator until told to stop
+		System.out.println("Elevator Started Moving");
 	}
 	public void stop() {
-		
+		// stop the elevator
+		System.out.println("Elevator Stopped Moving");
 	}
-	public void goUp() {
-		
+	public void openDoor() {
+		System.out.println("Elevator Door Opened");
 	}
-	public void goDown() {
-		
-	}
-
-	public void performAction(String data) {
-		this.display();
-		if(data.equals("config")) {
-			
-		}
-		if(data.equals("start/stop")) {
-			
-		}
-		if(data.equals("open/close")) {
-			// go up x floors, etc...
-		}
-		this.display();
+	public void closeDoor() {
+		System.out.println("Elevator Door Closed");
 	}
 	
+	public void performAction(String str, byte[] data) {
+		this.display();
+		if(str.equals("config")) {
+			numberOfElevators = data[1];
+			numberOfFloors = data[2];
+			
+			// for now this array is from 0 to num of Floors and encoded (on/off respectively), you can do it however u prefer
+			for(int i=0; i<numberOfFloors; i++) {
+				allButtons[i] = lampState.OFF;
+			}
+		}
+		if(str.equals("start/stop")) {
+			int destinationFloor = data[1]; // Go to this floor
+			currentFloor = data[2];
+			if(data[3]==0) {
+				this.start();//Start elevator
+			}else if(data[3]==1) {
+				this.stop();//Stop elevator
+			}
+		}
+		if(str.equals("open/close")) {
+			if(data[1]==0) {
+				this.closeDoor();//Start elevator
+			}else if(data[1]==1) {
+				this.openDoor();//Stop elevator
+			}
+		}if(str.equals("send clicked floor")) {
+			// send clicked floor to scheduler
+		}else {
+			//invalid case
+			System.out.println("Invalid Packet Format");
+			System.exit(1); // invalid
+		}
+	}
 	
 	// Method to validate the form of the array of bytes received from the Scheduler
 	public String validPacket(byte[] data) {
-		if(data[0]==0) {
+		if(data[0]== 0) {
 			return "config";
+		}else if(data[0]==3) {
+			// send the number of floor clicked
+			return "send clicked floor";
 		}else if(data[0]== 4) {
 			return "start/stop";
 		}else if(data[0]==5) {
@@ -175,73 +204,15 @@ public class elevatorSubsystem {
 		}
 		
 		String request = this.validPacket(data);
-		// if it is an invalid packet, then exit
+		this.performAction(request, data); // do whatever needs to be done
 		
-		//Add delay 
-		
-		if(request.equals("invalid")) {
-			System.out.println("Invalid Packet Format");
-			System.exit(1); // invalid
-		}
-		if (request.equals("config")) {
-			
-		}
-		
-
-		// Create a new datagram packet containing the string received from the client.
-
-		// Construct a datagram packet that is to be sent to a specified port
-		// on a specified host.
-		// The arguments are:
-		// data - the packet data (a byte array). This is the packet data
-		// that was received from the client.
-		// receivePacket.getLength() - the length of the packet data.
-		// Since we are echoing the received packet, this is the length
-		// of the received packet's data.
-		// This value is <= data.length (the length of the byte array).
-		// receivePacket.getAddress() - the Internet address of the
-		// destination host. Since we want to send a packet back to the
-		// client, we extract the address of the machine where the
-		// client is running from the datagram that was sent to us by
-		// the client.
-		// receivePacket.getPort() - the destination port number on the
-		// destination host where the client is running. The client
-		// sends and receives datagrams through the same socket/port,
-		// so we extract the port that the client used to send us the
-		// datagram, and use that as the destination port for the echoed
-		// packet.
-
-		sendPacket = new DatagramPacket(data, receivePacket.getLength(), receivePacket.getAddress(),
-				receivePacket.getPort());
-
-		System.out.println("Elevator: Sending packet:");
-		System.out.println("To host: " + sendPacket.getAddress());
-		System.out.println("Destination host port: " + sendPacket.getPort());
-		len = sendPacket.getLength();
-		System.out.println("Length: " + len);
-		System.out.print("Containing: ");
-		System.out.println(new String(sendPacket.getData(), 0, len));
-		// or (as we should be sending back the same thing)
-		// System.out.println(received);
-
-		// Send the datagram packet to the client via the send socket.
-		try {
-			sendSocket.send(sendPacket);
-		} catch (IOException e) {
-			e.printStackTrace();
-			System.exit(1);
-		}
-
-		System.out.println("Server: packet sent");
-
-		// We're finished, so close the sockets.
-		sendSocket.close();
-		receiveSocket.close();
+		//Add delay
 	}
 
 	public static void main(String args[]) {
 		elevatorSubsystem elevator1 = new elevatorSubsystem();
 		for(;;) {
+			// always wait for a message from the scheduler
 			elevator1.exchangeData();
 		}
 		
