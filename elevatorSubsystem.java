@@ -23,6 +23,8 @@ import java.util.*;
  * corresponding lamp. When the elevator reaches a floor, the scheduling subsystem signals the elevator subsystem to
  * turn the lamp of
  * 
+ * Message 1 from Scheduler
+ * 
  * PORT Numbers:
  * 	Receiving from Scheduler on Port xxxx
  * 	Sending to ? on Port xxxx
@@ -41,9 +43,13 @@ public class elevatorSubsystem {
 	//The current floor the elevator is on
 	private int elevatorNumber = 1;
 	private int currentFloor = 1;
-	private Button[] allButtons = {new Button("Emergency"), new Button("Close Door"), new Button("Open Door"),
-			new Button("1"), new Button("2"), new Button("3"), new Button("4")}; // and so on
 	
+	private enum lampState {
+        OFF,
+        ON
+    }
+	
+	// Motor only says go up or go down 
 
 	public elevatorSubsystem() {
 		try {
@@ -131,6 +137,10 @@ public class elevatorSubsystem {
 	}
 
 	public void exchangeData() {
+		// receive config layer out the elevators and the floors (once)
+		// receive command to move 
+		// recieve command to control doors
+		
 		// Construct a DatagramPacket for receiving packets up
 		// to 100 bytes long (the length of the byte array).
 		// Receiving Data from the Scheduler to Control the Motor and Open the doors
@@ -170,8 +180,9 @@ public class elevatorSubsystem {
 			System.exit(1);
 		}
 		
+		String request = this.validPacket(data);
 		// if it is an invalid packet, then exit
-		if(this.validPacket(data).equals("invalid")) {
+		if(request.equals("invalid")) {
 			System.out.println("Invalid Packet Format");
 			System.exit(1); // invalid
 		}
@@ -234,9 +245,9 @@ public class elevatorSubsystem {
 	}
 
 	public static void main(String args[]) {
-		elevatorSubsystem elevator = new elevatorSubsystem();
+		elevatorSubsystem elevator1 = new elevatorSubsystem();
 		for(;;) {
-			elevator.exchangeData();
+			elevator1.exchangeData();
 		}
 		
 	}
