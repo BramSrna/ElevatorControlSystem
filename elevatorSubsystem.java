@@ -57,7 +57,7 @@ public class elevatorSubsystem {
 			// send UDP Datagram packets.
 			sendSocket = new DatagramSocket();
 
-			// Construct a datagram socket and bind it to port 5000
+			// Construct a datagram socket and bind it to port 420 (the Scheduler)
 			// on the local host machine. This socket will be used to
 			// receive UDP Datagram packets.
 			receiveSocket = new DatagramSocket(420);
@@ -70,13 +70,10 @@ public class elevatorSubsystem {
 		}
 	}
 
-	public int getElevatorNumber() {
-		return this.elevatorNumber;
-	}
-
-	public int getCurrentFloor() {
-		return this.currentFloor;
-	}
+	public int getElevatorNumber() {return this.elevatorNumber;}
+	public int getCurrentFloor() {return this.currentFloor;}
+	public int getNumberOfElevatorNumber() {return this.numberOfElevators;}
+	public int getNumberOfFloor() {return this.numberOfFloors;}
 
 	// Interior Elevator Display
 	public void display() {
@@ -116,7 +113,7 @@ public class elevatorSubsystem {
 			// for now this array is from 0 to num of Floors and encoded (on/off
 			// respectively), you can do it however u prefer
 			for (int i = 0; i < numberOfFloors; i++) {
-				allButtons[i] = lampState.OFF;
+				allButtons[i] = lampState.OFF; // currently making everything OFF
 			}
 		}
 		if (str.equals("start/stop")) {
@@ -130,15 +127,15 @@ public class elevatorSubsystem {
 		}
 		if (str.equals("open/close")) {
 			if (data[1] == 0) {
-				this.closeDoor();// Start elevator
+				this.closeDoor();// Close the elevator door
 			} else if (data[1] == 1) {
-				this.openDoor();// Stop elevator
+				this.openDoor();// Open the elevator door
 			}
 		}
-		if (str.equals("send clicked floor")) {
-			// send clicked floor to scheduler
-			byte clickedFloor = 5;
-			byte[] clickedButton = { 3, clickedFloor, -1 };
+		if (str.equals("button clicked")) {
+			// button clicked by user (in the elevator), send that to scheduler
+			byte clickedFloor = 5; // ex. 5, not sure how we will do this
+			byte[] clickedButton = {3, clickedFloor, -1};
 			try {
 				sendPacket = new DatagramPacket(clickedButton, clickedButton.length, InetAddress.getLocalHost(), 420);
 			} catch (UnknownHostException e) {
@@ -162,10 +159,9 @@ public class elevatorSubsystem {
 			}
 
 			System.out.println("Elevator: Packet sent.\n");
-			
 		} 
 		else {
-			// invalid case
+			// Invalid case
 			System.out.println("Invalid Packet Format");
 			System.exit(1); // invalid
 		}
@@ -177,7 +173,7 @@ public class elevatorSubsystem {
 			return "config";
 		} else if (data[0] == 3) {
 			// send the number of floor clicked
-			return "send clicked floor";
+			return "button clicked";
 		} else if (data[0] == 4) {
 			return "start/stop";
 		} else if (data[0] == 5) {
@@ -187,9 +183,19 @@ public class elevatorSubsystem {
 	}
 
 	public void exchangeData() {
-		// receive config layer out the elevators and the floors (once)
-		// receive command to move
-		// recieve command to control doors
+		/*
+		 * The way this was designed is to constantly receive messages, nothing else, and then decoding the messages and using what
+		 * is needed. First (not verified yet just relying on Floor), the elevator system receives a configuration messages 
+		 * informing it how many elevators and floors to consider. After that, it is still waiting to receive data from the 
+		 * scheduler. If the first byte of the messages matches with one of the valid modes (0,3,4,5) then an action is performed, 
+		 * if not, it is considered invalid.
+		 * 
+		 * Expected Communication:
+		 * 	1) Receive configuration once
+		 * 	Do Forever:
+		 * 		2) Receive what floor to go to from the scheduler (and go there)
+		 * 		3) Receive when to open/close the door from the scheduler
+		 */
 
 		// Receiving Data from the Scheduler to Control the Motor and Open the doors
 		this.display(); // automatically show display
