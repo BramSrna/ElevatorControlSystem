@@ -36,6 +36,12 @@ public class Scheduler {
 	 * </pre>
 	 */
 
+	/**
+	 * <pre>
+	 * 1. How will the Scheduler know the elevator port number?
+	 * </pre>
+	 */
+
 	private DatagramSocket recieveSocket, sendSocket;
 	private DatagramPacket recievePacket, sendPacket;
 	private final int SCHEDULER_PORT_NUM = 420;
@@ -111,10 +117,7 @@ public class Scheduler {
 	 * @param recievedData
 	 */
 	private void extractFloorRequestedNumberAndGenerateResponseMessageAndActions(DatagramPacket recievedPacket) {
-		byte[] recievedData = recievedPacket.getData();
-		byte[] requestFloor = { recievedData[3], recievedData[4], recievedData[5], recievedData[6] };
-		int floorWhereRequestCameFrom = Integer.parseInt(new String(requestFloor));
-		floorButtonPressed(floorWhereRequestCameFrom);
+		floorButtonPressed(Character.getNumericValue(getCharFromByteArray(recievedPacket.getData()).get(0)));
 	}
 
 	private void moveToFloor(DatagramPacket packet) {
@@ -162,10 +165,7 @@ public class Scheduler {
 	 * @param recievedData
 	 */
 	private void extractElevatorButtonFloorAndGenerateResponseMessageAndActions(DatagramPacket recievedPacket) {
-		byte[] recievedData = recievedPacket.getData();
-		byte[] floorButtonPressed = { recievedData[3], recievedData[4], recievedData[5], recievedData[6] };
-		int buttonPressed = Integer.parseInt(new String(floorButtonPressed));
-		floorButtonPressed(buttonPressed);
+		floorButtonPressed(Character.getNumericValue(getCharFromByteArray(recievedPacket.getData()).get(0)));
 
 	}
 
@@ -175,9 +175,7 @@ public class Scheduler {
 	 * @param recievedData
 	 */
 	private void extractFloorReachedNumberAndGenerateResponseMessageAndActions(DatagramPacket recievedPacket) {
-		byte[] recievedData = recievedPacket.getData();
-		byte[] currentFloorNumber = { recievedData[3], recievedData[4], recievedData[5], recievedData[6] };
-		int currentFloor = Integer.parseInt(new String(currentFloorNumber));
+		int currentFloor = Character.getNumericValue(getCharFromByteArray(recievedPacket.getData()).get(0));
 		floorElevatorIsCurrentlyOn = currentFloor;
 		if (floorsToVisit.contains(currentFloor)) {
 			sendMessage(STOP_ELEVATOR, CLOSE_DOOR.length, recievedPacket.getAddress(), ELEVATOR_PORT_NUM);
@@ -214,6 +212,17 @@ public class Scheduler {
 			e.printStackTrace();
 			System.exit(1);
 		}
+	}
+
+	private List<Character> getCharFromByteArray(byte[] array) {
+		List<Character> charValues = new ArrayList<Character>();
+		for (int a = 0; a < array.length; a++) {
+			if (array[a] == 48) { // 0 in ASCII
+				break;
+			}
+			charValues.add((char) array[a]);
+		}
+		return charValues;
 	}
 
 }
