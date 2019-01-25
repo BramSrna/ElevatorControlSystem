@@ -173,14 +173,16 @@ public class FloorSubsystem {
             
             directionEnum = Direction.valueOf(directionStr.toUpperCase());
             
-            // Add the request
-            this.addRequest(hourInt, 
-                            minInt, 
-                            secInt, 
-                            milliSecInt, 
-                            startFloorInt, 
-                            directionEnum, 
-                            finalFloorInt);
+            for (Floor floor : floors) {
+            	if (floor.getFloorNumber() == startFloorInt) {
+            		floor.elevatorRequest(hourInt, 
+			                              minInt, 
+			                              secInt, 
+			                              milliSecInt, 
+			                              directionEnum, 
+			                              finalFloorInt);
+            	}
+            }
             
             // Get the next line in the file
             try {
@@ -226,13 +228,13 @@ public class FloorSubsystem {
      * 
      * @return  void
      */
-    public void addRequest(int hrOfReq, 
-                           int minOfReq, 
-                           int secOfReq, 
-                           int msOfReq, 
-                           int startFloor, 
-                           Direction dirPressed, 
-                           int finalFloor) {
+    public void sendElevatorRequest(int hrOfReq, 
+		                            int minOfReq, 
+		                            int secOfReq, 
+		                            int msOfReq, 
+		                            int startFloor, 
+		                            Direction dirPressed, 
+		                            int finalFloor) {
         // Check that the given floors are valid
         if ((startFloor < bottomFloor) || (startFloor > topFloor) ||
             (finalFloor < bottomFloor) || (finalFloor > topFloor)) {

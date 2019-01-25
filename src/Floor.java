@@ -44,13 +44,28 @@ public class Floor {
         controller.sendArrivalSensorSignal(this.floorNum, elevatorShaftNum);
     }
     
-    public void elevatorRequest(FloorSubsystem.Direction direction) {
+    public void elevatorRequest(int hourOfCall, 
+					    		int minOfCall, 
+					    		int secOfCall, 
+					    		int msOfCall, 
+					    		FloorSubsystem.Direction direction,
+					    		int endFloor) {
         if (direction == FloorSubsystem.Direction.UP) {
             upButtonPressed = lampState.ON;
         } else if (direction == FloorSubsystem.Direction.DOWN) {
             downButtonPressed = lampState.ON;
         }
         
-        controller.addRequest(0, 0, 0, 0, this.floorNum, direction, 0);
+        controller.sendElevatorRequest(hourOfCall, 
+						        	   minOfCall, 
+						        	   secOfCall, 
+						        	   msOfCall, 
+						        	   this.floorNum, 
+						        	   direction, 
+						        	   endFloor);
+    }
+    
+    public int getFloorNumber() {
+    	return(this.floorNum);
     }
 }

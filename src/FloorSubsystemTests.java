@@ -72,7 +72,7 @@ class FloorSubsystemTests {
             System.out.println("Error: Unable to delete test text file.");
             e.printStackTrace();
             System.exit(1);
-        } 
+        }
     }
 
 }
