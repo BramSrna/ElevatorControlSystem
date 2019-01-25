@@ -51,7 +51,7 @@ public class Scheduler {
 	private List<Integer> floorsToVisit;
 	private final byte[] FLOOR_BUTTON_HIT_MODE = { 0, 0, 0 };
 	private final byte[] REACHED_FLOOR_MESSAGE_MODE = { 0, 0, 1 };
-	private final byte[] ELEVATOR_REQUESTED_MODE = { 0, 0, 2 };
+	private final byte[] ELEVATOR_REQUEST_MODE = { 0, 0, 2 };
 	private final byte[] STOP_ELEVATOR = { 83, 84, 79, 90 }; // STOP in ASCII
 	private final byte[] OPEN_DOOR = { 81, 80, 69, 78 }; // OPEN in ASCII
 	private final byte[] CLOSE_DOOR = { 67, 76, 79, 83, 69 }; // CLOSE in ASCII
@@ -106,7 +106,7 @@ public class Scheduler {
 			extractElevatorButtonFloorAndGenerateResponseMessageAndActions(recievedPacket);
 		} else if (mode.equals(REACHED_FLOOR_MESSAGE_MODE)) {
 			extractFloorReachedNumberAndGenerateResponseMessageAndActions(recievedPacket);
-		} else if (mode.equals(ELEVATOR_REQUESTED_MODE)) {
+		} else if (mode.equals(ELEVATOR_REQUEST_MODE)) {
 			extractFloorRequestedNumberAndGenerateResponseMessageAndActions(recievedPacket);
 		}
 	}
@@ -117,6 +117,8 @@ public class Scheduler {
 	 * @param recievedData
 	 */
 	private void extractFloorRequestedNumberAndGenerateResponseMessageAndActions(DatagramPacket recievedPacket) {
+		System.out.println("Elevator was requested at: "
+				+ Character.getNumericValue(getCharFromByteArray(recievedPacket.getData()).get(0)) + "\n");
 		floorButtonPressed(Character.getNumericValue(getCharFromByteArray(recievedPacket.getData()).get(0)));
 	}
 
@@ -165,6 +167,8 @@ public class Scheduler {
 	 * @param recievedData
 	 */
 	private void extractElevatorButtonFloorAndGenerateResponseMessageAndActions(DatagramPacket recievedPacket) {
+		System.out.println("Following floor button was hit in the elevator: "
+				+ Character.getNumericValue(getCharFromByteArray(recievedPacket.getData()).get(0)) + "\n");
 		floorButtonPressed(Character.getNumericValue(getCharFromByteArray(recievedPacket.getData()).get(0)));
 
 	}
@@ -176,6 +180,7 @@ public class Scheduler {
 	 */
 	private void extractFloorReachedNumberAndGenerateResponseMessageAndActions(DatagramPacket recievedPacket) {
 		int currentFloor = Character.getNumericValue(getCharFromByteArray(recievedPacket.getData()).get(0));
+		System.out.println("Elevator has reached floor: " + currentFloor + "\n");
 		floorElevatorIsCurrentlyOn = currentFloor;
 		if (floorsToVisit.contains(currentFloor)) {
 			sendMessage(STOP_ELEVATOR, CLOSE_DOOR.length, recievedPacket.getAddress(), ELEVATOR_PORT_NUM);
