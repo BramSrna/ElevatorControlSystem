@@ -88,6 +88,7 @@ public class Scheduler {
 		} else if (mode == FLOOR_REQUEST_MODE) {
 			extractFloorRequestedNumberAndGenerateResponseMessageAndActions(recievedPacket);
 		}
+		moveToFloor(recievedPacket);
 	}
 
 	/**
@@ -96,29 +97,86 @@ public class Scheduler {
 	 * @param recievedData
 	 */
 	private void extractFloorRequestedNumberAndGenerateResponseMessageAndActions(DatagramPacket recievedPacket) {
-		System.out.println("Elevator was requested at: "
-				+ Character.getNumericValue(getCharFromByteArray(recievedPacket.getData()).get(0)) + "\n");
-		floorButtonPressed(Character.getNumericValue(getCharFromByteArray(recievedPacket.getData()).get(0)));
+		System.out.println("Elevator was requested at: " + recievedPacket.getData()[1] + " in the direction "
+				+ recievedPacket.getData()[2] + "\n");
+		floorButtonPressed(recievedPacket.getData()[1]);
 	}
 
 	private void moveToFloor(DatagramPacket packet) {
-		if (elevatorDirection.equals(ElevatorDirection.STATIONARY)) {
-			if (!floorsToVisit.isEmpty()) {
-				sendMessage(DOOR_CLOSE, DOOR_CLOSE.length, packet.getAddress(), ELEVATOR_PORT_NUM);
-				if (elevatorShouldGoUp()) {
-					sendMessage(GO_UP, DOOR_CLOSE.length, packet.getAddress(), ELEVATOR_PORT_NUM);
-				} else {
-					sendMessage(GO_DOWN, DOOR_CLOSE.length, packet.getAddress(), ELEVATOR_PORT_NUM);
-				}
+		if (elevatorDirection.equals(ElevatorDirection.STATIONARY) && !floorsToVisit.isEmpty()) {
+			closeElevatorDoors(packet);
+			if (elevatorShouldGoUp()) {
+				sendElevatorUp(packet);
+			} else {
+				sendElevatorDown(packet);
 			}
-
-		} else if (elevatorDirection.equals(ElevatorDirection.UP)) {
-			sendMessage(DOOR_CLOSE, DOOR_CLOSE.length, packet.getAddress(), ELEVATOR_PORT_NUM);
-			sendMessage(GO_UP, DOOR_CLOSE.length, packet.getAddress(), ELEVATOR_PORT_NUM);
-		} else if (elevatorDirection.equals(ElevatorDirection.DOWN)) {
-			sendMessage(DOOR_CLOSE, DOOR_CLOSE.length, packet.getAddress(), ELEVATOR_PORT_NUM);
-			sendMessage(GO_DOWN, DOOR_CLOSE.length, packet.getAddress(), ELEVATOR_PORT_NUM);
+		} else if (elevatorDirection.equals(ElevatorDirection.UP) && !floorsToVisit.isEmpty()) {
+			closeElevatorDoors(packet);
+			if (floorsToGoToAbove()) {
+				sendElevatorUp(packet);
+			} else {
+				sendElevatorDown(packet);
+			}
+		} else if (elevatorDirection.equals(ElevatorDirection.DOWN) && !floorsToVisit.isEmpty()) {
+			closeElevatorDoors(packet);
+			if (floorsToGoToBelow()) {
+				sendElevatorDown(packet);
+			} else {
+				sendElevatorUp(packet);
+			}
+		} else {
+			stopElevator(packet);
+			openElevatorDoors(packet);
 		}
+	}
+
+	private void stopElevator(DatagramPacket packet) {
+		byte[] STOP_ELEVATOR = { ELEVATOR_DIRECTION_MODE, floorElevatorIsCurrentlyOn, floorElevatorIsCurrentlyOn,
+				ELEVATOR_STAY, END_OF_MESSAGE };
+		sendMessage(STOP_ELEVATOR, STOP_ELEVATOR.length, packet.getAddress(), ELEVATOR_PORT_NUM);
+		elevatorDirection = ElevatorDirection.STATIONARY;
+	}
+
+	private void sendElevatorUp(DatagramPacket packet) {
+		byte[] goUp = { ELEVATOR_DIRECTION_MODE, floorElevatorIsCurrentlyOn, floorElevatorIsCurrentlyOn, ELEVATOR_UP,
+				END_OF_MESSAGE };
+		sendMessage(goUp, goUp.length, packet.getAddress(), ELEVATOR_PORT_NUM);
+		elevatorDirection = ElevatorDirection.UP;
+	}
+
+	private void sendElevatorDown(DatagramPacket packet) {
+		byte[] goDown = { ELEVATOR_DIRECTION_MODE, floorElevatorIsCurrentlyOn, floorElevatorIsCurrentlyOn,
+				ELEVATOR_DOWN, END_OF_MESSAGE };
+		sendMessage(goDown, goDown.length, packet.getAddress(), ELEVATOR_PORT_NUM);
+		elevatorDirection = ElevatorDirection.DOWN;
+	}
+
+	private void closeElevatorDoors(DatagramPacket packet) {
+		byte[] closeDoor = { ELEVATOR_DOOR_MODE, DOOR_CLOSE, END_OF_MESSAGE };
+		sendMessage(closeDoor, closeDoor.length, packet.getAddress(), ELEVATOR_PORT_NUM);
+	}
+
+	private void openElevatorDoors(DatagramPacket packet) {
+		byte[] openDoor = { ELEVATOR_DOOR_MODE, DOOR_OPEN, END_OF_MESSAGE };
+		sendMessage(openDoor, openDoor.length, packet.getAddress(), ELEVATOR_PORT_NUM);
+	}
+
+	private boolean floorsToGoToAbove() {
+		for (byte tempFloor : floorsToVisit) {
+			if (tempFloor > floorElevatorIsCurrentlyOn) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private boolean floorsToGoToBelow() {
+		for (byte tempFloor : floorsToVisit) {
+			if (tempFloor < floorElevatorIsCurrentlyOn) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private boolean elevatorShouldGoUp() {
@@ -126,7 +184,7 @@ public class Scheduler {
 		int currentClosestDistance = Integer.MAX_VALUE;
 		int closestFloor = 0;
 
-		for (int tempFloor : floorsToVisit) {
+		for (byte tempFloor : floorsToVisit) {
 			difference = Math.abs(floorElevatorIsCurrentlyOn - tempFloor);
 			if (difference < currentClosestDistance) {
 				currentClosestDistance = difference;
@@ -158,20 +216,13 @@ public class Scheduler {
 	 */
 	private void extractFloorReachedNumberAndGenerateResponseMessageAndActions(DatagramPacket recievedPacket) {
 		byte currentFloor = recievedPacket.getData()[1];
-		byte elevatorShaft = recievedPacket.getData()[2];
-		System.out.println("Elevator " + elevatorShaft + " has reached floor: " + currentFloor + "\n");
+		System.out.println("Elevator has reached floor: " + currentFloor + "\n");
 		floorElevatorIsCurrentlyOn = currentFloor;
 		if (floorsToVisit.contains(currentFloor)) {
-			// TODO I do not understand what you mean by destination floor, and added
-			// elevator shaft
-			byte[] STOP_ELEVATOR = { ELEVATOR_DIRECTION_MODE, elevatorShaft, currentFloor, currentFloor, ELEVATOR_STAY,
-					END_OF_MESSAGE };
-			sendMessage(STOP_ELEVATOR, STOP_ELEVATOR.length, recievedPacket.getAddress(), ELEVATOR_PORT_NUM);
-			byte[] OPEN_DOOR = { ELEVATOR_DOOR_MODE, elevatorShaft, DOOR_OPEN };
-			sendMessage(OPEN_DOOR, OPEN_DOOR.length, recievedPacket.getAddress(), ELEVATOR_PORT_NUM);
+			stopElevator(recievedPacket);
+			openElevatorDoors(recievedPacket);
 		}
 		reachedFloor(currentFloor);
-		moveToFloor(recievedPacket);
 	}
 
 	private void floorButtonPressed(byte floor) {
@@ -202,16 +253,4 @@ public class Scheduler {
 			System.exit(1);
 		}
 	}
-
-	private List<Character> getCharFromByteArray(byte[] array) {
-		List<Character> charValues = new ArrayList<Character>();
-		for (int a = 0; a < array.length; a++) {
-			if (array[a] == 48) { // 0 in ASCII
-				break;
-			}
-			charValues.add((char) array[a]);
-		}
-		return charValues;
-	}
-
 }
