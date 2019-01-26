@@ -13,9 +13,9 @@ public class FloorSubsystem {
     
     // List of service requests parsed from the input file
     // Sorted in order of time that requests are made
-    ArrayList<byte[]> serviceRequests;
+    private ArrayList<byte[]> serviceRequests;
     
-    ArrayList<Floor> floors;
+    private ArrayList<Floor> floors;
     
     // Possible directions for the requests
     public enum Direction {
