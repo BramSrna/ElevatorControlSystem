@@ -36,14 +36,18 @@ public class elevatorSubsystem {
 	DatagramPacket sendPacket, receivePacket;
 	DatagramSocket sendSocket, receiveSocket;
 
-	// The current floor the elevator is on
+	// The elevator car number
 	private int elevatorNumber = 1;
+	// The current floor the elevator is on
 	private int currentFloor = 1;
+	// The number of elevators and floors, initialized to 0
+	// These are set during the intial config
 	private int numberOfElevators = 0;
 	private int numberOfFloors = 0;
 
+	// The lamps indicate the floor(s) which will be visited by the elevator
 	private lampState[] allButtons;
-
+	
 	private enum lampState {
 		OFF, ON
 	}
@@ -81,26 +85,43 @@ public class elevatorSubsystem {
 		System.out.println("Floor # " + this.getCurrentFloor());
 		// ideally we want lights lighting up by whatever floor it is, not sure how we
 		// wil implement that yet
+		
+		// Get message from scheduler containing destinationFloor (e.g. floor 5)
+		// then set the lampState of the corresponsing button (#5 on the elevator) to 'ON'?
+		
+		//Same with turning if off 
+		// Do we just do:
+		// allbuttons[currentFloor] = lampState.OFF, in openDoor()?
 	}
 	
 	// Start elevator until told to stop
 	public void startMotor() {
 		System.out.println("Elevator Started Moving");
+		// Increment/Decrement currentFloor
+		// Sleep for 1-2 seconds
+		// Increment/Decrement currentFloor
+		// Sleep for 1-2 seconds
+		
+		// Repeat until we reach the destinationFloor?
 	}
 
 	// Stop the elevator
 	public void stopMotor() {
 		System.out.println("Elevator Stopped Moving");
+		// Sleep 1-2 seconds ( no other logic) ?
+		// Do we deal with the arrival signal?
 	}
 	
 	// Open the elevator door
 	public void openDoor() {
 		System.out.println("Elevator Door Opened");
+		// Sleep 1-2 seconds ( no other logic) ?
 	}
 	
 	// Close the elevator door
 	public void closeDoor() {
 		System.out.println("Elevator Door Closed");
+		// Sleep 1-2 seconds ( no other logic) ?
 	}
 	
 	// called within exchangeData() method to perform required actions
@@ -233,6 +254,7 @@ public class elevatorSubsystem {
 		}
 
 		String request = this.validPacket(data); // returns the status of the packet information
+		// Is it possible we miss the first config message?
 		this.performAction(request, data); // if the packet is valid, an action will be performed
 	}
 
