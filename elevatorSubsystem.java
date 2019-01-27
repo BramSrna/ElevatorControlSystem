@@ -3,6 +3,7 @@ package groupProject;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.lang.Math.*;
 
 /*
  * SYSC 3303 Elevator Group Project
@@ -91,37 +92,79 @@ public class elevatorSubsystem {
 		
 		//Same with turning if off 
 		// Do we just do:
-		// allbuttons[currentFloor] = lampState.OFF, in openDoor()?
+		// allbuttons[currentFloor] = lampState.OFF, in openDoor()?, or in stopMotor()?, or...
 	}
 	
 	// Start elevator until told to stop
-	public void startMotor() {
-		System.out.println("Elevator Started Moving");
-		// Increment/Decrement currentFloor
-		// Sleep for 1-2 seconds
-		// Increment/Decrement currentFloor
-		// Sleep for 1-2 seconds
+	public void startMotor(int currentFloor, int destinationFloor) {
+		int direction; // 1 = goUp, -1 = goDown
+		// The number of floors the elevator needs to travel
+		int floorDifference = abs(destinationFloor - currentFloor); 
 		
-		// Repeat until we reach the destinationFloor?
+		System.out.println("Elevator Started Moving");
+		
+		// Determine the direction the elevator needs to travel
+		if (destinationFloor > currentFloor) {
+			direction = 1;
+		}
+		else if (destinationFloor < currentFloor) {
+			direction = -1;
+		}
+		// else {} What happens if the destinationFloor = currentFloor?
+		
+		for (int i = floorDifference; i > 0; i--)
+		{
+			// Increment/Decrement currentFloor depending on the direction of travel
+			currentFloor += direction;
+			
+			// Sleep for 2 seconds to simulate floor-to-floor travel
+			// Do we miss messages if we sleep?
+			try {
+				Thread.sleep(2000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+				System.exit(1);
+			}
+		}
 	}
 
 	// Stop the elevator
 	public void stopMotor() {
+		// Sleep for 2 seconds to simulate elevator stopping, before door opens
+		// Do we miss messages if we sleep?
+		try {
+			Thread.sleep(2000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
 		System.out.println("Elevator Stopped Moving");
-		// Sleep 1-2 seconds ( no other logic) ?
-		// Do we deal with the arrival signal?
 	}
 	
 	// Open the elevator door
 	public void openDoor() {
+		// Sleep for 1.5 seconds to simulate the door opening
+		// Do we miss messages if we sleep?
+		try {
+			Thread.sleep(2000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
 		System.out.println("Elevator Door Opened");
-		// Sleep 1-2 seconds ( no other logic) ?
 	}
 	
 	// Close the elevator door
 	public void closeDoor() {
+		// Sleep for 1.5 seconds to simulate the door closing
+		// Do we miss messages if we sleep?
+		try {
+			Thread.sleep(1500);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
 		System.out.println("Elevator Door Closed");
-		// Sleep 1-2 seconds ( no other logic) ?
 	}
 	
 	// called within exchangeData() method to perform required actions
@@ -141,16 +184,17 @@ public class elevatorSubsystem {
 			int destinationFloor = data[1]; // Go to this floor
 			currentFloor = data[2];
 			if (data[3] == 0) {
-				this.startMotor();// Start elevator
+				this.startMotor(currentFloor, destinationFloor);// Start elevator
 			} else if (data[3] == 1) {
 				this.stopMotor();// Stop elevator
+				//allbuttons[currentFloor] = lampState.OFF;?
 			}
 		}
 		if (str.equals("open/close")) {
 			if (data[1] == 0) {
 				this.closeDoor();// Close the elevator door
 			} else if (data[1] == 1) {
-				this.openDoor();// Open the elevator door
+				this.openDoor();// Open the elevator doorv
 			}
 		}
 		if (str.equals("button clicked")) {
