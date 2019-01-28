@@ -5,7 +5,6 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -13,14 +12,14 @@ public class Scheduler {
 
 	// State Machine
 	enum State {
-		WAITING, INIT, ADDING_FLOORS_TO_VISIT, STOPPING_ELEVATOR, MOVING_ELEVATOR, OPENING_DOORS, CLOSING_DOORS
+		WAITING, READING_MESSAGE, RESPONDING_TO_MESSAGE
 	}
 
 	enum Event {
-		FLOOR_SENSOR_ACTIVATED, FLOOR_BUTTON_HIT, ELEVATOR_REQUESTED
-	}
+		MESSAGE_RECIEVED, CONFIG_MESSAGE, BUTTON_PUSHED_IN_ELEVATOR, FLOOR_SENSOR_ACTIVATED, FLOOR_REQUESTED,
+		MOVE_ELEVATOR
 
-	Collection events;
+	}
 
 	// Modes
 	private final byte CONFIG_MODE = 0;
@@ -42,7 +41,6 @@ public class Scheduler {
 	private DatagramPacket recievePacket, sendPacket;
 	private final int SCHEDULER_PORT_NUM = 420;
 	private final int ELEVATOR_PORT_NUM = 69;
-	private final int FLOOR_PORT_NUM = 666;
 	private final int MAX_BYTE_ARRAY_SIZE = 100;
 	private List<Byte> floorsToVisit;
 	private ElevatorDirection elevatorDirection;
@@ -56,7 +54,6 @@ public class Scheduler {
 	private Scheduler() {
 		floorsToVisit = new ArrayList<Byte>();
 		elevatorDirection = ElevatorDirection.STATIONARY;
-		events = new ArrayList<Event>();
 		currentState = State.WAITING;
 	}
 
@@ -79,31 +76,67 @@ public class Scheduler {
 		try {
 			System.out.println("Scheduler is waiting for data...");
 			recieveSocket.receive(recievePacket);
+			eventOccured(Event.MESSAGE_RECIEVED, recievePacket);
 		} catch (IOException e) {
 			System.out.println("Recieve Socket failure!");
 			e.printStackTrace();
 			System.exit(1);
 		}
-		readMessageAndGenerateResponseMessageAndActions(recievePacket);
+
 		recieveSocket.close();
 		sendSocket.close();
 	}
 
-	// TODO
-	private void readMessageAndGenerateResponseMessageAndActions(DatagramPacket recievedPacket) {
+	private void eventOccured(Event event, DatagramPacket packet) {
+		switch (currentState) {
+		case READING_MESSAGE:
+			if (event.equals(Event.CONFIG_MESSAGE)) {
+				sendConfigPacketToElevator(packet);
+			} else if (event.equals(Event.BUTTON_PUSHED_IN_ELEVATOR)) {
+				extractElevatorButtonFloorAndGenerateResponseMessageAndActions(packet);
+			} else if (event.equals(Event.FLOOR_SENSOR_ACTIVATED)) {
+				extractFloorReachedNumberAndGenerateResponseMessageAndActions(packet);
+			} else if (event.equals(Event.FLOOR_REQUESTED)) {
+				extractFloorRequestedNumberAndGenerateResponseMessageAndActions(packet);
+			}
+			currentState = State.RESPONDING_TO_MESSAGE;
+			moveToFloor(packet);
+			break;
+		case WAITING:
+			if (event.equals(Event.MESSAGE_RECIEVED)) {
+				currentState = State.READING_MESSAGE;
+				readMessage(recievePacket);
+			}
+			break;
+		case RESPONDING_TO_MESSAGE:
+			if (event.equals(Event.MOVE_ELEVATOR)) {
+				currentState = State.WAITING;
+			}
+			break;
+		default:
+			System.out.println("Should never come here!\n");
+			break;
+
+		}
+	}
+
+	private void sendConfigPacketToElevator(DatagramPacket configPacket) {
+		System.out.println("Sending config file to Elevator...");
+		sendMessage(configPacket.getData(), configPacket.getData().length, configPacket.getAddress(),
+				ELEVATOR_PORT_NUM);
+	}
+
+	private void readMessage(DatagramPacket recievedPacket) {
 		byte mode = recievedPacket.getData()[0];
 		if (mode == CONFIG_MODE) {
-			System.out.println("Sending config file to Elevator...");
-			sendMessage(recievedPacket.getData(), recievedPacket.getData().length, recievedPacket.getAddress(),
-					ELEVATOR_PORT_NUM);
+			eventOccured(Event.CONFIG_MESSAGE, recievedPacket);
 		} else if (mode == ELEVATOR_BUTTON_HIT_MODE) {
-			extractElevatorButtonFloorAndGenerateResponseMessageAndActions(recievedPacket);
+			eventOccured(Event.BUTTON_PUSHED_IN_ELEVATOR, recievedPacket);
 		} else if (mode == FLOOR_SENSOR_MODE) {
-			extractFloorReachedNumberAndGenerateResponseMessageAndActions(recievedPacket);
+			eventOccured(Event.FLOOR_SENSOR_ACTIVATED, recievedPacket);
 		} else if (mode == FLOOR_REQUEST_MODE) {
-			extractFloorRequestedNumberAndGenerateResponseMessageAndActions(recievedPacket);
+			eventOccured(Event.FLOOR_REQUESTED, recievedPacket);
 		}
-		moveToFloor(recievedPacket);
 	}
 
 	/**
@@ -143,6 +176,7 @@ public class Scheduler {
 			stopElevator(packet);
 			openElevatorDoors(packet);
 		}
+		eventOccured(Event.MOVE_ELEVATOR, packet);
 	}
 
 	private void stopElevator(DatagramPacket packet) {
