@@ -5,10 +5,22 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 public class Scheduler {
+
+	// State Machine
+	enum State {
+		WAITING, INIT, ADDING_FLOORS_TO_VISIT, STOPPING_ELEVATOR, MOVING_ELEVATOR, OPENING_DOORS, CLOSING_DOORS
+	}
+
+	enum Event {
+		FLOOR_SENSOR_ACTIVATED, FLOOR_BUTTON_HIT, ELEVATOR_REQUESTED
+	}
+
+	Collection events;
 
 	// Modes
 	private final byte CONFIG_MODE = 0;
@@ -35,6 +47,7 @@ public class Scheduler {
 	private List<Byte> floorsToVisit;
 	private ElevatorDirection elevatorDirection;
 	private byte floorElevatorIsCurrentlyOn;
+	private State currentState;
 
 	enum ElevatorDirection {
 		UP, DOWN, STATIONARY
@@ -43,6 +56,8 @@ public class Scheduler {
 	private Scheduler() {
 		floorsToVisit = new ArrayList<Byte>();
 		elevatorDirection = ElevatorDirection.STATIONARY;
+		events = new ArrayList<Event>();
+		currentState = State.WAITING;
 	}
 
 	public static void main(String[] args) {
