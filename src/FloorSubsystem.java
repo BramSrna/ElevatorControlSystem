@@ -13,10 +13,12 @@ public class FloorSubsystem {
     
     // List of service requests parsed from the input file
     // Sorted in order of time that requests are made
-    ArrayList<byte[]> serviceRequests;
+    private ArrayList<byte[]> serviceRequests;
+    
+    private ArrayList<Floor> floors;
     
     // Possible directions for the requests
-    private enum Direction {
+    public enum Direction {
         DOWN,
         UP
     }
@@ -34,10 +36,16 @@ public class FloorSubsystem {
      * 
      * @return  void
      */
-    public FloorSubsystem(int numFloors) {
+    public FloorSubsystem(int numFloors, int numElevators) {
         this.setNumFloors(numFloors);
         
         serviceRequests = new ArrayList<byte[]>();
+        
+        floors = new ArrayList<Floor>();
+        
+        for (int i = 0; i < numFloors; i++) {
+            floors.add(new Floor(this, i, numElevators));
+        }
     }
     
     /**
@@ -165,14 +173,16 @@ public class FloorSubsystem {
             
             directionEnum = Direction.valueOf(directionStr.toUpperCase());
             
-            // Add the request
-            this.addRequest(hourInt, 
-                            minInt, 
-                            secInt, 
-                            milliSecInt, 
-                            startFloorInt, 
-                            directionEnum, 
-                            finalFloorInt);
+            for (Floor floor : floors) {
+            	if (floor.getFloorNumber() == startFloorInt) {
+            		floor.elevatorRequest(hourInt, 
+			                              minInt, 
+			                              secInt, 
+			                              milliSecInt, 
+			                              directionEnum, 
+			                              finalFloorInt);
+            	}
+            }
             
             // Get the next line in the file
             try {
@@ -218,13 +228,13 @@ public class FloorSubsystem {
      * 
      * @return  void
      */
-    public void addRequest(int hrOfReq, 
-                           int minOfReq, 
-                           int secOfReq, 
-                           int msOfReq, 
-                           int startFloor, 
-                           Direction dirPressed, 
-                           int finalFloor) {
+    public void sendElevatorRequest(int hrOfReq, 
+		                            int minOfReq, 
+		                            int secOfReq, 
+		                            int msOfReq, 
+		                            int startFloor, 
+		                            Direction dirPressed, 
+		                            int finalFloor) {
         // Check that the given floors are valid
         if ((startFloor < bottomFloor) || (startFloor > topFloor) ||
             (finalFloor < bottomFloor) || (finalFloor > topFloor)) {
@@ -301,5 +311,9 @@ public class FloorSubsystem {
      */
     public ArrayList<byte[]> getRequests(){
         return(serviceRequests);
+    }
+    
+    public void sendArrivalSensorSignal(int elevatorShaftNum, int floorNum) {
+        
     }
 }
