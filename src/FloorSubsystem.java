@@ -3,15 +3,29 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.net.*;
 
 public class FloorSubsystem {
+	
+	private DatagramPacket sendPacket, receivePacket;
+	private DatagramSocket sendReceiveSocket;
+	
     private int bottomFloor; // Lowest possible floor
     private int topFloor;    // Highest possible floor
     private int numFloors;   // Number of floors that the elevator services
     
     private int numElevators; // The current number of elevators
     
-    private final int REQUEST_SIZE = 7; // Size of the service requests
+    // Size of service requests
+    private final int CONFIG_SIZE = 4;
+    private final int REQUEST_SIZE = 5; 
+    private final int ARRIVAL_SIZE = 4;
+    
+    private final int TIME_PER_FLOOR = 2000;
+    
     
     // Valid ranges for the number of 
     // floors and number of elevators
@@ -291,7 +305,7 @@ public class FloorSubsystem {
      * 
      * @return  void
      */
-    public void sendElevatorRequest(int hrOfReq, 
+    public void addElevatorRequest(int hrOfReq, 
 		                            int minOfReq, 
 		                            int secOfReq, 
 		                            int msOfReq, 
@@ -436,7 +450,81 @@ public class FloorSubsystem {
      * @return	void
      */
     public void sendArrivalSensorSignal(int elevatorShaftNum, int floorNum) {
-        
+    	System.out.println("Floor " + floorNum + ": sending a packet containing elevator location\n");
+    			
+    	
+    	// Construct a message to send with data from given parameters
+    	byte[] msg = new byte[ARRIVAL_SIZE];
+    	msg[0] = 1;
+    	msg[1] = (byte) floorNum;
+    	msg[2] = (byte) elevatorShaftNum;
+    	msg[3] = -1;
+    			
+    	// Construct a datagram packet that is to be sent to a specified port 
+    	// on a specified host.
+    	// The arguments are:
+    	//  msg - the message contained in the packet (the byte array)
+    	//  msg.length - the length of the byte array
+    	//  InetAddress.getLocalHost() - the Internet address of the 
+    	//     destination host.
+    	//     InetAddress.getLocalHost() returns the Internet
+    	//     address of the local host.
+    	//  420 - the destination port number on the destination host.
+    	try {
+    		sendPacket = new DatagramPacket(msg, msg.length,
+    						InetAddress.getLocalHost(), 420);
+    	} catch (UnknownHostException e) {
+    		e.printStackTrace();
+    		System.exit(1);
+    	}
+    			
+    	// Process the sent datagram.
+    	System.out.println("Floor" + floorNum + ": Sending packet:");
+    	System.out.println("To host: " + sendPacket.getAddress());
+    	System.out.println("Destination host port: " + sendPacket.getPort());
+    	int len = sendPacket.getLength();
+    	System.out.println("Length: " + len);
+    			
+    			
+    	// Print the byte array
+    	System.out.print("Containing (Bytes): ");
+    	System.out.println(Arrays.toString(msg));
+    			
+    	// Send the datagram packet to the host via the send/receive socket. 
+    			
+    	try {
+    		sendReceiveSocket.send(sendPacket);
+    	} catch (IOException e) {
+    		e.printStackTrace();
+    		System.exit(1);
+    	}
+    			
+    	System.out.println("Floor" + floorNum + ": Packet sent.\n");
+    			
+    	// Construct a DatagramPacket for receiving packets up 
+    	// to 100 bytes long (the length of the byte array).
+    			
+    	byte data[] = new byte[100];
+    	receivePacket = new DatagramPacket(data, data.length);
+    			
+    	try {
+    		// Block until a datagram is received via sendReceiveSocket.  
+    		sendReceiveSocket.receive(receivePacket);
+    	} catch(IOException e) {
+    		e.printStackTrace();
+    		System.exit(1);
+    	}
+    			
+    	// Process the received datagram.
+    	System.out.println("Floor" + floorNum + ": Packet received:");
+    	System.out.println("From host: " + receivePacket.getAddress());
+    	System.out.println("Host port: " + receivePacket.getPort());
+    	len = receivePacket.getLength();
+    	System.out.println("Length: " + len);
+    	
+    	System.out.print("Containing (Bytes): ");
+    	System.out.println(Arrays.toString(receivePacket.getData()));
+    
     }
     
     /**
@@ -470,11 +558,240 @@ public class FloorSubsystem {
      * Sends a configuration signal with the
      * number of elevators and elevator shaft number.
      * 
+     * @param numElevators	The amount for elevators the building has
+     * @param numFloors		The amount of floors the buidling has
+     * 
      * @return	void
      */
-    public void sendConfigurationSignal() {
+    public void sendConfigurationSignal(int numElevators, int numFloors) {
+
+    	System.out.println("Sending a packet containing elevator configuration\n");
+		
     	
+    	// Construct a message to send with data from given parameters
+    	
+    	byte[] msg = new byte[CONFIG_SIZE];
+    	msg[0] = 0;
+    	msg[1] = (byte) numElevators;
+    	msg[2] = (byte) numFloors;
+    	msg[3] = -1;
+    			
+    	// Construct a datagram packet that is to be sent to a specified port 
+    	// on a specified host.
+    	// The arguments are:
+    	//  msg - the message contained in the packet (the byte array)
+    	//  msg.length - the length of the byte array
+    	//  InetAddress.getLocalHost() - the Internet address of the 
+    	//     destination host.
+    	//     InetAddress.getLocalHost() returns the Internet
+    	//     address of the local host.
+    	//  420 - the destination port number on the destination host.
+    	try {
+    		sendPacket = new DatagramPacket(msg, msg.length,
+    						InetAddress.getLocalHost(), 420);
+    	} catch (UnknownHostException e) {
+    		e.printStackTrace();
+    		System.exit(1);
+    	}
+    			
+    	// Process the sent datagram.
+    	System.out.println("Config: Sending packet:");
+    	System.out.println("To host: " + sendPacket.getAddress());
+    	System.out.println("Destination host port: " + sendPacket.getPort());
+    	int len = sendPacket.getLength();
+    	System.out.println("Length: " + len);
+    			
+    			
+    	// Print the byte array
+    	System.out.print("Containing (Bytes): ");
+    	System.out.println(Arrays.toString(msg));
+    			
+    	// Send the datagram packet to the host via the send/receive socket. 
+    			
+    	try {
+    		sendReceiveSocket.send(sendPacket);
+    	} catch (IOException e) {
+    		e.printStackTrace();
+    		System.exit(1);
+    	}
+    			
+    	System.out.println("Config: Packet sent.\n");
+    			
+    	// Construct a DatagramPacket for receiving packets up 
+    	// to 100 bytes long (the length of the byte array).
+    			
+    	byte data[] = new byte[100];
+    	receivePacket = new DatagramPacket(data, data.length);
+    			
+    	try {
+    		// Block until a datagram is received via sendReceiveSocket.  
+    		sendReceiveSocket.receive(receivePacket);
+    	} catch(IOException e) {
+    		e.printStackTrace();
+    		System.exit(1);
+    	}
+    			
+    	// Process the received datagram.
+    	System.out.println("Config: Packet received:");
+    	System.out.println("From host: " + receivePacket.getAddress());
+    	System.out.println("Host port: " + receivePacket.getPort());
+    	len = receivePacket.getLength();
+    	System.out.println("Length: " + len);
+    	System.out.print("Containing (Bytes): ");
+    	
+    	// Form a String from the byte array.
+    	System.out.println(Arrays.toString(receivePacket.getData()));
     }
+    
+    
+    public int getNumFloors() {
+    	return numFloors;
+    }
+    
+    public int getNumElevators() {
+    	return numElevators;
+    }
+    
+    
+    public void sendElevatorRequest(int sourceFloor, int destFloor, Direction diRequest) {
+    	
+    	System.out.println("Sending a packet containing elevator request details\n");
+		
+    	
+    	// Construct a message to send with data from given parameters
+    	
+    	byte[] msg = new byte[REQUEST_SIZE];
+    	msg[0] = 2;
+    	msg[1] = (byte) sourceFloor;
+    	msg[2] = (byte) diRequest.ordinal();
+    	msg[3] = (byte) destFloor;
+    	msg[4] = -1;
+    			
+    	// Construct a datagram packet that is to be sent to a specified port 
+    	// on a specified host.
+    	// The arguments are:
+    	//  msg - the message contained in the packet (the byte array)
+    	//  msg.length - the length of the byte array
+    	//  InetAddress.getLocalHost() - the Internet address of the 
+    	//     destination host.
+    	//     InetAddress.getLocalHost() returns the Internet
+    	//     address of the local host.
+    	//  420 - the destination port number on the destination host.
+    	try {
+    		sendPacket = new DatagramPacket(msg, msg.length,
+    						InetAddress.getLocalHost(), 420);
+    	} catch (UnknownHostException e) {
+    		e.printStackTrace();
+    		System.exit(1);
+    	}
+    			
+    	// Process the sent datagram.
+    	System.out.println("Floor" + sourceFloor + ": Sending packet:");
+    	System.out.println("To host: " + sendPacket.getAddress());
+    	System.out.println("Destination host port: " + sendPacket.getPort());
+    	int len = sendPacket.getLength();
+    	System.out.println("Length: " + len);
+    			
+    			
+    	// Print the byte array
+    	System.out.print("Containing (Bytes): ");
+    	System.out.println(Arrays.toString(msg));
+    			
+    	// Send the datagram packet to the host via the send/receive socket. 
+    			
+    	try {
+    		sendReceiveSocket.send(sendPacket);
+    	} catch (IOException e) {
+    		e.printStackTrace();
+    		System.exit(1);
+    	}
+    			
+    	System.out.println("Floor" + sourceFloor + ": Packet sent.\n");
+    			
+    	// Construct a DatagramPacket for receiving packets up 
+    	// to 100 bytes long (the length of the byte array).
+    			
+    	byte data[] = new byte[100];
+    	receivePacket = new DatagramPacket(data, data.length);
+    			
+    	try {
+    		// Block until a datagram is received via sendReceiveSocket.  
+    		sendReceiveSocket.receive(receivePacket);
+    	} catch(IOException e) {
+    		e.printStackTrace();
+    		System.exit(1);
+    	}
+    			
+    	// Process the received datagram.
+    	System.out.println("Floor" + sourceFloor + ": Packet received:");
+    	System.out.println("From host: " + receivePacket.getAddress());
+    	System.out.println("Host port: " + receivePacket.getPort());
+    	len = receivePacket.getLength();
+    	System.out.println("Length: " + len);
+    	System.out.print("Containing (Bytes): ");
+    	
+    	// Form a String from the byte array.
+    	System.out.println(Arrays.toString(receivePacket.getData()));
+    }
+    
+    
+    
+    public void runSubsystem() {
+    	boolean sendFlag = false;
+    	
+    	Timer timer = new Timer();
+    	for (byte[] req : serviceRequests) {
+    		byte startFloor = req[4];
+    		byte endFloor = req[6];
+    		byte dir = req[5];
+    		
+    		sendElevatorRequest((int) startFloor, (int) endFloor, Direction.values()[(int) dir]);
+    		
+    		timer.schedule(new TimerTask() {
+    			@Override
+    			public void run() {
+    				while (true) {
+    					timedMovement();
+    				}   				
+    			}
+    		}, 100);
+    	}
+    }
+    
+    
+    public void timedMovement() {
+    	
+    	int floorTiming = TIME_PER_FLOOR;
+    	byte data[] = new byte[100];
+    	receivePacket = new DatagramPacket(data, data.length);
+    			
+    	try {
+    		// Block until a datagram is received via sendReceiveSocket.  
+    		sendReceiveSocket.receive(receivePacket);
+    	} catch(IOException e) {
+    		e.printStackTrace();
+    		System.exit(1);
+    	}
+    	
+    	byte holder = receivePacket.getData()[1];
+    	Direction dir = Direction.values()[(int) receivePacket.getData()[2]];
+    	if (dir == Direction.UP) {
+    		holder++;
+    	}else {
+    		holder--;
+    	}
+    	
+    	try {
+			Thread.sleep(floorTiming);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
+    	sendArrivalSensorSignal(1, holder);
+    }
+    
+    
     
     /**
      * main
@@ -509,7 +826,7 @@ public class FloorSubsystem {
     			// If reconfing was received, resend the configuration method    			
     			floorController.setNumFloors(ui.getNumFloors());
     			floorController.setNumElevators(ui.getNumElevators());
-    			floorController.sendConfigurationSignal();
+    			floorController.sendConfigurationSignal(floorController.getNumElevators(), floorController.getNumFloors());
     		} else if (val == UserInterface.ReturnVals.NEW_TEST_FILE) {
     			// If a new test file was entered, parse the file
     			floorController.parseInputFile(ui.getTestFile());

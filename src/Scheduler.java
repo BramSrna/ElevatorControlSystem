@@ -10,12 +10,11 @@ import java.util.List;
 
 public class Scheduler {
 
-	// State machine
+	// State Machine
 	enum State {
 		WAITING, READING_MESSAGE, RESPONDING_TO_MESSAGE
 	}
 
-	// External and internal events
 	enum Event {
 		MESSAGE_RECIEVED, CONFIG_MESSAGE, BUTTON_PUSHED_IN_ELEVATOR, FLOOR_SENSOR_ACTIVATED, FLOOR_REQUESTED,
 		MOVE_ELEVATOR
@@ -29,7 +28,6 @@ public class Scheduler {
 	private final byte ELEVATOR_BUTTON_HIT_MODE = 3;
 	private final byte ELEVATOR_DIRECTION_MODE = 4;
 	private final byte ELEVATOR_DOOR_MODE = 5;
-	private final byte SEND_DESTINATION_TO_ELEVATOR_MODE = 6;
 
 	// Messages
 	private final byte ELEVATOR_STAY = 0;
@@ -39,21 +37,19 @@ public class Scheduler {
 	private final byte DOOR_CLOSE = 0;
 	private final byte DOOR_OPEN = 1;
 
-	// Elevator directions
-	enum ElevatorDirection {
-		UP, DOWN, STATIONARY
-	}
-
 	private DatagramSocket recieveSocket, sendSocket;
 	private DatagramPacket recievePacket, sendPacket;
 	private final int SCHEDULER_PORT_NUM = 420;
 	private final int ELEVATOR_PORT_NUM = 69;
-	private final int FLOOR_PORT_NUM = 666;
 	private final int MAX_BYTE_ARRAY_SIZE = 100;
 	private List<Byte> floorsToVisit;
 	private ElevatorDirection elevatorDirection;
 	private byte floorElevatorIsCurrentlyOn;
 	private State currentState;
+
+	enum ElevatorDirection {
+		UP, DOWN, STATIONARY
+	}
 
 	private Scheduler() {
 		floorsToVisit = new ArrayList<Byte>();
@@ -68,9 +64,6 @@ public class Scheduler {
 		}
 	}
 
-	/**
-	 * Recieve messages and send messages according to the type of message recieved
-	 */
 	private void recieveAndSendData() {
 		try {
 			recieveSocket = new DatagramSocket(SCHEDULER_PORT_NUM);
@@ -94,13 +87,6 @@ public class Scheduler {
 		sendSocket.close();
 	}
 
-	/**
-	 * Based on an event that occurred, determine what action needs to be taken.
-	 * Also changes the state if the scheduler.
-	 * 
-	 * @param event
-	 * @param packet
-	 */
 	private void eventOccured(Event event, DatagramPacket packet) {
 		switch (currentState) {
 		case READING_MESSAGE:
@@ -134,22 +120,12 @@ public class Scheduler {
 		}
 	}
 
-	/**
-	 * Send the initial floor schematics to the elevator for setup
-	 * 
-	 * @param configPacket
-	 */
 	private void sendConfigPacketToElevator(DatagramPacket configPacket) {
 		System.out.println("Sending config file to Elevator...");
 		sendMessage(configPacket.getData(), configPacket.getData().length, configPacket.getAddress(),
 				ELEVATOR_PORT_NUM);
 	}
 
-	/**
-	 * Read the message and call the appropriate event
-	 * 
-	 * @param recievedPacket
-	 */
 	private void readMessage(DatagramPacket recievedPacket) {
 		byte mode = recievedPacket.getData()[0];
 		if (mode == CONFIG_MODE) {
@@ -170,16 +146,10 @@ public class Scheduler {
 	 */
 	private void extractFloorRequestedNumberAndGenerateResponseMessageAndActions(DatagramPacket recievedPacket) {
 		System.out.println("Elevator was requested at: " + recievedPacket.getData()[1] + " in the direction "
-				+ recievedPacket.getData()[2] + " with destination " + recievedPacket.getData()[3] + "\n");
+				+ recievedPacket.getData()[2] + "\n");
 		floorButtonPressed(recievedPacket.getData()[1]);
-		floorButtonPressed(recievedPacket.getData()[3]);
 	}
 
-	/**
-	 * Move the elevator, and trigger the move elevator event
-	 * 
-	 * @param packet
-	 */
 	private void moveToFloor(DatagramPacket packet) {
 		if (elevatorDirection.equals(ElevatorDirection.STATIONARY) && !floorsToVisit.isEmpty()) {
 			closeElevatorDoors(packet);
@@ -209,69 +179,37 @@ public class Scheduler {
 		eventOccured(Event.MOVE_ELEVATOR, packet);
 	}
 
-	/**
-	 * Send stop elevator message
-	 * 
-	 * @param packet
-	 */
 	private void stopElevator(DatagramPacket packet) {
-		byte[] stopElevator = { ELEVATOR_DIRECTION_MODE, floorElevatorIsCurrentlyOn, ELEVATOR_STAY, END_OF_MESSAGE };
-		sendMessage(stopElevator, stopElevator.length, packet.getAddress(), ELEVATOR_PORT_NUM);
-		sendMessage(stopElevator, stopElevator.length, packet.getAddress(), FLOOR_PORT_NUM);
+		byte[] STOP_ELEVATOR = { ELEVATOR_DIRECTION_MODE, floorElevatorIsCurrentlyOn, floorElevatorIsCurrentlyOn,
+				ELEVATOR_STAY, END_OF_MESSAGE };
+		sendMessage(STOP_ELEVATOR, STOP_ELEVATOR.length, packet.getAddress(), ELEVATOR_PORT_NUM);
 		elevatorDirection = ElevatorDirection.STATIONARY;
 	}
 
-	/**
-	 * Send move elevator up message
-	 * 
-	 * @param packet
-	 */
 	private void sendElevatorUp(DatagramPacket packet) {
-		byte[] goUp = { ELEVATOR_DIRECTION_MODE, floorElevatorIsCurrentlyOn, ELEVATOR_UP, END_OF_MESSAGE };
-		System.out.println("Sending elevator up... \n");
+		byte[] goUp = { ELEVATOR_DIRECTION_MODE, floorElevatorIsCurrentlyOn, floorElevatorIsCurrentlyOn, ELEVATOR_UP,
+				END_OF_MESSAGE };
 		sendMessage(goUp, goUp.length, packet.getAddress(), ELEVATOR_PORT_NUM);
-		sendMessage(goUp, goUp.length, packet.getAddress(), FLOOR_PORT_NUM);
 		elevatorDirection = ElevatorDirection.UP;
 	}
 
-	/**
-	 * Send move elevator down message
-	 * 
-	 * @param packet
-	 */
 	private void sendElevatorDown(DatagramPacket packet) {
-		byte[] goDown = { ELEVATOR_DIRECTION_MODE, floorElevatorIsCurrentlyOn, ELEVATOR_DOWN, END_OF_MESSAGE };
-		System.out.println("Sending elevator down... \n");
+		byte[] goDown = { ELEVATOR_DIRECTION_MODE, floorElevatorIsCurrentlyOn, floorElevatorIsCurrentlyOn,
+				ELEVATOR_DOWN, END_OF_MESSAGE };
 		sendMessage(goDown, goDown.length, packet.getAddress(), ELEVATOR_PORT_NUM);
-		sendMessage(goDown, goDown.length, packet.getAddress(), FLOOR_PORT_NUM);
 		elevatorDirection = ElevatorDirection.DOWN;
 	}
 
-	/**
-	 * Send close elevator door message
-	 * 
-	 * @param packet
-	 */
 	private void closeElevatorDoors(DatagramPacket packet) {
 		byte[] closeDoor = { ELEVATOR_DOOR_MODE, DOOR_CLOSE, END_OF_MESSAGE };
 		sendMessage(closeDoor, closeDoor.length, packet.getAddress(), ELEVATOR_PORT_NUM);
 	}
 
-	/**
-	 * Send open elevator door message
-	 * 
-	 * @param packet
-	 */
 	private void openElevatorDoors(DatagramPacket packet) {
 		byte[] openDoor = { ELEVATOR_DOOR_MODE, DOOR_OPEN, END_OF_MESSAGE };
 		sendMessage(openDoor, openDoor.length, packet.getAddress(), ELEVATOR_PORT_NUM);
 	}
 
-	/**
-	 * Check to see if there are floors we need to go to above the current floor
-	 * 
-	 * @return True if we need to go up, false otherwise
-	 */
 	private boolean floorsToGoToAbove() {
 		for (byte tempFloor : floorsToVisit) {
 			if (tempFloor > floorElevatorIsCurrentlyOn) {
@@ -281,11 +219,6 @@ public class Scheduler {
 		return false;
 	}
 
-	/**
-	 * Check to see if there are floors we need to go to below the current floor
-	 * 
-	 * @return True if we need to go down, false otherwise
-	 */
 	private boolean floorsToGoToBelow() {
 		for (byte tempFloor : floorsToVisit) {
 			if (tempFloor < floorElevatorIsCurrentlyOn) {
@@ -295,11 +228,6 @@ public class Scheduler {
 		return false;
 	}
 
-	/**
-	 * Determine if the elevator should go up
-	 * 
-	 * @return True if the elevator should go up, false otherwise
-	 */
 	private boolean elevatorShouldGoUp() {
 		int difference;
 		int currentClosestDistance = Integer.MAX_VALUE;
@@ -346,11 +274,6 @@ public class Scheduler {
 		reachedFloor(currentFloor);
 	}
 
-	/**
-	 * Add a floor to the list tracking the floors to visit
-	 * 
-	 * @param floor
-	 */
 	private void floorButtonPressed(byte floor) {
 		if (!floorsToVisit.contains(floor)) {
 			floorsToVisit.add(floor);
@@ -358,23 +281,10 @@ public class Scheduler {
 		}
 	}
 
-	/**
-	 * Remove a floor from the list tracking floors to visit
-	 * 
-	 * @param floor
-	 */
 	private void reachedFloor(byte floor) {
 		floorsToVisit.removeAll(Arrays.asList(floor));
 	}
 
-	/**
-	 * Send a message
-	 * 
-	 * @param responseData
-	 * @param packetLength
-	 * @param destAddress
-	 * @param destPortNum
-	 */
 	private void sendMessage(byte[] responseData, int packetLength, InetAddress destAddress, int destPortNum) {
 		try {
 			sendSocket = new DatagramSocket();
