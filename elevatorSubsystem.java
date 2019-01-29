@@ -117,14 +117,20 @@ public class elevatorSubsystem {
 			// Increment/Decrement currentFloor depending on the direction of travel
 			currentFloor += direction;
 			
+			// TODO Remove Debug Message
+			System.out.println("Elevator is now on floor " + currentFloor);
+			
 			// Sleep for 2 seconds to simulate floor-to-floor travel
 			// Do we miss messages if we sleep?
+			// TODO Remove
+			/*
 			try {
 				Thread.sleep(2000);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 				System.exit(1);
 			}
+			*/
 		}
 	}
 
@@ -132,12 +138,15 @@ public class elevatorSubsystem {
 	public void stopMotor() {
 		// Sleep for 2 seconds to simulate elevator stopping, before door opens
 		// Do we miss messages if we sleep?
+		// TODO Remove
+		/*
 		try {
 			Thread.sleep(2000);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 			System.exit(1);
 		}
+		*/
 		System.out.println("Elevator Stopped Moving");
 	}
 	
@@ -145,12 +154,15 @@ public class elevatorSubsystem {
 	public void openDoor() {
 		// Sleep for 1.5 seconds to simulate the door opening
 		// Do we miss messages if we sleep?
+		// TODO Remove
+		/*
 		try {
 			Thread.sleep(2000);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 			System.exit(1);
 		}
+		*/
 		System.out.println("Elevator Door Opened");
 	}
 	
@@ -158,12 +170,15 @@ public class elevatorSubsystem {
 	public void closeDoor() {
 		// Sleep for 1.5 seconds to simulate the door closing
 		// Do we miss messages if we sleep?
+		// TODO Remove
+		/*
 		try {
 			Thread.sleep(1500);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 			System.exit(1);
 		}
+		*/
 		System.out.println("Elevator Door Closed");
 	}
 	
@@ -197,6 +212,7 @@ public class elevatorSubsystem {
 				this.openDoor();// Open the elevator doorv
 			}
 		}
+		// Do we need this? We're not sending any messages
 		if (str.equals("button clicked")) {
 			// button clicked by user (in the elevator), send that to scheduler
 			byte clickedFloor = 5; // ex. 5, not sure how we will do this
@@ -236,6 +252,7 @@ public class elevatorSubsystem {
 	public String validPacket(byte[] data) {
 		if (data[0] == 0) {
 			return "config";
+		// Do we need this?
 		} else if (data[0] == 3) {
 			// send the number of floor clicked
 			return "button clicked";
