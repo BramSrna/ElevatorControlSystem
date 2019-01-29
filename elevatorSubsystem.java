@@ -45,7 +45,9 @@ public class elevatorSubsystem {
 	// These are set during the intial config
 	private int numberOfElevators = 0;
 	private int numberOfFloors = 0;
-
+	
+	// The destination floor 
+	private int destination; 
 	// The lamps indicate the floor(s) which will be visited by the elevator
 	private lampState[] allButtons;
 	
@@ -95,43 +97,13 @@ public class elevatorSubsystem {
 		// allbuttons[currentFloor] = lampState.OFF, in openDoor()?, or in stopMotor()?, or...
 	}
 	
-	// Start elevator until told to stop
-	public void startMotor(int currentFloor, int destinationFloor) {
-		int direction; // 1 = goUp, -1 = goDown
-		// The number of floors the elevator needs to travel
-		int floorDifference = abs(destinationFloor - currentFloor); 
-		
-		System.out.println("Elevator Started Moving");
-		
-		// Determine the direction the elevator needs to travel
-		if (destinationFloor > currentFloor) {
-			direction = 1;
-		}
-		else if (destinationFloor < currentFloor) {
-			direction = -1;
-		}
-		// else {} What happens if the destinationFloor = currentFloor?
-		
-		for (int i = floorDifference; i > 0; i--)
-		{
-			// Increment/Decrement currentFloor depending on the direction of travel
-			currentFloor += direction;
-			
-			// TODO Remove Debug Message
-			System.out.println("Elevator is now on floor " + currentFloor);
-			
-			// Sleep for 2 seconds to simulate floor-to-floor travel
-			// Do we miss messages if we sleep?
-			// TODO Remove
-			/*
-			try {
-				Thread.sleep(2000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-				System.exit(1);
-			}
-			*/
-		}
+	// Make the elevator move (up)
+	public void goUp() {
+		System.out.println("Elevator Moving Up");
+	}
+	// Make the elevator move (down)
+	public void goDown() {
+		System.out.println("Elevator Moving Down");
 	}
 
 	// Stop the elevator
@@ -147,6 +119,9 @@ public class elevatorSubsystem {
 			System.exit(1);
 		}
 		*/
+		
+		//TURN OFF LIGHTS AT CURRENT FLOOR
+		
 		System.out.println("Elevator Stopped Moving");
 	}
 	
@@ -195,14 +170,15 @@ public class elevatorSubsystem {
 				allButtons[i] = lampState.OFF; // currently making everything OFF
 			}
 		}
-		if (str.equals("start/stop")) {
-			int destinationFloor = data[1]; // Go to this floor
-			currentFloor = data[2];
-			if (data[3] == 0) {
-				this.startMotor(currentFloor, destinationFloor);// Start elevator
-			} else if (data[3] == 1) {
-				this.stopMotor();// Stop elevator
-				//allbuttons[currentFloor] = lampState.OFF;?
+		if (str.equals("start/stop")) {		
+			currentFloor = data[1];
+			byte moveDirection = data[2]; // 0-stay, 1-up, 2-down
+			if(moveDirection == 1) {
+				this.goUp();
+			}else if(moveDirection == 2) {
+				this.goDown();
+			}else {
+				//stay on the same floor
 			}
 		}
 		if (str.equals("open/close")) {
@@ -246,6 +222,11 @@ public class elevatorSubsystem {
 			System.out.println("Invalid Packet Format");
 			System.exit(1); // invalid
 		}
+		if (str.equals("destination")) {
+			this.destination = data[1];
+			
+			//HERE TURN ON LAMPS
+		}
 	}
 
 	// Method to validate the form of the array of bytes received from the Scheduler
@@ -260,6 +241,8 @@ public class elevatorSubsystem {
 			return "start/stop";
 		} else if (data[0] == 5) {
 			return "close/open";
+		}else if(data[0] == 6) {
+			return "destination";
 		}
 		return "invalid"; // anything else is an invalid request.
 	}
