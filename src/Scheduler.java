@@ -212,8 +212,7 @@ public class Scheduler {
 	 * @param packet
 	 */
 	private void stopElevator(DatagramPacket packet) {
-		byte[] STOP_ELEVATOR = { ELEVATOR_DIRECTION_MODE, floorElevatorIsCurrentlyOn, floorElevatorIsCurrentlyOn,
-				ELEVATOR_STAY, END_OF_MESSAGE };
+		byte[] STOP_ELEVATOR = { ELEVATOR_DIRECTION_MODE, floorElevatorIsCurrentlyOn, ELEVATOR_STAY, END_OF_MESSAGE };
 		sendMessage(STOP_ELEVATOR, STOP_ELEVATOR.length, packet.getAddress(), ELEVATOR_PORT_NUM);
 		elevatorDirection = ElevatorDirection.STATIONARY;
 	}
@@ -224,8 +223,7 @@ public class Scheduler {
 	 * @param packet
 	 */
 	private void sendElevatorUp(DatagramPacket packet) {
-		byte[] goUp = { ELEVATOR_DIRECTION_MODE, floorElevatorIsCurrentlyOn, floorElevatorIsCurrentlyOn, ELEVATOR_UP,
-				END_OF_MESSAGE };
+		byte[] goUp = { ELEVATOR_DIRECTION_MODE, floorElevatorIsCurrentlyOn, ELEVATOR_UP, END_OF_MESSAGE };
 		System.out.println("Sending elevator up... \n");
 		sendMessage(goUp, goUp.length, packet.getAddress(), ELEVATOR_PORT_NUM);
 		elevatorDirection = ElevatorDirection.UP;
@@ -237,8 +235,7 @@ public class Scheduler {
 	 * @param packet
 	 */
 	private void sendElevatorDown(DatagramPacket packet) {
-		byte[] goDown = { ELEVATOR_DIRECTION_MODE, floorElevatorIsCurrentlyOn, floorElevatorIsCurrentlyOn,
-				ELEVATOR_DOWN, END_OF_MESSAGE };
+		byte[] goDown = { ELEVATOR_DIRECTION_MODE, floorElevatorIsCurrentlyOn, ELEVATOR_DOWN, END_OF_MESSAGE };
 		System.out.println("Sending elevator down... \n");
 		sendMessage(goDown, goDown.length, packet.getAddress(), ELEVATOR_PORT_NUM);
 		elevatorDirection = ElevatorDirection.DOWN;
