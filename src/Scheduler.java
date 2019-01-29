@@ -29,6 +29,7 @@ public class Scheduler {
 	private final byte ELEVATOR_BUTTON_HIT_MODE = 3;
 	private final byte ELEVATOR_DIRECTION_MODE = 4;
 	private final byte ELEVATOR_DOOR_MODE = 5;
+	private final byte SEND_DESTINATION_TO_ELEVATOR_MODE = 6;
 
 	// Messages
 	private final byte ELEVATOR_STAY = 0;
@@ -47,6 +48,7 @@ public class Scheduler {
 	private DatagramPacket recievePacket, sendPacket;
 	private final int SCHEDULER_PORT_NUM = 420;
 	private final int ELEVATOR_PORT_NUM = 69;
+	private final int FLOOR_PORT_NUM = 666;
 	private final int MAX_BYTE_ARRAY_SIZE = 100;
 	private List<Byte> floorsToVisit;
 	private ElevatorDirection elevatorDirection;
@@ -168,8 +170,9 @@ public class Scheduler {
 	 */
 	private void extractFloorRequestedNumberAndGenerateResponseMessageAndActions(DatagramPacket recievedPacket) {
 		System.out.println("Elevator was requested at: " + recievedPacket.getData()[1] + " in the direction "
-				+ recievedPacket.getData()[2] + "\n");
+				+ recievedPacket.getData()[2] + " with destination " + recievedPacket.getData()[3] + "\n");
 		floorButtonPressed(recievedPacket.getData()[1]);
+		floorButtonPressed(recievedPacket.getData()[3]);
 	}
 
 	/**
@@ -212,8 +215,9 @@ public class Scheduler {
 	 * @param packet
 	 */
 	private void stopElevator(DatagramPacket packet) {
-		byte[] STOP_ELEVATOR = { ELEVATOR_DIRECTION_MODE, floorElevatorIsCurrentlyOn, ELEVATOR_STAY, END_OF_MESSAGE };
-		sendMessage(STOP_ELEVATOR, STOP_ELEVATOR.length, packet.getAddress(), ELEVATOR_PORT_NUM);
+		byte[] stopElevator = { ELEVATOR_DIRECTION_MODE, floorElevatorIsCurrentlyOn, ELEVATOR_STAY, END_OF_MESSAGE };
+		sendMessage(stopElevator, stopElevator.length, packet.getAddress(), ELEVATOR_PORT_NUM);
+		sendMessage(stopElevator, stopElevator.length, packet.getAddress(), FLOOR_PORT_NUM);
 		elevatorDirection = ElevatorDirection.STATIONARY;
 	}
 
@@ -226,6 +230,7 @@ public class Scheduler {
 		byte[] goUp = { ELEVATOR_DIRECTION_MODE, floorElevatorIsCurrentlyOn, ELEVATOR_UP, END_OF_MESSAGE };
 		System.out.println("Sending elevator up... \n");
 		sendMessage(goUp, goUp.length, packet.getAddress(), ELEVATOR_PORT_NUM);
+		sendMessage(goUp, goUp.length, packet.getAddress(), FLOOR_PORT_NUM);
 		elevatorDirection = ElevatorDirection.UP;
 	}
 
@@ -238,6 +243,7 @@ public class Scheduler {
 		byte[] goDown = { ELEVATOR_DIRECTION_MODE, floorElevatorIsCurrentlyOn, ELEVATOR_DOWN, END_OF_MESSAGE };
 		System.out.println("Sending elevator down... \n");
 		sendMessage(goDown, goDown.length, packet.getAddress(), ELEVATOR_PORT_NUM);
+		sendMessage(goDown, goDown.length, packet.getAddress(), FLOOR_PORT_NUM);
 		elevatorDirection = ElevatorDirection.DOWN;
 	}
 
