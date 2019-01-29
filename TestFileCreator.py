@@ -7,8 +7,8 @@ startMs = 453
 
 hourStep = 0
 minStep = 0
-secStep = 0
-msStep = 5
+secStep = 5
+msStep = 0
 
 numFloors = 10
 
