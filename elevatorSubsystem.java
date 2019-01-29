@@ -3,8 +3,6 @@ package groupProject;
 import java.io.*;
 import java.net.*;
 import java.util.*;
-import java.lang.Math.*;
-
 /*
  * SYSC 3303 Elevator Group Project
  * Client.java
@@ -40,14 +38,14 @@ public class elevatorSubsystem {
 	// The elevator car number
 	private int elevatorNumber = 1;
 	// The current floor the elevator is on
-	private int currentFloor = 1;
+	int currentFloor = 1;
 	// The number of elevators and floors, initialized to 0
 	// These are set during the intial config
 	private int numberOfElevators = 0;
 	private int numberOfFloors = 0;
 	
 	// The destination floor 
-	private int destination; 
+	int destination; 
 	// The lamps indicate the floor(s) which will be visited by the elevator
 	private lampState[] allButtons;
 	
@@ -223,8 +221,8 @@ public class elevatorSubsystem {
 			System.exit(1); // invalid
 		}
 		if (str.equals("destination")) {
-			this.destination = data[1];
-			
+			destination = data[1];
+
 			//HERE TURN ON LAMPS
 		}
 	}
