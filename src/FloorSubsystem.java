@@ -9,12 +9,23 @@ public class FloorSubsystem {
     private int topFloor;    // Highest possible floor
     private int numFloors;   // Number of floors that the elevator services
     
+    private int numElevators; // The current number of elevators
+    
     private final int REQUEST_SIZE = 7; // Size of the service requests
+    
+    // Valid ranges for the number of 
+    // floors and number of elevators
+    private static final int MIN_NUM_FLOORS = 1;
+    private static final int MAX_NUM_FLOORS = 1000;
+    
+    private static final int MIN_NUM_ELEVATORS = 1;
+    private static final int MAX_NUM_ELEVATORS = 1000;
     
     // List of service requests parsed from the input file
     // Sorted in order of time that requests are made
     private ArrayList<byte[]> serviceRequests;
     
+    // List of existing floor objects
     private ArrayList<Floor> floors;
     
     // Possible directions for the requests
@@ -37,31 +48,81 @@ public class FloorSubsystem {
      * @return  void
      */
     public FloorSubsystem(int numFloors, int numElevators) {
-        this.setNumFloors(numFloors);
-        
         serviceRequests = new ArrayList<byte[]>();
         
         floors = new ArrayList<Floor>();
         
-        for (int i = 0; i < numFloors; i++) {
-            floors.add(new Floor(this, i, numElevators));
-        }
+        this.setNumElevators(numElevators);
+        this.setNumFloors(numFloors);
     }
     
     /**
      * setNumFloors
      * 
      * Set the number of floors that the elevator services.
+     * Adds and removes Floor objects from the list of Floors
+     * as needed.
      * 
      * @param newNumFloors  Number of floors that the elevator services
      * 
      * @return  void
      */
     public void setNumFloors(int newNumFloors) {
+    	if ((newNumFloors < MIN_NUM_FLOORS) || 
+			(newNumFloors > MAX_NUM_FLOORS)) {
+    		System.out.println("Error: Floor value is outside of valid range.");
+    		System.exit(1);
+    	}
+    	
+    	// Set the number of floors
         this.numFloors = newNumFloors;
         
+        // Set bottom and top floors
         this.bottomFloor = 0;
         this.topFloor = this.numFloors - 1;
+        
+        // Check if the list of floors needs to be modified
+        if (floors.size() < numFloors) {
+        	// Need more floors, so add amount needed
+            for (int i = floors.size(); i < numFloors; i++) {
+                floors.add(new Floor(this, i, numElevators));
+            }	
+        } else if (floors.size() > numFloors) {
+        	// Too many floors, so remove floors
+        	ArrayList<Floor> toRemove = new ArrayList<Floor>();
+        	
+        	// Get a list of floors to remove
+        	for (Floor currFloor : floors) {
+        		if (currFloor.getFloorNumber() > numFloors - 1) {
+        			toRemove.add(currFloor);
+        		}
+        	}
+        	
+        	// Remove the marked floors
+        	for (Floor currFloor : toRemove) {
+        		floors.remove(currFloor);
+        	}
+        }
+    }
+    
+    /**
+     * setNumElevators
+     * 
+     * Sets the number of elevators to the new amount.
+     * Checks that the new number is within the valid range.
+     * 
+     * @param newNumElevators The new number of elevators
+     * 
+     * @return	void
+     */
+    public void setNumElevators(int newNumElevators) {
+    	if ((newNumElevators < MIN_NUM_ELEVATORS) ||
+			(newNumElevators > MAX_NUM_ELEVATORS)) {
+    		System.out.println("Error: Elevator value is outside of valid range.");
+    		System.exit(1);
+    	}
+    	
+    	this.numElevators = newNumElevators;
     }
     
     /**
@@ -173,6 +234,8 @@ public class FloorSubsystem {
             
             directionEnum = Direction.valueOf(directionStr.toUpperCase());
             
+            // Find the floor where the request was made,
+            // and make the request
             for (Floor floor : floors) {
             	if (floor.getFloorNumber() == startFloorInt) {
             		floor.elevatorRequest(hourInt, 
@@ -303,6 +366,52 @@ public class FloorSubsystem {
     }
     
     /**
+     * getValidFloorValueRange
+     * 
+     * Static method
+     * 
+     * Returns the range of valid number of floor values.
+     * Returns the range as an array of 2 values.
+     * Format:
+     * 		Byte 0 - Minimum value
+     * 		Byte 1 - Maximum value
+     * 
+     * @return int[] First byte is minimum value
+     * 				 Second byte is maximum value
+     */
+    public static int[] getValidFloorValueRange() {
+    	int validRange[] = new int[2];
+    	
+    	validRange[0] = MIN_NUM_FLOORS;
+    	validRange[1] = MAX_NUM_FLOORS;
+    	
+    	return(validRange);
+    }
+    
+    /**
+     * getValidElevatorValueRange
+     * 
+     * Static method
+     * 
+     * Returns the range of valid number of elevator values.
+     * Returns the range as an array of 2 values.
+     * Format:
+     * 		Byte 0 - Minimum value
+     * 		Byte 1 - Maximum value
+     * 
+     * @return int[] First byte is minimum value
+     * 				 Second byte is maximum value
+     */
+    public static int[] getValidElevatorValueRange() {
+    	int validRange[] = new int[2];
+    	
+    	validRange[0] = MIN_NUM_ELEVATORS;
+    	validRange[1] = MAX_NUM_ELEVATORS;
+    	
+    	return(validRange);
+    }
+    
+    /**
      * getRequests
      * 
      * Return the current list of requests.
@@ -313,7 +422,106 @@ public class FloorSubsystem {
         return(serviceRequests);
     }
     
+    /**
+     * sendArrivalSensorSignal
+     * 
+     * Sends a signal saying that the arrival sensor
+     * was triggered.
+     * 
+     * Format:
+     * 
+     * @param elevatorShaftNum Elevator shaft that the signal was received from
+     * @param floorNum Floor where the signal was received
+     * 
+     * @return	void
+     */
     public void sendArrivalSensorSignal(int elevatorShaftNum, int floorNum) {
         
+    }
+    
+    /**
+     * sendTeardownSignal
+     * 
+     * Sends a signal that the program should teardown.
+     * 
+     * Format:
+     * 
+     * @return	void
+     */
+    public void sendTeardownSignal() {
+    	
+    }
+    
+    /**
+     * teardown
+     * 
+     * Sends a teardown signal and then closes
+     * all open sockets.
+     * 
+     * @return	void
+     */
+    public void teardown() {
+    	sendTeardownSignal();
+    }
+    
+    /**
+     * sendConfigurationSignal
+     * 
+     * Sends a configuration signal with the
+     * number of elevators and elevator shaft number.
+     * 
+     * @return	void
+     */
+    public void sendConfigurationSignal() {
+    	
+    }
+    
+    /**
+     * main
+     * 
+     * Static method
+     * 
+     * Main method
+     * 
+     * Creates a new UserInterface class to get input from the user.
+     * Uses the input to control a FloorSubsystem.
+     * 
+     * @param args
+     * 
+     * @return	void
+     */
+    public static void main(String[] args) {
+    	UserInterface ui = new UserInterface();
+    	
+    	// Get basic configuration information to start
+    	ui.getNewConfigurationInformation();
+    	
+    	// Create a FloorSubsystem with the given information
+    	FloorSubsystem floorController = new FloorSubsystem(ui.getNumFloors(), ui.getNumElevators());
+    	   	
+    	// While true
+    	// Display the valid options to the user
+    	// Based off of user input, run the corresponding method(s)
+    	while (true) {
+    		UserInterface.ReturnVals val = ui.displayMenu();
+    		
+    		if (val == UserInterface.ReturnVals.RECONFIG) {
+    			// If reconfing was received, resend the configuration method    			
+    			floorController.setNumFloors(ui.getNumFloors());
+    			floorController.setNumElevators(ui.getNumElevators());
+    			floorController.sendConfigurationSignal();
+    		} else if (val == UserInterface.ReturnVals.NEW_TEST_FILE) {
+    			// If a new test file was entered, parse the file
+    			floorController.parseInputFile(ui.getTestFile());
+    		} else if (val == UserInterface.ReturnVals.TEARDOWN) {
+    			// If teardown was selected,
+    			// Send the teardown signal
+    			// Exit the program
+    			floorController.teardown();
+    			floorController = null;
+    			System.exit(1);
+    		}
+    	}
+    	
     }
 }

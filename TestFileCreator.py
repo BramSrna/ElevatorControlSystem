@@ -61,7 +61,7 @@ with open("TestFile.txt", "w") as f:
         
         toPrint = (str(int(currHour)) + ":" +
                    str(int(currMin)) + ":" +
-                   str(int(currSec)) + ":" +
+                   str(int(currSec)) + "." +
                    str(int(currMs)) + " " +
                    str(startFloor) + " " +
                    str(dir) + " " +
