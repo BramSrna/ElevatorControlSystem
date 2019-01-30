@@ -27,18 +27,18 @@ public class Floor {
 	 * @return None
 	 */
 	public Floor(FloorSubsystem controller, int floorNum, int numElevatorShafts) {
+		elevatorLocation = new ArrayList<Integer>();
+		arrivalLamp = new ArrayList<UtilityInformation.LampState>();
+		arrivalLampDir = new ArrayList<UtilityInformation.ElevatorDirection>();
+
 		// Save all of the information
 		this.controller = controller;
 
 		this.floorNum = floorNum;
 		this.setNumElevatorShafts(numElevatorShafts);
 
-		elevatorLocation = new ArrayList<Integer>();
-		arrivalLamp = new ArrayList<UtilityInformation.LampState>();
-		arrivalLampDir = new ArrayList<UtilityInformation.ElevatorDirection>();
-
 		// Configure lamps and buttons
-		for (int i = 0; i < arrivalLamp.size(); i++) {
+		for (int i = 0; i < numElevatorShafts; i++) {
 			elevatorLocation.add(0);
 			arrivalLamp.add(UtilityInformation.LampState.OFF);
 			arrivalLampDir.add(UtilityInformation.ElevatorDirection.STATIONARY);
