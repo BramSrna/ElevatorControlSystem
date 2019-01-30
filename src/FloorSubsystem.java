@@ -42,12 +42,6 @@ public class FloorSubsystem {
     // List of existing floor objects
     private ArrayList<Floor> floors;
     
-    // Possible directions for the requests
-    public enum Direction {
-        DOWN,
-        UP
-    }
-    
     /**
      * FloorSubsystem
      * 
@@ -227,7 +221,7 @@ public class FloorSubsystem {
             int milliSecInt = 0;
             int startFloorInt = 0;
             int finalFloorInt = 0;
-            Direction directionEnum;
+            HardwareState.ElevatorDirection directionEnum;
             
             // Convert the data to the proper format
             // Time format is hh:mm:ss.mmmm
@@ -255,7 +249,7 @@ public class FloorSubsystem {
                 System.out.println("Error: Start floor must be an integer.");
             }
             
-            directionEnum = Direction.valueOf(directionStr.toUpperCase());
+            directionEnum = HardwareState.ElevatorDirection.valueOf(directionStr.toUpperCase());
             
             // Find the floor where the request was made,
             // and make the request
@@ -319,7 +313,7 @@ public class FloorSubsystem {
                                     int secOfReq, 
                                     int msOfReq, 
                                     int startFloor, 
-                                    Direction dirPressed, 
+                                    HardwareState.ElevatorDirection dirPressed, 
                                     int finalFloor) {
         // Check that the given floors are valid
         if ((startFloor < bottomFloor) || (startFloor > topFloor) ||
@@ -329,15 +323,15 @@ public class FloorSubsystem {
         }
         
         // Check that the direction is valid for the floor
-        if (((startFloor == bottomFloor) && (dirPressed == Direction.DOWN)) ||
-            ((startFloor == topFloor) && (dirPressed == Direction.UP))) {
+        if (((startFloor == bottomFloor) && (dirPressed == HardwareState.ElevatorDirection.DOWN)) ||
+            ((startFloor == topFloor) && (dirPressed == HardwareState.ElevatorDirection.UP))) {
             System.out.println("Error: Invalid request. Direction invalid for given floor.");
             System.exit(1);
         }
         
         // Check that the start + end floors match the given direction
-        if (((dirPressed == Direction.DOWN) && (finalFloor > startFloor)) ||
-            ((dirPressed == Direction.UP) && (finalFloor < startFloor))) {
+        if (((dirPressed == HardwareState.ElevatorDirection.DOWN) && (finalFloor > startFloor)) ||
+            ((dirPressed == HardwareState.ElevatorDirection.UP) && (finalFloor < startFloor))) {
             System.out.println("Error: Invalid request. "
                     + "Given floor numbers do not match desired direction.");
             System.exit(1);
@@ -444,62 +438,7 @@ public class FloorSubsystem {
     public ArrayList<byte[]> getRequests(){
         return(serviceRequests);
     }
-    
-    /**
-     * sendArrivalSensorSignal
-     * 
-     * Sends a signal saying that the arrival sensor
-     * was triggered.
-     * 
-     * Format:
-     * 
-     * @param elevatorShaftNum Elevator shaft that the signal was received from
-     * @param floorNum Floor where the signal was received
-     * 
-     * @return  void
-     */
-    public void sendArrivalSensorSignal(int elevatorShaftNum, int floorNum) {
-        System.out.println("Floor " + floorNum + ": Sending arrival signal\n");                
-        
-        // Construct a message to send with data from given parameters
-        byte[] msg = new byte[ARRIVAL_SIZE];
-        msg[0] = 1;
-        msg[1] = (byte) floorNum;
-        msg[2] = (byte) elevatorShaftNum;
-        msg[3] = -1;
-                
-        // Construct a datagram packet that is to be sent to a specified port 
-        // on a specified host.
-        // The arguments are:
-        //  msg - the message contained in the packet (the byte array)
-        //  msg.length - the length of the byte array
-        //  InetAddress.getLocalHost() - the Internet address of the 
-        //     destination host.
-        //     InetAddress.getLocalHost() returns the Internet
-        //     address of the local host.
-        //  420 - the destination port number on the destination host.
-        try {
-            sendPacket = new DatagramPacket(msg, msg.length,
-                            InetAddress.getLocalHost(), 420);
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-            System.exit(1);
-        }
-                
-        // Process the sent datagram.
-        System.out.println("Floor" + floorNum + ": Sending the arrival signal ...");
-                
-        // Send the datagram packet to the host via the send/receive socket.                 
-        try {
-            sendReceiveSocket.send(sendPacket);
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.exit(1);
-        }
-                
-        System.out.println("Floor" + floorNum + ": Signal Sent.\n");    
-    }
-    
+       
     /**
      * sendTeardownSignal
      * 
@@ -607,7 +546,9 @@ public class FloorSubsystem {
     }
     
     
-    public void sendElevatorRequest(int sourceFloor, int destFloor, Direction diRequest) {        
+    public void sendElevatorRequest(int sourceFloor, 
+						    		int destFloor, 
+						    		HardwareState.ElevatorDirection diRequest) {        
         System.out.println("Sending a packet containing elevator request details\n");        
         
         // Construct a message to send with data from given parameters        
@@ -660,7 +601,9 @@ public class FloorSubsystem {
             byte endFloor = currReq[6];
             byte dir = currReq[5];
             
-            sendElevatorRequest((int) startFloor, (int) endFloor, Direction.values()[(int) dir]);
+            sendElevatorRequest((int) startFloor, 
+			            		(int) endFloor, 
+			            		HardwareState.ElevatorDirection.values()[(int) dir]);
             
             int timeUntilNextRequest = 0;
             
@@ -705,21 +648,17 @@ public class FloorSubsystem {
         }
         
         byte holder = receivePacket.getData()[1];
-        Direction dir = Direction.values()[(int) receivePacket.getData()[2]];
-        if (dir == Direction.UP) {
+        HardwareState.ElevatorDirection dir = 
+        		HardwareState.ElevatorDirection.values()[(int) receivePacket.getData()[2]];
+        if (dir == HardwareState.ElevatorDirection.UP) {
             holder++;
-        }else {
+        } else {
             holder--;
         }
         
-        try {
-            Thread.sleep(floorTiming);
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        for (Floor currFloor : floors) {
+        	
         }
-        
-        sendArrivalSensorSignal(1, holder);
     }
     
     

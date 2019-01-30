@@ -1,19 +1,16 @@
+import java.util.ArrayList;
+
 public class Floor {
     private FloorSubsystem controller;
     
     private int floorNum;
-    private int numElevatorShafts;    
+    private int numElevatorShafts;
     
-    private enum lampState {
-        OFF,
-        ON
-    }
+    private ArrayList<HardwareState.LampState> arrivalLamp;
+    private ArrayList<HardwareState.ElevatorDirection> arrivalLampDir;
     
-    private lampState arrivalLamp;
-    private FloorSubsystem.Direction arrivalLampDir;
-    
-    private lampState upButtonPressed;
-    private lampState downButtonPressed;
+    private HardwareState.ButtonState upButton;
+    private HardwareState.ButtonState downButton;
     
     /**
      * Floor
@@ -38,39 +35,17 @@ public class Floor {
         this.floorNum = floorNum;
         this.setNumElevatorShafts(numElevatorShafts);
         
+        arrivalLamp = new ArrayList<HardwareState.LampState>();
+        arrivalLampDir = new ArrayList<HardwareState.ElevatorDirection>();
+                
         // Configure lamps and buttons
-        setArrivalLamp(lampState.OFF);
-        setArrivalLampDir(FloorSubsystem.Direction.UP);
-        
-        upButtonPressed = lampState.OFF;
-        downButtonPressed = lampState.OFF;
-    }
-    
-    /**
-     * elevatorArriving
-     * 
-     * Tells the FloorSubsystem that an elevator is arriving at this floor.
-     * Turns on the corresponding lamps.
-     * 
-     * @param elevatorShaftNum	Elevator shaft number where the elevator is
-     * @param direction	Direction that the elevator is travelling
-     * 
-     * @return	void
-     */
-    public void elevatorArriving(int elevatorShaftNum, FloorSubsystem.Direction direction) {
-    	// Set the lamp values
-        setArrivalLamp(lampState.ON);
-        setArrivalLampDir(direction);
-        
-        // Turn off the buttons
-        if ((direction == FloorSubsystem.Direction.UP) && (upButtonPressed == lampState.ON)) {
-            upButtonPressed = lampState.OFF;
-        } else if ((direction == FloorSubsystem.Direction.DOWN) && (downButtonPressed == lampState.ON)) {
-            downButtonPressed = lampState.OFF;
+        for (int i = 0; i < arrivalLamp.size(); i++) {
+        	arrivalLamp.add(HardwareState.LampState.OFF);
+        	arrivalLampDir.add(HardwareState.ElevatorDirection.STATIONARY);
         }
         
-        // Tell the controller to send the signal
-        controller.sendArrivalSensorSignal(this.floorNum, elevatorShaftNum);
+        upButton = HardwareState.ButtonState.UNPRESSED;
+        downButton = HardwareState.ButtonState.UNPRESSED;
     }
     
     /**
@@ -92,13 +67,13 @@ public class Floor {
 					    		int minOfCall, 
 					    		int secOfCall, 
 					    		int msOfCall, 
-					    		FloorSubsystem.Direction direction,
+					    		HardwareState.ElevatorDirection direction,
 					    		int endFloor) {
     	// Set the button and lamp states
-        if (direction == FloorSubsystem.Direction.UP) {
-            upButtonPressed = lampState.ON;
-        } else if (direction == FloorSubsystem.Direction.DOWN) {
-            downButtonPressed = lampState.ON;
+        if (direction == HardwareState.ElevatorDirection.UP) {
+            upButton = HardwareState.ButtonState.PRESSED;
+        } else if (direction == HardwareState.ElevatorDirection.DOWN) {
+            downButton = HardwareState.ButtonState.PRESSED;
         }
         
         // Tell the controller to send the request
@@ -159,8 +134,8 @@ public class Floor {
 	 * 
 	 * @return lampState	The state of the arrival lamp
 	 */
-	public lampState getArrivalLamp() {
-		return arrivalLamp;
+	public HardwareState.LampState getArrivalLamp(int elevatorShaftNum) {
+		return arrivalLamp.get(elevatorShaftNum);
 	}
 
 	/**
@@ -172,8 +147,8 @@ public class Floor {
 	 * 
 	 * @return	void
 	 */
-	public void setArrivalLamp(lampState arrivalLamp) {
-		this.arrivalLamp = arrivalLamp;
+	public void setArrivalLamp(HardwareState.LampState newLampState, int elevatorShaftNum) {
+		arrivalLamp.set(elevatorShaftNum, newLampState);
 	}
 
 	/**
@@ -185,8 +160,8 @@ public class Floor {
 	 * 
 	 * @return FloorSubsystem.Direction	Direction currently being displayed on the lamp
 	 */
-	public FloorSubsystem.Direction getArrivalLampDir() {
-		return arrivalLampDir;
+	public HardwareState.ElevatorDirection getArrivalLampDir(int elevatorShaftNum) {
+		return arrivalLampDir.get(elevatorShaftNum);
 	}
 
 	/**
@@ -198,7 +173,7 @@ public class Floor {
 	 * 
 	 * @return	void
 	 */
-	public void setArrivalLampDir(FloorSubsystem.Direction arrivalLampDir) {
-		this.arrivalLampDir = arrivalLampDir;
+	public void setArrivalLampDir(HardwareState.ElevatorDirection newDirection, int elevatorShaftNum) {
+		arrivalLampDir.set(elevatorShaftNum, newDirection);
 	}
 }
