@@ -12,7 +12,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class FloorSubsystem {
-
 	private DatagramPacket sendPacket, receivePacket;
 	private DatagramSocket sendReceiveSocket;
 
@@ -24,10 +23,14 @@ public class FloorSubsystem {
 
 	// Size of service requests
 	private final int CONFIG_SIZE = 4;
+	private final int CONFIG_REC_SIZE = 100;
+	
 	private final int REQUEST_SIZE = 5;
-	private final int ARRIVAL_SIZE = 4;
-
-	private final int TIME_PER_FLOOR = 2000;
+	
+	private final int ELEVATOR_UPDATE_SIZE = 100;
+	
+	private final int TEARDOWN_SIZE = 10;
+	private final int TEARDOWN_REC_SIZE = 100;
 
 	// Valid ranges for the number of
 	// floors and number of elevators
@@ -426,7 +429,61 @@ public class FloorSubsystem {
 	 * @return void
 	 */
 	public void sendTeardownSignal() {
+		System.out.println("Sending a packet containing teardown.\n");
 
+		// Construct a message to send with data from given parameters
+		byte[] msg = new byte[TEARDOWN_SIZE];
+		msg[0] = UtilityInformation.TEARDOWN_MODE;
+		msg[1] = -1;
+
+		// Construct a datagram packet that is to be sent to a specified port
+		// on a specified host.
+		// The arguments are:
+		// msg - the message contained in the packet (the byte array)
+		// msg.length - the length of the byte array
+		// InetAddress.getLocalHost() - the Internet address of the
+		// destination host.
+		// InetAddress.getLocalHost() returns the Internet
+		// address of the local host.
+		// 420 - the destination port number on the destination host.
+		try {
+			sendPacket = new DatagramPacket(msg, msg.length, InetAddress.getLocalHost(), 420);
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+
+		// Process the sent datagram.
+		System.out.println("Teardown: Sending signal...");
+
+		// Send the datagram packet to the host via the send/receive socket.
+
+		try {
+			sendReceiveSocket.send(sendPacket);
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+
+		System.out.println("Teardown: Signal sent.\n");
+
+		// Construct a DatagramPacket for receiving packets up
+		// to 100 bytes long (the length of the byte array).
+
+		byte data[] = new byte[TEARDOWN_REC_SIZE];
+		receivePacket = new DatagramPacket(data, data.length);
+
+		System.out.println("Teardown: Waiting for response...\n");
+
+		try {
+			// Block until a datagram is received via sendReceiveSocket.
+			sendReceiveSocket.receive(receivePacket);
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+
+		System.out.println("Teardown: Response received.");
 	}
 
 	/**
@@ -495,7 +552,7 @@ public class FloorSubsystem {
 		// Construct a DatagramPacket for receiving packets up
 		// to 100 bytes long (the length of the byte array).
 
-		byte data[] = new byte[100];
+		byte data[] = new byte[CONFIG_REC_SIZE];
 		receivePacket = new DatagramPacket(data, data.length);
 
 		System.out.println("Config: Waiting for response...\n");
@@ -601,7 +658,7 @@ public class FloorSubsystem {
 	}
 
 	public void waitForElevatorUpdate() {
-		byte data[] = new byte[100];
+		byte data[] = new byte[ELEVATOR_UPDATE_SIZE];
 		receivePacket = new DatagramPacket(data, data.length);
 
 		try {
