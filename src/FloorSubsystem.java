@@ -141,6 +141,10 @@ public class FloorSubsystem {
 		}
 
 		this.numElevators = newNumElevators;
+		
+		for (Floor currFloor : floors) {
+			currFloor.setNumElevatorShafts(newNumElevators);
+		}
 	}
 
 	/**
@@ -466,24 +470,6 @@ public class FloorSubsystem {
 		}
 
 		System.out.println("Teardown: Signal sent.\n");
-
-		// Construct a DatagramPacket for receiving packets up
-		// to 100 bytes long (the length of the byte array).
-
-		byte data[] = new byte[TEARDOWN_REC_SIZE];
-		receivePacket = new DatagramPacket(data, data.length);
-
-		System.out.println("Teardown: Waiting for response...\n");
-
-		try {
-			// Block until a datagram is received via sendReceiveSocket.
-			sendReceiveSocket.receive(receivePacket);
-		} catch (IOException e) {
-			e.printStackTrace();
-			System.exit(1);
-		}
-
-		System.out.println("Teardown: Response received.");
 	}
 
 	/**
@@ -495,6 +481,7 @@ public class FloorSubsystem {
 	 */
 	public void teardown() {
 		sendTeardownSignal();
+		sendReceiveSocket.close();
 	}
 
 	/**
@@ -513,7 +500,7 @@ public class FloorSubsystem {
 
 		// Construct a message to send with data from given parameters
 		byte[] msg = new byte[CONFIG_SIZE];
-		msg[0] = 0;
+		msg[0] = UtilityInformation.CONFIG_MODE;
 		msg[1] = (byte) numElevators;
 		msg[2] = (byte) numFloors;
 		msg[3] = -1;
@@ -581,7 +568,7 @@ public class FloorSubsystem {
 
 		// Construct a message to send with data from given parameters
 		byte[] msg = new byte[REQUEST_SIZE];
-		msg[0] = 2;
+		msg[0] = UtilityInformation.FLOOR_REQUEST_MODE;
 		msg[1] = (byte) sourceFloor;
 		msg[2] = (byte) diRequest.ordinal();
 		msg[3] = (byte) destFloor;

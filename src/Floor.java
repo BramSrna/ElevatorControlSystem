@@ -152,6 +152,36 @@ public class Floor {
 	 */
 	public void setNumElevatorShafts(int numElevatorShafts) {
 		this.numElevatorShafts = numElevatorShafts;
+		
+		if (elevatorLocation.size() > numElevatorShafts) {
+			while (elevatorLocation.size() > numElevatorShafts) {
+				elevatorLocation.remove(elevatorLocation.size() - 1);
+			}
+		} else {
+			while (elevatorLocation.size() < numElevatorShafts) {
+				elevatorLocation.add(0);
+			}
+		}
+		
+		if (arrivalLamp.size() > numElevatorShafts) {
+			while (arrivalLamp.size() > numElevatorShafts) {
+				arrivalLamp.remove(arrivalLamp.size() - 1);
+			}
+		} else {
+			while (arrivalLamp.size() < numElevatorShafts) {
+				arrivalLamp.add(UtilityInformation.LampState.OFF);
+			}
+		}
+		
+		if (arrivalLampDir.size() > numElevatorShafts) {
+			while (arrivalLampDir.size() > numElevatorShafts) {
+				arrivalLampDir.remove(arrivalLampDir.size() - 1);
+			}
+		} else {
+			while (arrivalLampDir.size() < numElevatorShafts) {
+				arrivalLampDir.add(UtilityInformation.ElevatorDirection.STATIONARY);
+			}
+		}
 	}
 
 	/**
