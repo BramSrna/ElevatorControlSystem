@@ -6,10 +6,10 @@ import java.util.*;
 
 /*
  * SYSC 3303 Elevator Group Project
- * Client.java
+ * Elevator.java
  * @ author Samy Ibrahim 
  * @ student# 101037927
- * @ version 1
+ * @ version 2
  * 
  * The elevator subsystem consists of the buttons and lamps inside of the elevator used to select floors and indicate the
  * floors selected, and to indicate the location of the elevator itself. The elevator subsystem is also used to operate the
@@ -23,13 +23,7 @@ import java.util.*;
  * corresponding lamp. When the elevator reaches a floor, the scheduling subsystem signals the elevator subsystem to
  * turn the lamp of
  * 
- * Message 1 from Scheduler
- * 
- * PORT Numbers:
- * Elevator port 69
- * 	Receiving from Scheduler on Port 420
- * 
- * Last Edited January 25,2019
+ * Last Edited January 30,2019
  * 
  */
 public class Elevator {
@@ -37,7 +31,7 @@ public class Elevator {
 	DatagramPacket sendPacket, receivePacket;
 	DatagramSocket sendSocket, receiveSocket;
 	
-	// Information of Scheduler
+	// Information for System
 	InetAddress schedulerIP;
 	int schedulerPort = 420;
 	
@@ -77,13 +71,14 @@ public class Elevator {
 	
 	public int getElevatorNumber() {return this.elevatorNumber;}
 	public int getCurrentFloor() {return this.currentFloor;}
-	public int getNumberOfElevatorNumber() {return this.numberOfElevators;}
-	public int getNumberOfFloor() {return this.numberOfFloors;}
+	public int getNumberOfElevators() {return this.numberOfElevators;}
+	public int getNumberOfFloors() {return this.numberOfFloors;}
 
 	// USED ENUMS
+	// Enum for all lights
 	enum lampState {OFF, ON}
-	// State machine
-	enum State {STATIONARY, ANALYZING_MESSAGE}
+	// State machine states
+	enum State {ANALYZING_MESSAGE, CURRENTLY_MOVING, ARRIVE_AT_FLOOR}
 	// All events taking place in the elevator
 	enum Event {CONFIG_RECIEVED, BUTTON_PUSHED_IN_ELEVATOR, ELEVATOR_MOVING, UPDATE_DEST, OPEN_DOOR, CLOSE_DOOR}
 	
@@ -101,6 +96,9 @@ public class Elevator {
 		// Simply display 
 		System.out.println("Elevator " + this.getElevatorNumber());
 		System.out.println("Floor # " + this.getCurrentFloor());
+		for(int i=0; i<allButtons.length; i++) {
+			System.out.println("Floor Number " + i + ": " +allButtons[i]);
+		}
 	}
 
 	public void sendData(byte[] data, InetAddress IP, int port) {
@@ -139,7 +137,6 @@ public class Elevator {
 
 		// Block until a datagram packet is received from receiveSocket.
 		try {
-			System.out.println("Waiting..."); // so we know we're waiting
 			receiveSocket.receive(receivePacket);
 		} catch (IOException e) {
 			System.out.print("IO Exception: likely:");
@@ -163,11 +160,28 @@ public class Elevator {
 		}
 		
 		// Depending on the type of message, a certain event will be raised
-		if(check.equals("config")) {eventOccured(Event.CONFIG_RECIEVED, receivePacket, check, data);}
-		if(check.equals("button clicked")) {eventOccured(Event.BUTTON_PUSHED_IN_ELEVATOR, receivePacket, check, data);}
-		if(check.equals("go up") | check.equals("go down") ) {eventOccured(Event.ELEVATOR_MOVING, receivePacket, check, data);}
-		if(check.equals("open door") | check.equals("close door") ) {eventOccured(Event.ELEVATOR_MOVING, receivePacket, check, data);}
-		if(check.equals("destination")) {eventOccured(Event.UPDATE_DEST, receivePacket, check, data);}
+		if(check.equals("config")) {
+			currentState = State.ANALYZING_MESSAGE;
+			eventOccured(Event.CONFIG_RECIEVED, receivePacket, check, data);
+		}
+		if(check.equals("button clicked")) {
+			currentState = State.ANALYZING_MESSAGE;
+			eventOccured(Event.BUTTON_PUSHED_IN_ELEVATOR, receivePacket, check, data);
+		}
+		if(check.equals("destination")) {
+			currentState = State.ANALYZING_MESSAGE;
+			eventOccured(Event.UPDATE_DEST, receivePacket, check, data);
+		}
+		if(check.equals("go up") | check.equals("go down") ) {
+			currentState = State.CURRENTLY_MOVING;
+			eventOccured(Event.ELEVATOR_MOVING, receivePacket, check, data);
+		}
+		if(check.equals("open door") | check.equals("close door") ) {
+			// if not, the elevator is not at the floor yet
+			if(currentState.equals(State.ARRIVE_AT_FLOOR)) {
+				eventOccured(Event.ELEVATOR_MOVING, receivePacket, check, data);
+			}
+		}
 	}
 
 	/*
@@ -182,23 +196,23 @@ public class Elevator {
 			if (event.equals(Event.BUTTON_PUSHED_IN_ELEVATOR)) {
 				this.performAction("button clicked", data);
 			} 
-			if (event.equals(Event.ELEVATOR_MOVING)) {
-				if(valid.equals("go up")) {
-					currentState = State.STATIONARY;
-					this.performAction("go up", data);
-				}
-				if(valid.equals("go down")) {
-					currentState = State.STATIONARY;
-					this.performAction("go down", data);
-				}
-			}
 			if(event.equals(Event.UPDATE_DEST)) {
 				performAction("destination", data);
 			}	
-			currentState = State.STATIONARY;
 			break;
 			
-		case STATIONARY:
+		case CURRENTLY_MOVING:
+			if (event.equals(Event.ELEVATOR_MOVING)) {
+				if(valid.equals("go up")) {
+					this.performAction("go up", data);
+				}
+				if(valid.equals("go down")) {
+					this.performAction("go down", data);
+				}
+			}
+			break;
+			
+		case ARRIVE_AT_FLOOR: // represents the sensor in the elevator
 			if(event.equals(Event.OPEN_DOOR)) {
 				performAction("open door", data);
 			}
@@ -206,6 +220,7 @@ public class Elevator {
 				performAction("close door", data);
 			}
 			currentState = State.ANALYZING_MESSAGE;
+			break;
 		}
 	}
 
@@ -217,7 +232,6 @@ public class Elevator {
 		if (str.equals("config")) {
 			numberOfElevators = data[1];
 			numberOfFloors = data[2];
-
 			// adding required buttons to the list of buttons
 			for (int i = 0; i < numberOfFloors; i++) {
 				allButtons[i] = lampState.OFF; // currently making everything OFF
@@ -274,7 +288,7 @@ public class Elevator {
 	// Make the elevator move up one floor
 	public void goUp() {
 		byte[] data = {8, 8, -1};
-		currentState = State.STATIONARY;
+		currentState = State.ARRIVE_AT_FLOOR;
 		String doorAction = "close door";
 		eventOccured(Event.CLOSE_DOOR, receivePacket, doorAction, data);
 		
@@ -287,13 +301,14 @@ public class Elevator {
 		}
 		currentFloor++;
 		doorAction = "open door";
+		currentState = State.ARRIVE_AT_FLOOR;
 		eventOccured(Event.OPEN_DOOR, receivePacket, doorAction, data);
 	}
 
 	// Make the elevator move (down)
 	public void goDown() {
 		byte[] data = {8, 8, -1};
-		currentState = State.STATIONARY;
+		currentState = State.ARRIVE_AT_FLOOR;
 		String doorAction = "close door";
 		eventOccured(Event.CLOSE_DOOR, receivePacket, doorAction, data);
 		
@@ -306,6 +321,7 @@ public class Elevator {
 		}
 		currentFloor--;
 		doorAction = "open door";
+		currentState = State.ARRIVE_AT_FLOOR;
 		eventOccured(Event.OPEN_DOOR, receivePacket, doorAction, data);
 	}
 
@@ -338,7 +354,5 @@ public class Elevator {
 			elevator1.receiveData();
 			elevator1.display();
 		}
-
 	}
-
 }
