@@ -13,3 +13,7 @@
 /UtilityInformation$LampState.class
 /UtilityInformation.class
 /SchedulerTest.class
+/Elevator$Event.class
+/Elevator$State.class
+/Elevator$lampState.class
+/Elevator.class

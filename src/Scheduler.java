@@ -18,7 +18,7 @@ public class Scheduler {
 	// External and internal events
 	enum Event {
 		MESSAGE_RECIEVED, CONFIG_MESSAGE, BUTTON_PUSHED_IN_ELEVATOR, FLOOR_SENSOR_ACTIVATED, FLOOR_REQUESTED,
-		MOVE_ELEVATOR, TEARDOWN
+		MOVE_ELEVATOR, TEARDOWN, CONFIRM_TEARDOWN
 
 	}
 
@@ -88,6 +88,8 @@ public class Scheduler {
 				extractFloorRequestedNumberAndGenerateResponseMessageAndActions(packet);
 			} else if (event.equals(Event.TEARDOWN)) {
 				sendTearDownMessage(packet);
+			} else if (event.equals(Event.CONFIRM_TEARDOWN)) {
+				sendConfirmTeardownMessage(packet);
 			}
 			currentState = State.RESPONDING_TO_MESSAGE;
 			moveToFloor(packet);
@@ -111,6 +113,19 @@ public class Scheduler {
 	}
 
 	/**
+	 * If elevator people also get scared.
+	 * 
+	 * @param packet
+	 */
+	private void sendConfirmTeardownMessage(DatagramPacket packet) {
+		sendMessage(packet.getData(), packet.getData().length, packet.getAddress(), UtilityInformation.FLOOR_PORT_NUM);
+		recieveSocket.close();
+		sendSocket.close();
+		System.exit(1);
+
+	}
+
+	/**
 	 * If the floor people get scared.
 	 * 
 	 * @param packet
@@ -118,9 +133,6 @@ public class Scheduler {
 	private void sendTearDownMessage(DatagramPacket packet) {
 		byte[] tearDown = { UtilityInformation.TEARDOWN_MODE, UtilityInformation.END_OF_MESSAGE };
 		sendMessage(tearDown, tearDown.length, packet.getAddress(), UtilityInformation.ELEVATOR_PORT_NUM);
-		recieveSocket.close();
-		sendSocket.close();
-		System.exit(1);
 	}
 
 	/**
@@ -151,6 +163,8 @@ public class Scheduler {
 			eventOccured(Event.FLOOR_REQUESTED, recievedPacket);
 		} else if (mode == UtilityInformation.TEARDOWN_MODE) {
 			eventOccured(Event.TEARDOWN, recievedPacket);
+		} else if (mode == UtilityInformation.TEARDOWN_CONFIRM) {
+			eventOccured(Event.CONFIRM_TEARDOWN, recievedPacket);
 		}
 	}
 
