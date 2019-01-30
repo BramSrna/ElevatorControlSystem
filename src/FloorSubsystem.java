@@ -3,15 +3,29 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.net.*;
 
 public class FloorSubsystem {
+    
+    private DatagramPacket sendPacket, receivePacket;
+    private DatagramSocket sendReceiveSocket;
+    
     private int bottomFloor; // Lowest possible floor
     private int topFloor;    // Highest possible floor
     private int numFloors;   // Number of floors that the elevator services
     
     private int numElevators; // The current number of elevators
     
-    private final int REQUEST_SIZE = 7; // Size of the service requests
+    // Size of service requests
+    private final int CONFIG_SIZE = 4;
+    private final int REQUEST_SIZE = 5; 
+    private final int ARRIVAL_SIZE = 4;
+    
+    private final int TIME_PER_FLOOR = 2000;
+    
     
     // Valid ranges for the number of 
     // floors and number of elevators
@@ -54,6 +68,15 @@ public class FloorSubsystem {
         
         this.setNumElevators(numElevators);
         this.setNumFloors(numFloors);
+        
+        // Initialize the DatagramSocket
+        try {
+            sendReceiveSocket = new DatagramSocket();
+        } catch (SocketException se) {
+            se.printStackTrace();
+            this.teardown();
+            System.exit(1);
+        }
     }
     
     /**
@@ -68,13 +91,13 @@ public class FloorSubsystem {
      * @return  void
      */
     public void setNumFloors(int newNumFloors) {
-    	if ((newNumFloors < MIN_NUM_FLOORS) || 
-			(newNumFloors > MAX_NUM_FLOORS)) {
-    		System.out.println("Error: Floor value is outside of valid range.");
-    		System.exit(1);
-    	}
-    	
-    	// Set the number of floors
+        if ((newNumFloors < MIN_NUM_FLOORS) || 
+            (newNumFloors > MAX_NUM_FLOORS)) {
+            System.out.println("Error: Floor value is outside of valid range.");
+            System.exit(1);
+        }
+        
+        // Set the number of floors
         this.numFloors = newNumFloors;
         
         // Set bottom and top floors
@@ -83,25 +106,25 @@ public class FloorSubsystem {
         
         // Check if the list of floors needs to be modified
         if (floors.size() < numFloors) {
-        	// Need more floors, so add amount needed
+            // Need more floors, so add amount needed
             for (int i = floors.size(); i < numFloors; i++) {
                 floors.add(new Floor(this, i, numElevators));
-            }	
+            }   
         } else if (floors.size() > numFloors) {
-        	// Too many floors, so remove floors
-        	ArrayList<Floor> toRemove = new ArrayList<Floor>();
-        	
-        	// Get a list of floors to remove
-        	for (Floor currFloor : floors) {
-        		if (currFloor.getFloorNumber() > numFloors - 1) {
-        			toRemove.add(currFloor);
-        		}
-        	}
-        	
-        	// Remove the marked floors
-        	for (Floor currFloor : toRemove) {
-        		floors.remove(currFloor);
-        	}
+            // Too many floors, so remove floors
+            ArrayList<Floor> toRemove = new ArrayList<Floor>();
+            
+            // Get a list of floors to remove
+            for (Floor currFloor : floors) {
+                if (currFloor.getFloorNumber() > numFloors - 1) {
+                    toRemove.add(currFloor);
+                }
+            }
+            
+            // Remove the marked floors
+            for (Floor currFloor : toRemove) {
+                floors.remove(currFloor);
+            }
         }
     }
     
@@ -113,16 +136,16 @@ public class FloorSubsystem {
      * 
      * @param newNumElevators The new number of elevators
      * 
-     * @return	void
+     * @return  void
      */
     public void setNumElevators(int newNumElevators) {
-    	if ((newNumElevators < MIN_NUM_ELEVATORS) ||
-			(newNumElevators > MAX_NUM_ELEVATORS)) {
-    		System.out.println("Error: Elevator value is outside of valid range.");
-    		System.exit(1);
-    	}
-    	
-    	this.numElevators = newNumElevators;
+        if ((newNumElevators < MIN_NUM_ELEVATORS) ||
+            (newNumElevators > MAX_NUM_ELEVATORS)) {
+            System.out.println("Error: Elevator value is outside of valid range.");
+            System.exit(1);
+        }
+        
+        this.numElevators = newNumElevators;
     }
     
     /**
@@ -237,14 +260,14 @@ public class FloorSubsystem {
             // Find the floor where the request was made,
             // and make the request
             for (Floor floor : floors) {
-            	if (floor.getFloorNumber() == startFloorInt) {
-            		floor.elevatorRequest(hourInt, 
-			                              minInt, 
-			                              secInt, 
-			                              milliSecInt, 
-			                              directionEnum, 
-			                              finalFloorInt);
-            	}
+                if (floor.getFloorNumber() == startFloorInt) {
+                    floor.elevatorRequest(hourInt, 
+                                          minInt, 
+                                          secInt, 
+                                          milliSecInt, 
+                                          directionEnum, 
+                                          finalFloorInt);
+                }
             }
             
             // Get the next line in the file
@@ -291,13 +314,13 @@ public class FloorSubsystem {
      * 
      * @return  void
      */
-    public void sendElevatorRequest(int hrOfReq, 
-		                            int minOfReq, 
-		                            int secOfReq, 
-		                            int msOfReq, 
-		                            int startFloor, 
-		                            Direction dirPressed, 
-		                            int finalFloor) {
+    public void addElevatorRequest(int hrOfReq, 
+                                    int minOfReq, 
+                                    int secOfReq, 
+                                    int msOfReq, 
+                                    int startFloor, 
+                                    Direction dirPressed, 
+                                    int finalFloor) {
         // Check that the given floors are valid
         if ((startFloor < bottomFloor) || (startFloor > topFloor) ||
             (finalFloor < bottomFloor) || (finalFloor > topFloor)) {
@@ -321,7 +344,7 @@ public class FloorSubsystem {
         }
         
         // Formulate byte array
-        byte request[] = new byte[REQUEST_SIZE];
+        byte request[] = new byte[7];
         
         int hrInd = 0;
         int minInd = 1;
@@ -373,19 +396,19 @@ public class FloorSubsystem {
      * Returns the range of valid number of floor values.
      * Returns the range as an array of 2 values.
      * Format:
-     * 		Byte 0 - Minimum value
-     * 		Byte 1 - Maximum value
+     *      Byte 0 - Minimum value
+     *      Byte 1 - Maximum value
      * 
      * @return int[] First byte is minimum value
-     * 				 Second byte is maximum value
+     *               Second byte is maximum value
      */
     public static int[] getValidFloorValueRange() {
-    	int validRange[] = new int[2];
-    	
-    	validRange[0] = MIN_NUM_FLOORS;
-    	validRange[1] = MAX_NUM_FLOORS;
-    	
-    	return(validRange);
+        int validRange[] = new int[2];
+        
+        validRange[0] = MIN_NUM_FLOORS;
+        validRange[1] = MAX_NUM_FLOORS;
+        
+        return(validRange);
     }
     
     /**
@@ -396,19 +419,19 @@ public class FloorSubsystem {
      * Returns the range of valid number of elevator values.
      * Returns the range as an array of 2 values.
      * Format:
-     * 		Byte 0 - Minimum value
-     * 		Byte 1 - Maximum value
+     *      Byte 0 - Minimum value
+     *      Byte 1 - Maximum value
      * 
      * @return int[] First byte is minimum value
-     * 				 Second byte is maximum value
+     *               Second byte is maximum value
      */
     public static int[] getValidElevatorValueRange() {
-    	int validRange[] = new int[2];
-    	
-    	validRange[0] = MIN_NUM_ELEVATORS;
-    	validRange[1] = MAX_NUM_ELEVATORS;
-    	
-    	return(validRange);
+        int validRange[] = new int[2];
+        
+        validRange[0] = MIN_NUM_ELEVATORS;
+        validRange[1] = MAX_NUM_ELEVATORS;
+        
+        return(validRange);
     }
     
     /**
@@ -433,10 +456,48 @@ public class FloorSubsystem {
      * @param elevatorShaftNum Elevator shaft that the signal was received from
      * @param floorNum Floor where the signal was received
      * 
-     * @return	void
+     * @return  void
      */
     public void sendArrivalSensorSignal(int elevatorShaftNum, int floorNum) {
+        System.out.println("Floor " + floorNum + ": Sending arrival signal\n");                
         
+        // Construct a message to send with data from given parameters
+        byte[] msg = new byte[ARRIVAL_SIZE];
+        msg[0] = 1;
+        msg[1] = (byte) floorNum;
+        msg[2] = (byte) elevatorShaftNum;
+        msg[3] = -1;
+                
+        // Construct a datagram packet that is to be sent to a specified port 
+        // on a specified host.
+        // The arguments are:
+        //  msg - the message contained in the packet (the byte array)
+        //  msg.length - the length of the byte array
+        //  InetAddress.getLocalHost() - the Internet address of the 
+        //     destination host.
+        //     InetAddress.getLocalHost() returns the Internet
+        //     address of the local host.
+        //  420 - the destination port number on the destination host.
+        try {
+            sendPacket = new DatagramPacket(msg, msg.length,
+                            InetAddress.getLocalHost(), 420);
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+                
+        // Process the sent datagram.
+        System.out.println("Floor" + floorNum + ": Sending the arrival signal ...");
+                
+        // Send the datagram packet to the host via the send/receive socket.                 
+        try {
+            sendReceiveSocket.send(sendPacket);
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+                
+        System.out.println("Floor" + floorNum + ": Signal Sent.\n");    
     }
     
     /**
@@ -446,10 +507,10 @@ public class FloorSubsystem {
      * 
      * Format:
      * 
-     * @return	void
+     * @return  void
      */
     public void sendTeardownSignal() {
-    	
+        
     }
     
     /**
@@ -458,10 +519,10 @@ public class FloorSubsystem {
      * Sends a teardown signal and then closes
      * all open sockets.
      * 
-     * @return	void
+     * @return  void
      */
     public void teardown() {
-    	sendTeardownSignal();
+        sendTeardownSignal();
     }
     
     /**
@@ -470,11 +531,198 @@ public class FloorSubsystem {
      * Sends a configuration signal with the
      * number of elevators and elevator shaft number.
      * 
-     * @return	void
+     * @param numElevators  The amount for elevators the building has
+     * @param numFloors     The amount of floors the buidling has
+     * 
+     * @return  void
      */
-    public void sendConfigurationSignal() {
-    	
+    public void sendConfigurationSignal(int numElevators, int numFloors) {
+        System.out.println("Sending a packet containing elevator configuration\n");        
+        
+        // Construct a message to send with data from given parameters        
+        byte[] msg = new byte[CONFIG_SIZE];
+        msg[0] = 0;
+        msg[1] = (byte) numElevators;
+        msg[2] = (byte) numFloors;
+        msg[3] = -1;
+                
+        // Construct a datagram packet that is to be sent to a specified port 
+        // on a specified host.
+        // The arguments are:
+        //  msg - the message contained in the packet (the byte array)
+        //  msg.length - the length of the byte array
+        //  InetAddress.getLocalHost() - the Internet address of the 
+        //     destination host.
+        //     InetAddress.getLocalHost() returns the Internet
+        //     address of the local host.
+        //  420 - the destination port number on the destination host.
+        try {
+            sendPacket = new DatagramPacket(msg, msg.length,
+                            InetAddress.getLocalHost(), 420);
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+                
+        // Process the sent datagram.
+        System.out.println("Config: Sending signal...");
+                
+        // Send the datagram packet to the host via the send/receive socket. 
+                
+        try {
+            sendReceiveSocket.send(sendPacket);
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+                
+        System.out.println("Config: Signal sent.\n");
+                
+        // Construct a DatagramPacket for receiving packets up 
+        // to 100 bytes long (the length of the byte array).
+                
+        byte data[] = new byte[100];
+        receivePacket = new DatagramPacket(data, data.length);
+        
+        System.out.println("Config: Waiting for response...\n");
+                
+        try {
+            // Block until a datagram is received via sendReceiveSocket.  
+            sendReceiveSocket.receive(receivePacket);
+        } catch(IOException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+                
+        System.out.println("Config: Response received.");
     }
+    
+    
+    public int getNumFloors() {
+        return numFloors;
+    }
+    
+    public int getNumElevators() {
+        return numElevators;
+    }
+    
+    
+    public void sendElevatorRequest(int sourceFloor, int destFloor, Direction diRequest) {        
+        System.out.println("Sending a packet containing elevator request details\n");        
+        
+        // Construct a message to send with data from given parameters        
+        byte[] msg = new byte[REQUEST_SIZE];
+        msg[0] = 2;
+        msg[1] = (byte) sourceFloor;
+        msg[2] = (byte) diRequest.ordinal();
+        msg[3] = (byte) destFloor;
+        msg[4] = -1;
+                
+        // Construct a datagram packet that is to be sent to a specified port 
+        // on a specified host.
+        // The arguments are:
+        //  msg - the message contained in the packet (the byte array)
+        //  msg.length - the length of the byte array
+        //  InetAddress.getLocalHost() - the Internet address of the 
+        //     destination host.
+        //     InetAddress.getLocalHost() returns the Internet
+        //     address of the local host.
+        //  420 - the destination port number on the destination host.
+        try {
+            sendPacket = new DatagramPacket(msg, msg.length,
+                            InetAddress.getLocalHost(), 420);
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+                
+        // Process the sent datagram.
+        System.out.println("Floor" + sourceFloor + ": Elevator request...");
+                
+        // Send the datagram packet to the host via the send/receive socket. 
+                
+        try {
+            sendReceiveSocket.send(sendPacket);
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+                
+        System.out.println("Floor" + sourceFloor + ": Elevator request sent.\n");
+    }
+    
+    public void runSubsystem() {        
+        Timer timer = new Timer();
+        for (int i = 0; i < serviceRequests.size(); i++) {
+            byte currReq[] = serviceRequests.get(i);
+            
+            byte startFloor = currReq[4];
+            byte endFloor = currReq[6];
+            byte dir = currReq[5];
+            
+            sendElevatorRequest((int) startFloor, (int) endFloor, Direction.values()[(int) dir]);
+            
+            int timeUntilNextRequest = 0;
+            
+            if (i < serviceRequests.size() - 1) {
+                byte nextReq[] = serviceRequests.get(i + 1);
+                
+                timeUntilNextRequest = 0;
+                
+                timeUntilNextRequest += nextReq[3] - currReq[3];
+                timeUntilNextRequest += nextReq[2] - currReq[2] * 1000;
+                timeUntilNextRequest += nextReq[1] - currReq[1] * 60 * 1000;
+                timeUntilNextRequest += nextReq[0] - currReq[0] * 60 * 60 * 1000;
+                
+            } else {
+                timeUntilNextRequest = 10 * 1000;
+            }
+            
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    while (true) {
+                        timedMovement();
+                    }                   
+                }
+            }, timeUntilNextRequest);
+        }
+    }
+    
+    
+    public void timedMovement() {
+        
+        int floorTiming = TIME_PER_FLOOR;
+        byte data[] = new byte[100];
+        receivePacket = new DatagramPacket(data, data.length);
+                
+        try {
+            // Block until a datagram is received via sendReceiveSocket.  
+            sendReceiveSocket.receive(receivePacket);
+        } catch(IOException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+        
+        byte holder = receivePacket.getData()[1];
+        Direction dir = Direction.values()[(int) receivePacket.getData()[2]];
+        if (dir == Direction.UP) {
+            holder++;
+        }else {
+            holder--;
+        }
+        
+        try {
+            Thread.sleep(floorTiming);
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        
+        sendArrivalSensorSignal(1, holder);
+    }
+    
+    
     
     /**
      * main
@@ -488,40 +736,43 @@ public class FloorSubsystem {
      * 
      * @param args
      * 
-     * @return	void
+     * @return  void
      */
     public static void main(String[] args) {
-    	UserInterface ui = new UserInterface();
-    	
-    	// Get basic configuration information to start
-    	ui.getNewConfigurationInformation();
-    	
-    	// Create a FloorSubsystem with the given information
-    	FloorSubsystem floorController = new FloorSubsystem(ui.getNumFloors(), ui.getNumElevators());
-    	   	
-    	// While true
-    	// Display the valid options to the user
-    	// Based off of user input, run the corresponding method(s)
-    	while (true) {
-    		UserInterface.ReturnVals val = ui.displayMenu();
-    		
-    		if (val == UserInterface.ReturnVals.RECONFIG) {
-    			// If reconfing was received, resend the configuration method    			
-    			floorController.setNumFloors(ui.getNumFloors());
-    			floorController.setNumElevators(ui.getNumElevators());
-    			floorController.sendConfigurationSignal();
-    		} else if (val == UserInterface.ReturnVals.NEW_TEST_FILE) {
-    			// If a new test file was entered, parse the file
-    			floorController.parseInputFile(ui.getTestFile());
-    		} else if (val == UserInterface.ReturnVals.TEARDOWN) {
-    			// If teardown was selected,
-    			// Send the teardown signal
-    			// Exit the program
-    			floorController.teardown();
-    			floorController = null;
-    			System.exit(1);
-    		}
-    	}
-    	
+        UserInterface ui = new UserInterface();
+        
+        // Get basic configuration information to start
+        ui.getNewConfigurationInformation();
+        
+        // Create a FloorSubsystem with the given information
+        FloorSubsystem floorController = new FloorSubsystem(ui.getNumFloors(), ui.getNumElevators());
+        
+        floorController.sendConfigurationSignal(floorController.getNumElevators(), floorController.getNumFloors());
+            
+        // While true
+        // Display the valid options to the user
+        // Based off of user input, run the corresponding method(s)
+        while (true) {
+            UserInterface.ReturnVals val = ui.displayMenu();
+            
+            if (val == UserInterface.ReturnVals.RECONFIG) {
+                // If reconfing was received, resend the configuration method               
+                floorController.setNumFloors(ui.getNumFloors());
+                floorController.setNumElevators(ui.getNumElevators());
+                floorController.sendConfigurationSignal(floorController.getNumElevators(), floorController.getNumFloors());
+            } else if (val == UserInterface.ReturnVals.NEW_TEST_FILE) {
+                // If a new test file was entered, parse the file
+                floorController.parseInputFile(ui.getTestFile());
+                floorController.runSubsystem();
+            } else if (val == UserInterface.ReturnVals.TEARDOWN) {
+                // If teardown was selected,
+                // Send the teardown signal
+                // Exit the program
+                floorController.teardown();
+                floorController = null;
+                System.exit(1);
+            }
+        }
+        
     }
 }

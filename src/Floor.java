@@ -102,13 +102,13 @@ public class Floor {
         }
         
         // Tell the controller to send the request
-        controller.sendElevatorRequest(hourOfCall, 
-						        	   minOfCall, 
-						        	   secOfCall, 
-						        	   msOfCall, 
-						        	   this.floorNum, 
-						        	   direction, 
-						        	   endFloor);
+        controller.addElevatorRequest(hourOfCall, 
+						        	  minOfCall, 
+						        	  secOfCall, 
+						        	  msOfCall, 
+						        	  this.floorNum, 
+						        	  direction, 
+						        	  endFloor);
     }
     
     /**
