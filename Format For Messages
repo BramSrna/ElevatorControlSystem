@@ -2,9 +2,12 @@ Floor Encryption to Scheduler
 
 index : Representation
 
-0 : 	Request type		0 = Config 		1 = Elevator arrival		2 = Elevator request            7 = Teardown
-1 : 				No. Elevators 		Floor number 			Source floor			-1
-2 : 				No. Floors		Elevator Shaft No.		Direction, 1 = up, 0 = down
-3 :				-1			-1				Destination
-4: start/stop (4, destinationfloor, current floor, start(0)/stop(1) bit, -1)
-5: open/close doors (5,open(1)/close(0), -1)
+0 : 	Request type		0 = Config		2 = Elevator request            7 = Teardown
+1 : 				No. Elevators   	Source floor			-1
+2 : 				No. Floors		Direction, 1 = up, 0 = down
+3 :				-1	  	        Destination
+4:                                                     -1
+
+start/stop (4, destinationfloor, current floor, start(0)/stop(1) bit, -1)
+
+open/close doors (5,open(1)/close(0), -1)
