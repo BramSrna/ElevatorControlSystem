@@ -4,3 +4,11 @@
 /Scheduler$Event.class
 /Scheduler$State.class
 /FloorSubsystem$1.class
+/HardwareState$ButtonState.class
+/HardwareState$ElevatorDirection.class
+/HardwareState$LampState.class
+/HardwareState.class
+/UtilityInformation$ButtonState.class
+/UtilityInformation$ElevatorDirection.class
+/UtilityInformation$LampState.class
+/UtilityInformation.class
