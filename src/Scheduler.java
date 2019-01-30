@@ -29,7 +29,7 @@ public class Scheduler {
 	private byte floorElevatorIsCurrentlyOn;
 	private State currentState;
 
-	private Scheduler() {
+	public Scheduler() {
 		floorsToVisit = new ArrayList<Byte>();
 		elevatorDirection = UtilityInformation.ElevatorDirection.STATIONARY;
 		currentState = State.WAITING;
