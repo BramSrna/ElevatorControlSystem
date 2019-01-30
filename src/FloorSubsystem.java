@@ -8,6 +8,7 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -69,7 +70,7 @@ public class FloorSubsystem {
 
 		// Initialize the DatagramSocket
 		try {
-			sendReceiveSocket = new DatagramSocket();
+			sendReceiveSocket = new DatagramSocket(UtilityInformation.FLOOR_PORT_NUM);
 		} catch (SocketException se) {
 			se.printStackTrace();
 			this.teardown();
@@ -590,6 +591,9 @@ public class FloorSubsystem {
 			e.printStackTrace();
 			System.exit(1);
 		}
+		
+		System.out.print("Containing: ");
+		System.out.println(Arrays.toString(msg)); // or could print "s"
 
 		// Process the sent datagram.
 		System.out.println("Floor" + sourceFloor + ": Elevator request...");

@@ -51,6 +51,13 @@ public class Elevator {
 	
 	public Elevator() {
 		try {
+			schedulerIP = InetAddress.getLocalHost();
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		try {
 			// Construct a Datagram socket and bind it to any available port on the local host machine. This socket will be used to
 			// send UDP Datagram packets.
 			sendSocket = new DatagramSocket();
@@ -91,6 +98,7 @@ public class Elevator {
 	private final int DESTINATION_MODE = 6;
 	private final int CURRFLOOR_MODE = 1;
 	private final int TEARDOWN = 7;
+	private final int CONFIG_RESPONSE = 8;
 	
 	public void display() {
 		// Simply display 
@@ -242,7 +250,8 @@ public class Elevator {
 			numberOfFloors = data[2];
 			
 			allButtons = new lampState[numberOfFloors];
-			
+			byte[] response = {CONFIG_RESPONSE, 1, -1};
+			this.sendData(response, schedulerIP, schedulerPort);
 			// adding required buttons to the list of buttons
 			for (int i = 0; i < numberOfFloors; i++) {
 				allButtons[i] = lampState.OFF; // currently making everything OFF
