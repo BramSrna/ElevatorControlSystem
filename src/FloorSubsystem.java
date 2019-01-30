@@ -247,7 +247,12 @@ public class FloorSubsystem {
 			// and make the request
 			for (Floor floor : floors) {
 				if (floor.getFloorNumber() == startFloorInt) {
-					floor.elevatorRequest(hourInt, minInt, secInt, milliSecInt, directionEnum, finalFloorInt);
+					floor.createElevatorRequest(hourInt, 
+												minInt, 
+												secInt, 
+												milliSecInt, 
+												directionEnum, 
+												finalFloorInt);
 				}
 			}
 
@@ -588,16 +593,14 @@ public class FloorSubsystem {
 				@Override
 				public void run() {
 					while (true) {
-						timedMovement();
+						waitForElevatorUpdate();
 					}
 				}
 			}, timeUntilNextRequest);
 		}
 	}
 
-	public void timedMovement() {
-
-		int floorTiming = TIME_PER_FLOOR;
+	public void waitForElevatorUpdate() {
 		byte data[] = new byte[100];
 		receivePacket = new DatagramPacket(data, data.length);
 
@@ -619,7 +622,7 @@ public class FloorSubsystem {
 		}
 
 		for (Floor currFloor : floors) {
-
+			currFloor.updateElevatorLocation(1, holder, dir);
 		}
 	}
 

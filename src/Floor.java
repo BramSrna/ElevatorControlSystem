@@ -6,6 +6,7 @@ public class Floor {
 	private int floorNum;
 	private int numElevatorShafts;
 
+	private ArrayList<Integer> elevatorLocation;
 	private ArrayList<UtilityInformation.LampState> arrivalLamp;
 	private ArrayList<UtilityInformation.ElevatorDirection> arrivalLampDir;
 
@@ -32,11 +33,13 @@ public class Floor {
 		this.floorNum = floorNum;
 		this.setNumElevatorShafts(numElevatorShafts);
 
+		elevatorLocation = new ArrayList<Integer>();
 		arrivalLamp = new ArrayList<UtilityInformation.LampState>();
 		arrivalLampDir = new ArrayList<UtilityInformation.ElevatorDirection>();
 
 		// Configure lamps and buttons
 		for (int i = 0; i < arrivalLamp.size(); i++) {
+			elevatorLocation.add(0);
 			arrivalLamp.add(UtilityInformation.LampState.OFF);
 			arrivalLampDir.add(UtilityInformation.ElevatorDirection.STATIONARY);
 		}
@@ -46,7 +49,7 @@ public class Floor {
 	}
 
 	/**
-	 * elevatorRequest
+	 * createElevatorRequest
 	 * 
 	 * Tells the FloorSubsystem that a new request was made at this Floor. Sets the
 	 * corresponding lamp and button values.
@@ -60,7 +63,7 @@ public class Floor {
 	 * 
 	 * @return void
 	 */
-	public void elevatorRequest(int hourOfCall, int minOfCall, int secOfCall, int msOfCall,
+	public void createElevatorRequest(int hourOfCall, int minOfCall, int secOfCall, int msOfCall,
 			UtilityInformation.ElevatorDirection direction, int endFloor) {
 		// Set the button and lamp states
 		if (direction == UtilityInformation.ElevatorDirection.UP) {
@@ -70,8 +73,47 @@ public class Floor {
 		}
 
 		// Tell the controller to send the request
-		controller.addElevatorRequest(hourOfCall, minOfCall, secOfCall, msOfCall, this.floorNum, direction, endFloor);
+		controller.addElevatorRequest(hourOfCall, 
+									  minOfCall, 
+									  secOfCall, 
+									  msOfCall, 
+									  this.floorNum, 
+									  direction, 
+									  endFloor);
 	}
+	
+	/**
+     * updateElevatorLocation
+     * 
+     * Updates the lamps and buttons depending on the given
+     * elevator's direction and location.
+     * 
+     * @param elevatorShaftNum	Elevator that is moving
+     * @param floorNum	Floor number the elevator is at
+     * @param direction	Direction of the elevator
+     * 
+     * @return	void
+     */
+    public void updateElevatorLocation(int elevatorShaftNum, 
+							    	   int floorNum, 
+							    	   UtilityInformation.ElevatorDirection direction) {
+    	// If the elevator is at this floor
+    	// Set the arrival lamp and
+    	// check if this is the floor that the elevator shaft is stopping at
+    	if ((floorNum == this.getFloorNumber()) && 
+    		(direction == UtilityInformation.ElevatorDirection.STATIONARY)) {
+    		// Turn off up/down buttons if the elevator is stopping at this floor
+			arrivalLamp.set(elevatorShaftNum, UtilityInformation.LampState.ON);
+			downButton = UtilityInformation.ButtonState.UNPRESSED;
+			upButton = UtilityInformation.ButtonState.UNPRESSED;
+    	} else {
+    		arrivalLamp.set(elevatorShaftNum, UtilityInformation.LampState.OFF);
+    	}
+    	
+    	// Update the elevator location and direction
+    	elevatorLocation.set(elevatorShaftNum, floorNum);
+    	arrivalLampDir.set(elevatorShaftNum, direction);
+    }
 
 	/**
 	 * getFloorNumber
@@ -163,5 +205,57 @@ public class Floor {
 	 */
 	public void setArrivalLampDir(UtilityInformation.ElevatorDirection newDirection, int elevatorShaftNum) {
 		arrivalLampDir.set(elevatorShaftNum, newDirection);
+	}
+	
+	/**
+	 * getUpButton
+	 * 
+	 * Returns the state of the upButton.
+	 * 
+	 * @param	None
+	 * 
+	 * @return UtilityInformation.ButtonState	State of the upButton
+	 */
+	public UtilityInformation.ButtonState getUpButton() {
+		return upButton;
+	}
+
+	/**
+	 * setUpButton
+	 * 
+	 * Sets the state of the upButton to the given state.
+	 * 
+	 * @param downButton The new state of the upButton
+	 * 
+	 * @return	void
+	 */
+	public void setUpButton(UtilityInformation.ButtonState newState) {
+		this.upButton = newState;
+	}
+
+	/**
+	 * getDownButton
+	 * 
+	 * Returns the state of the downButton.
+	 * 
+	 * @param	None
+	 * 
+	 * @return UtilityInformation.ButtonState	State of the down button
+	 */
+	public UtilityInformation.ButtonState getDownButton() {
+		return downButton;
+	}
+
+	/**
+	 * setDownButton
+	 * 
+	 * Sets the state of the downButton to the given state.
+	 * 
+	 * @param downButton The new state of the downButton
+	 * 
+	 * @return	void
+	 */
+	public void setDownButton(UtilityInformation.ButtonState newState) {
+		this.downButton = newState;
 	}
 }
