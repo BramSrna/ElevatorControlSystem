@@ -9,7 +9,7 @@ import java.util.*;
  * Elevator.java
  * @ author Samy Ibrahim 
  * @ student# 101037927
- * @ version 2
+ * @ version 1
  * 
  * The elevator subsystem consists of the buttons and lamps inside of the elevator used to select floors and indicate the
  * floors selected, and to indicate the location of the elevator itself. The elevator subsystem is also used to operate the
