@@ -288,4 +288,24 @@ public class Floor {
 	public void setDownButton(UtilityInformation.ButtonState newState) {
 		this.downButton = newState;
 	}
+	
+	public String toString() {	    
+	    String toReturn = "";
+	    
+	    toReturn += String.format("Floor Number: %d ", floorNum);
+	    
+	    for (int i = 0; i < numElevatorShafts; i++) {
+	        toReturn += String.format("Elevator: %d", i);
+	        toReturn += String.format(", Floor: %d", elevatorLocation.get(i));
+            toReturn += String.format(", Direction", arrivalLampDir.get(i));
+            toReturn += String.format(", ArrivalLamp: %d ", i, arrivalLamp.get(i));
+	    }
+	    
+        toReturn += String.format("Up Button: %d ", upButton);
+       
+        toReturn += String.format("Down Button: %d ", downButton);
+	    
+        return(toReturn);
+	    
+	}
 }

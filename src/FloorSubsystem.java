@@ -47,6 +47,8 @@ public class FloorSubsystem {
 
 	// List of existing floor objects
 	private ArrayList<Floor> floors;
+	
+	private InetAddress addressToSend;
 
 	/**
 	 * FloorSubsystem
@@ -76,6 +78,13 @@ public class FloorSubsystem {
 			this.teardown();
 			System.exit(1);
 		}
+		
+		try {
+            addressToSend = InetAddress.getLocalHost();
+        } catch (UnknownHostException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
 	}
 
 	/**
@@ -425,55 +434,6 @@ public class FloorSubsystem {
 	}
 
 	/**
-	 * sendTeardownSignal
-	 * 
-	 * Sends a signal that the program should teardown.
-	 * 
-	 * Format:
-	 * 
-	 * @return void
-	 */
-	public void sendTeardownSignal() {
-		System.out.println("Sending a packet containing teardown.\n");
-
-		// Construct a message to send with data from given parameters
-		byte[] msg = new byte[TEARDOWN_SIZE];
-		msg[0] = UtilityInformation.TEARDOWN_MODE;
-		msg[1] = -1;
-
-		// Construct a datagram packet that is to be sent to a specified port
-		// on a specified host.
-		// The arguments are:
-		// msg - the message contained in the packet (the byte array)
-		// msg.length - the length of the byte array
-		// InetAddress.getLocalHost() - the Internet address of the
-		// destination host.
-		// InetAddress.getLocalHost() returns the Internet
-		// address of the local host.
-		// 420 - the destination port number on the destination host.
-		try {
-			sendPacket = new DatagramPacket(msg, msg.length, InetAddress.getLocalHost(), 420);
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-			System.exit(1);
-		}
-
-		// Process the sent datagram.
-		System.out.println("Teardown: Sending signal...");
-
-		// Send the datagram packet to the host via the send/receive socket.
-
-		try {
-			sendReceiveSocket.send(sendPacket);
-		} catch (IOException e) {
-			e.printStackTrace();
-			System.exit(1);
-		}
-
-		System.out.println("Teardown: Signal sent.\n");
-	}
-
-	/**
 	 * teardown
 	 * 
 	 * Sends a teardown signal and then closes all open sockets.
@@ -484,6 +444,43 @@ public class FloorSubsystem {
 		sendTeardownSignal();
 		sendReceiveSocket.close();
 	}
+	
+    public String toString() {
+        String toReturn = "";
+        
+        for (Floor currFloor : floors) {
+            toReturn += currFloor.toString();
+            toReturn += "\n";
+        }
+        
+        return(toReturn);
+    }
+    
+    public int getNumFloors() {
+        return numFloors;
+    }
+
+    public int getNumElevators() {
+        return numElevators;
+    }
+    
+    /**
+     * sendTeardownSignal
+     * 
+     * Sends a signal that the program should teardown.
+     * 
+     * Format:
+     * 
+     * @return void
+     */
+    public void sendTeardownSignal() {
+        // Construct a message to send with data from given parameters
+        byte[] msg = new byte[TEARDOWN_SIZE];
+        msg[0] = UtilityInformation.TEARDOWN_MODE;
+        msg[1] = -1;
+        
+        sendSignal(msg, UtilityInformation.SCHEDULER_PORT_NUM, addressToSend);
+    }
 
 	/**
 	 * sendConfigurationSignal
@@ -497,8 +494,6 @@ public class FloorSubsystem {
 	 * @return void
 	 */
 	public void sendConfigurationSignal(int numElevators, int numFloors) {
-		System.out.println("Sending a packet containing elevator configuration\n");
-
 		// Construct a message to send with data from given parameters
 		byte[] msg = new byte[CONFIG_SIZE];
 		msg[0] = UtilityInformation.CONFIG_MODE;
@@ -506,67 +501,12 @@ public class FloorSubsystem {
 		msg[2] = (byte) numFloors;
 		msg[3] = -1;
 
-		// Construct a datagram packet that is to be sent to a specified port
-		// on a specified host.
-		// The arguments are:
-		// msg - the message contained in the packet (the byte array)
-		// msg.length - the length of the byte array
-		// InetAddress.getLocalHost() - the Internet address of the
-		// destination host.
-		// InetAddress.getLocalHost() returns the Internet
-		// address of the local host.
-		// 420 - the destination port number on the destination host.
-		try {
-			sendPacket = new DatagramPacket(msg, msg.length, InetAddress.getLocalHost(), 420);
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-			System.exit(1);
-		}
+		sendSignal(msg, UtilityInformation.SCHEDULER_PORT_NUM, addressToSend);
 
-		// Process the sent datagram.
-		System.out.println("Config: Sending signal...");
-
-		// Send the datagram packet to the host via the send/receive socket.
-
-		try {
-			sendReceiveSocket.send(sendPacket);
-		} catch (IOException e) {
-			e.printStackTrace();
-			System.exit(1);
-		}
-
-		System.out.println("Config: Signal sent.\n");
-
-		// Construct a DatagramPacket for receiving packets up
-		// to 100 bytes long (the length of the byte array).
-
-		byte data[] = new byte[CONFIG_REC_SIZE];
-		receivePacket = new DatagramPacket(data, data.length);
-
-		System.out.println("Config: Waiting for response...\n");
-
-		try {
-			// Block until a datagram is received via sendReceiveSocket.
-			sendReceiveSocket.receive(receivePacket);
-		} catch (IOException e) {
-			e.printStackTrace();
-			System.exit(1);
-		}
-
-		System.out.println("Config: Response received.");
-	}
-
-	public int getNumFloors() {
-		return numFloors;
-	}
-
-	public int getNumElevators() {
-		return numElevators;
+		waitForSignal(CONFIG_REC_SIZE);
 	}
 
 	public void sendElevatorRequest(int sourceFloor, int destFloor, UtilityInformation.ElevatorDirection diRequest) {
-		System.out.println("Sending a packet containing elevator request details\n");
-
 		// Construct a message to send with data from given parameters
 		byte[] msg = new byte[REQUEST_SIZE];
 		msg[0] = UtilityInformation.FLOOR_REQUEST_MODE;
@@ -575,44 +515,14 @@ public class FloorSubsystem {
 		msg[3] = (byte) destFloor;
 		msg[4] = -1;
 
-		// Construct a datagram packet that is to be sent to a specified port
-		// on a specified host.
-		// The arguments are:
-		// msg - the message contained in the packet (the byte array)
-		// msg.length - the length of the byte array
-		// InetAddress.getLocalHost() - the Internet address of the
-		// destination host.
-		// InetAddress.getLocalHost() returns the Internet
-		// address of the local host.
-		// 420 - the destination port number on the destination host.
-		try {
-			sendPacket = new DatagramPacket(msg, msg.length, InetAddress.getLocalHost(), 420);
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-			System.exit(1);
-		}
-		
-		System.out.print("Containing: ");
-		System.out.println(Arrays.toString(msg)); // or could print "s"
-
-		// Process the sent datagram.
-		System.out.println("Floor" + sourceFloor + ": Elevator request...");
-
-		// Send the datagram packet to the host via the send/receive socket.
-
-		try {
-			sendReceiveSocket.send(sendPacket);
-		} catch (IOException e) {
-			e.printStackTrace();
-			System.exit(1);
-		}
-
-		System.out.println("Floor" + sourceFloor + ": Elevator request sent.\n");
+		sendSignal(msg, UtilityInformation.SCHEDULER_PORT_NUM, addressToSend);
 	}
 
 	public void runSubsystem() {
 		Timer timer = new Timer();
 		for (int i = 0; i < serviceRequests.size(); i++) {
+		    this.toString();
+		    
 			byte currReq[] = serviceRequests.get(i);
 
 			byte startFloor = currReq[4];
@@ -641,6 +551,7 @@ public class FloorSubsystem {
 				@Override
 				public void run() {
 					while (true) {
+					    this.toString();
 						waitForElevatorUpdate();
 					}
 				}
@@ -649,29 +560,48 @@ public class FloorSubsystem {
 	}
 
 	public void waitForElevatorUpdate() {
-		byte data[] = new byte[ELEVATOR_UPDATE_SIZE];
-		receivePacket = new DatagramPacket(data, data.length);
+		byte data[] = waitForSignal(ELEVATOR_UPDATE_SIZE);
 
-		try {
-			// Block until a datagram is received via sendReceiveSocket.
-			sendReceiveSocket.receive(receivePacket);
-		} catch (IOException e) {
-			e.printStackTrace();
-			System.exit(1);
-		}
-
-		byte holder = receivePacket.getData()[1];
+		byte floorNum = data[1];
+		
 		UtilityInformation.ElevatorDirection dir = UtilityInformation.ElevatorDirection
-				.values()[receivePacket.getData()[2]];
+				.values()[data[2]];
+		
 		if (dir == UtilityInformation.ElevatorDirection.UP) {
-			holder++;
+			floorNum++;
 		} else {
-			holder--;
+			floorNum--;
 		}
 
 		for (Floor currFloor : floors) {
-			currFloor.updateElevatorLocation(1, holder, dir);
+			currFloor.updateElevatorLocation(1, floorNum, dir);
 		}
+	}
+	
+	public void sendSignal(byte[] msg, int portNumber, InetAddress address) {
+        sendPacket = new DatagramPacket(msg, msg.length, address, portNumber);
+        
+        try {
+            sendReceiveSocket.send(sendPacket);
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+	}
+	
+	public byte[] waitForSignal(int expectedMsgSize) {
+        byte data[] = new byte[expectedMsgSize];
+        receivePacket = new DatagramPacket(data, data.length);
+
+        try {
+            // Block until a datagram is received via sendReceiveSocket.
+            sendReceiveSocket.receive(receivePacket);
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+
+        return(receivePacket.getData());
 	}
 
 	/**
@@ -698,6 +628,8 @@ public class FloorSubsystem {
 		FloorSubsystem floorController = new FloorSubsystem(ui.getNumFloors(), ui.getNumElevators());
 
 		floorController.sendConfigurationSignal(floorController.getNumElevators(), floorController.getNumFloors());
+		
+		floorController.toString();
 
 		// While true
 		// Display the valid options to the user
@@ -711,10 +643,12 @@ public class FloorSubsystem {
 				floorController.setNumElevators(ui.getNumElevators());
 				floorController.sendConfigurationSignal(floorController.getNumElevators(),
 						floorController.getNumFloors());
+				floorController.toString();
 			} else if (val == UserInterface.ReturnVals.NEW_TEST_FILE) {
 				// If a new test file was entered, parse the file
 				floorController.parseInputFile(ui.getTestFile());
 				floorController.runSubsystem();
+				floorController.toString();
 			} else if (val == UserInterface.ReturnVals.TEARDOWN) {
 				// If teardown was selected,
 				// Send the teardown signal
