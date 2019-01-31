@@ -297,9 +297,9 @@ public class Floor {
             toReturn += String.format(", ArrivalLamp: %d ", i, arrivalLamp.get(i));
 	    }
 	    
-        toReturn += String.format("Up Button: %d ", upButton);
+        toReturn += String.format("Up Button: %s ", upButton.toString());
        
-        toReturn += String.format("Down Button: %d ", downButton);
+        toReturn += String.format("Down Button: %s ", downButton.toString());
 	    
         return(toReturn);
 	    
