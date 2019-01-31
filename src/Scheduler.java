@@ -57,6 +57,9 @@ public class Scheduler {
 		try {
 			System.out.println("Scheduler is waiting for data...");
 			recieveSocket.receive(recievePacket);
+			System.out.print("Scheduler received message: ");
+			System.out.print("Containing (as bytes): ");
+	        System.out.println(Arrays.toString(recievePacket.getData()));
 			eventOccured(Event.MESSAGE_RECIEVED, recievePacket);
 		} catch (IOException e) {
 			System.out.println("Recieve Socket failure!");
@@ -84,12 +87,15 @@ public class Scheduler {
 				eventOccured(Event.MOVE_ELEVATOR, packet);
 			} else if (event.equals(Event.BUTTON_PUSHED_IN_ELEVATOR)) {
 				extractElevatorButtonFloorAndGenerateResponseMessageAndActions(packet);
+				currentState = State.RESPONDING_TO_MESSAGE;
 				moveToFloor(packet);
 			} else if (event.equals(Event.FLOOR_SENSOR_ACTIVATED)) {
 				extractFloorReachedNumberAndGenerateResponseMessageAndActions(packet);
+				currentState = State.RESPONDING_TO_MESSAGE;
 				moveToFloor(packet);
 			} else if (event.equals(Event.FLOOR_REQUESTED)) {
 				extractFloorRequestedNumberAndGenerateResponseMessageAndActions(packet);
+				currentState = State.RESPONDING_TO_MESSAGE;
 				moveToFloor(packet);
 			} else if (event.equals(Event.TEARDOWN)) {
 				sendTearDownMessage(packet);
@@ -98,7 +104,7 @@ public class Scheduler {
 				currentState = State.RESPONDING_TO_MESSAGE;
 				eventOccured(Event.MOVE_ELEVATOR, packet);
 			}
-			currentState = State.RESPONDING_TO_MESSAGE;
+			
 			break;
 		case WAITING:
 			if (event.equals(Event.MESSAGE_RECIEVED)) {
