@@ -63,8 +63,7 @@ public class Floor {
 	 * 
 	 * @return void
 	 */
-	public void createElevatorRequest(int hourOfCall, int minOfCall, int secOfCall, int msOfCall,
-			UtilityInformation.ElevatorDirection direction, int endFloor) {
+	public void createElevatorRequest(int timeOfReq, UtilityInformation.ElevatorDirection direction, int endFloor) {
 		// Set the button and lamp states
 		if (direction == UtilityInformation.ElevatorDirection.UP) {
 			upButton = UtilityInformation.ButtonState.PRESSED;
@@ -73,10 +72,7 @@ public class Floor {
 		}
 
 		// Tell the controller to send the request
-		controller.addElevatorRequest(hourOfCall, 
-									  minOfCall, 
-									  secOfCall, 
-									  msOfCall, 
+		controller.addElevatorRequest(timeOfReq, 
 									  this.floorNum, 
 									  direction, 
 									  endFloor);

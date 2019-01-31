@@ -43,11 +43,12 @@ public class FloorSubsystem {
 
 	// List of service requests parsed from the input file
 	// Sorted in order of time that requests are made
-	private ArrayList<byte[]> serviceRequests;
+	private ArrayList<Integer[]> serviceRequests;
 
 	// List of existing floor objects
 	private ArrayList<Floor> floors;
 	
+	// Address to send messages to
 	private InetAddress addressToSend;
 
 	/**
@@ -63,7 +64,7 @@ public class FloorSubsystem {
 	 * @return void
 	 */
 	public FloorSubsystem(int numFloors, int numElevators) {
-		serviceRequests = new ArrayList<byte[]>();
+		serviceRequests = new ArrayList<Integer[]>();
 
 		floors = new ArrayList<Floor>();
 
@@ -79,11 +80,13 @@ public class FloorSubsystem {
 			System.exit(1);
 		}
 		
+		// Set the address to send to
 		try {
             addressToSend = InetAddress.getLocalHost();
         } catch (UnknownHostException e) {
-            // TODO Auto-generated catch block
+            System.out.println("Error: Unable to get local address.");
             e.printStackTrace();
+            System.exit(1);
         }
 	}
 
@@ -245,6 +248,10 @@ public class FloorSubsystem {
 			// Get the second and millisecond
 			secInt = Integer.parseInt(secParts[0]);
 			milliSecInt = Integer.parseInt(secParts[1]);
+			
+			milliSecInt += secInt * 1000;
+			milliSecInt += minInt * 60 * 1000;
+			milliSecInt += hourInt * 60 * 60 * 1000;
 
 			try {
 				startFloorInt = Integer.parseInt(startFloorStr);
@@ -264,10 +271,7 @@ public class FloorSubsystem {
 			// and make the request
 			for (Floor floor : floors) {
 				if (floor.getFloorNumber() == startFloorInt) {
-					floor.createElevatorRequest(hourInt, 
-												minInt, 
-												secInt, 
-												milliSecInt, 
+					floor.createElevatorRequest(milliSecInt, 
 												directionEnum, 
 												finalFloorInt);
 				}
@@ -314,8 +318,10 @@ public class FloorSubsystem {
 	 * 
 	 * @return void
 	 */
-	public void addElevatorRequest(int hrOfReq, int minOfReq, int secOfReq, int msOfReq, int startFloor,
-			UtilityInformation.ElevatorDirection dirPressed, int finalFloor) {
+	public void addElevatorRequest(int timeOfReq, 
+                        	       int startFloor, 
+                        	       UtilityInformation.ElevatorDirection dirPressed, 
+                        	       int finalFloor) {
 		// Check that the given floors are valid
 		if ((startFloor < bottomFloor) || (startFloor > topFloor) || (finalFloor < bottomFloor)
 				|| (finalFloor > topFloor)) {
@@ -338,24 +344,18 @@ public class FloorSubsystem {
 		}
 
 		// Formulate byte array
-		byte request[] = new byte[7];
+		Integer request[] = new Integer[REQUEST_SIZE];
 
-		int hrInd = 0;
-		int minInd = 1;
-		int secInd = 2;
-		int msInd = 3;
-		int startFloorInd = 4;
-		int dirInd = 5;
-		int finalFloorInd = 6;
+		int timeInd = 0;
+		int startFloorInd = 1;
+		int dirInd = 2;
+		int finalFloorInd = 3;
 
 		// Set all of the values
-		request[hrInd] = (byte) hrOfReq;
-		request[minInd] = (byte) minOfReq;
-		request[secInd] = (byte) secOfReq;
-		request[msInd] = (byte) msOfReq;
-		request[startFloorInd] = (byte) startFloor;
-		request[dirInd] = (byte) dirPressed.ordinal();
-		request[finalFloorInd] = (byte) finalFloor;
+		request[timeInd] = timeOfReq;
+		request[startFloorInd] = startFloor;
+		request[dirInd] = dirPressed.ordinal();
+		request[finalFloorInd] = finalFloor;
 
 		// Add it to the list of requests
 		if (serviceRequests.isEmpty()) {
@@ -363,18 +363,13 @@ public class FloorSubsystem {
 			serviceRequests.add(request);
 		} else {
 			// If not empty add it to the proper spot in the list
-			byte currReq[];
+			Integer currReq[];
 			int i = 0;
 			while (i < serviceRequests.size()) {
 				currReq = serviceRequests.get(i);
 
 				// Check if current request should be after new request
-				if ((request[hrInd] < currReq[hrInd])
-						|| ((request[hrInd] == currReq[hrInd]) && (request[minInd] < currReq[minInd]))
-						|| ((request[hrInd] == currReq[hrInd]) && (request[minInd] == currReq[minInd])
-								&& (request[secInd] < currReq[secInd]))
-						|| ((request[hrInd] == currReq[hrInd]) && (request[minInd] == currReq[minInd])
-								&& (request[secInd] == currReq[secInd]) && (request[msInd] < currReq[msInd]))) {
+				if (request[timeInd] < currReq[timeInd]) {
 					break;
 				}
 
@@ -427,9 +422,9 @@ public class FloorSubsystem {
 	 * 
 	 * Return the current list of requests.
 	 * 
-	 * @return ArrayList<byte[]> : The current list of requests
+	 * @return ArrayList<Integer[]> : The current list of requests
 	 */
-	public ArrayList<byte[]> getRequests() {
+	public ArrayList<Integer[]> getRequests() {
 		return (serviceRequests);
 	}
 
@@ -523,25 +518,20 @@ public class FloorSubsystem {
 		for (int i = 0; i < serviceRequests.size(); i++) {
 		    this.toString();
 		    
-			byte currReq[] = serviceRequests.get(i);
+			Integer currReq[] = serviceRequests.get(i);
 
-			byte startFloor = currReq[4];
-			byte endFloor = currReq[6];
-			byte dir = currReq[5];
+			int startFloor = currReq[1];
+			int endFloor = currReq[3];
+			int dir = currReq[2];
 
 			sendElevatorRequest(startFloor, endFloor, UtilityInformation.ElevatorDirection.values()[dir]);
 
 			int timeUntilNextRequest = 0;
 
 			if (i < serviceRequests.size() - 1) {
-				byte nextReq[] = serviceRequests.get(i + 1);
-
-				timeUntilNextRequest = 0;
-
-				timeUntilNextRequest += nextReq[3] - currReq[3];
-				timeUntilNextRequest += nextReq[2] - currReq[2] * 1000;
-				timeUntilNextRequest += nextReq[1] - currReq[1] * 60 * 1000;
-				timeUntilNextRequest += nextReq[0] - currReq[0] * 60 * 60 * 1000;
+				Integer nextReq[] = serviceRequests.get(i + 1);
+				
+				timeUntilNextRequest += nextReq[0] - currReq[0];
 
 			} else {
 				timeUntilNextRequest = 10 * 1000;

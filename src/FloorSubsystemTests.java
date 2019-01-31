@@ -58,10 +58,10 @@ class FloorSubsystemTests {
         
         testFloors.parseInputFile(filePath);
         
-        ArrayList<byte[]> reqs = testFloors.getRequests();
+        ArrayList<Integer[]> reqs = testFloors.getRequests();
         
         // Print the requests
-        for (byte[] req : reqs) {
+        for (Integer[] req : reqs) {
             System.out.println(Arrays.toString(req) + "\n");
         }
         
