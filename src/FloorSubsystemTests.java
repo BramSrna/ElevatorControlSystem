@@ -1,5 +1,9 @@
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -11,13 +15,17 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class FloorSubsystemTests {
-
+    private TestHost host;
+    
     @BeforeEach
     void setUp() throws Exception {
+        host = new TestHost(1);
     }
-
+    
     @AfterEach
     void tearDown() throws Exception {
+        host.teardown();
+        host = null;
     }
 
     /**
@@ -73,6 +81,23 @@ class FloorSubsystemTests {
             e.printStackTrace();
             System.exit(1);
         }
+    }
+    
+    @Test
+    void testConfigMessage() {
+        int numFloors = 11;
+        int numElevators = 1;
+        
+        host.setExpectedNumMessages(1);
+        Thread t = new Thread(host);
+        t.start();
+        
+        FloorSubsystem testController = new FloorSubsystem(numFloors, numElevators);
+        
+        testController.sendConfigurationSignal(numElevators, numFloors);
+        
+        testController.teardown();
+        testController = null;
     }
 
 }
