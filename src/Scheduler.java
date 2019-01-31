@@ -82,19 +82,17 @@ public class Scheduler {
 				sendConfigPacketToElevator(packet);
 			} else if (event.equals(Event.BUTTON_PUSHED_IN_ELEVATOR)) {
 				extractElevatorButtonFloorAndGenerateResponseMessageAndActions(packet);
-				moveToFloor(packet);
 			} else if (event.equals(Event.FLOOR_SENSOR_ACTIVATED)) {
 				extractFloorReachedNumberAndGenerateResponseMessageAndActions(packet);
-				moveToFloor(packet);
 			} else if (event.equals(Event.FLOOR_REQUESTED)) {
 				extractFloorRequestedNumberAndGenerateResponseMessageAndActions(packet);
-				moveToFloor(packet);
 			} else if (event.equals(Event.TEARDOWN)) {
 				sendTearDownMessage(packet);
 			} else if (event.equals(Event.CONFIRM_CONFIG)) {
 				sendConfigConfirmMessage(packet);
 			}
 			currentState = State.RESPONDING_TO_MESSAGE;
+			moveToFloor(packet);
 			break;
 		case WAITING:
 			if (event.equals(Event.MESSAGE_RECIEVED)) {
@@ -103,8 +101,7 @@ public class Scheduler {
 			}
 			break;
 		case RESPONDING_TO_MESSAGE:
-			if (event.equals(Event.MOVE_ELEVATOR) || event.equals(Event.CONFIG_MESSAGE)
-					|| event.equals(Event.CONFIRM_CONFIG)) {
+			if (event.equals(Event.MOVE_ELEVATOR)) {
 				currentState = State.WAITING;
 			}
 			break;
@@ -122,7 +119,7 @@ public class Scheduler {
 	 */
 	private void sendConfigConfirmMessage(DatagramPacket packet) {
 		sendMessage(packet.getData(), packet.getData().length, packet.getAddress(), UtilityInformation.FLOOR_PORT_NUM);
-		eventOccured(Event.CONFIG_MESSAGE, packet);
+
 	}
 
 	/**
@@ -147,7 +144,6 @@ public class Scheduler {
 		System.out.println("Sending config file to Elevator...");
 		sendMessage(configPacket.getData(), configPacket.getData().length, configPacket.getAddress(),
 				UtilityInformation.ELEVATOR_PORT_NUM);
-		eventOccured(Event.CONFIG_MESSAGE, configPacket);
 	}
 
 	/**
