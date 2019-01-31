@@ -80,19 +80,25 @@ public class Scheduler {
 		case READING_MESSAGE:
 			if (event.equals(Event.CONFIG_MESSAGE)) {
 				sendConfigPacketToElevator(packet);
+				currentState = State.RESPONDING_TO_MESSAGE;
+				eventOccured(Event.MOVE_ELEVATOR, packet);
 			} else if (event.equals(Event.BUTTON_PUSHED_IN_ELEVATOR)) {
 				extractElevatorButtonFloorAndGenerateResponseMessageAndActions(packet);
+				moveToFloor(packet);
 			} else if (event.equals(Event.FLOOR_SENSOR_ACTIVATED)) {
 				extractFloorReachedNumberAndGenerateResponseMessageAndActions(packet);
+				moveToFloor(packet);
 			} else if (event.equals(Event.FLOOR_REQUESTED)) {
 				extractFloorRequestedNumberAndGenerateResponseMessageAndActions(packet);
+				moveToFloor(packet);
 			} else if (event.equals(Event.TEARDOWN)) {
 				sendTearDownMessage(packet);
 			} else if (event.equals(Event.CONFIRM_CONFIG)) {
 				sendConfigConfirmMessage(packet);
+				currentState = State.RESPONDING_TO_MESSAGE;
+				eventOccured(Event.MOVE_ELEVATOR, packet);
 			}
 			currentState = State.RESPONDING_TO_MESSAGE;
-			moveToFloor(packet);
 			break;
 		case WAITING:
 			if (event.equals(Event.MESSAGE_RECIEVED)) {
