@@ -86,16 +86,14 @@ public class Scheduler {
 				currentState = State.RESPONDING_TO_MESSAGE;
 				eventOccured(Event.MOVE_ELEVATOR, packet);
 			} else if (event.equals(Event.BUTTON_PUSHED_IN_ELEVATOR)) {
-				System.out.println("\n\nA\n\n");
+
 				extractElevatorButtonFloorAndGenerateResponseMessageAndActions(packet);
 				currentState = State.RESPONDING_TO_MESSAGE;
 				moveToFloor(packet);
 			} else if (event.equals(Event.FLOOR_SENSOR_ACTIVATED)) {
-				System.out.println("\n\nB\n\n");
+
 				extractFloorReachedNumberAndGenerateResponseMessageAndActions(packet);
-				System.out.println("\n\nC\n\n");
-				currentState = State.RESPONDING_TO_MESSAGE;
-				moveToFloor(packet);
+
 			} else if (event.equals(Event.FLOOR_REQUESTED)) {
 				extractFloorRequestedNumberAndGenerateResponseMessageAndActions(packet);
 				currentState = State.RESPONDING_TO_MESSAGE;
@@ -374,6 +372,9 @@ public class Scheduler {
 		if (floorsToVisit.contains(currentFloor)) {
 			stopElevator(recievedPacket);
 			openElevatorDoors(recievedPacket);
+		} else {
+			currentState = State.RESPONDING_TO_MESSAGE;
+			moveToFloor(recievedPacket);
 		}
 		reachedFloor(currentFloor);
 	}

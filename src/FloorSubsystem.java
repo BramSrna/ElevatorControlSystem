@@ -25,11 +25,11 @@ public class FloorSubsystem {
 	// Size of service requests
 	private final int CONFIG_SIZE = 4;
 	private final int CONFIG_REC_SIZE = 100;
-	
+
 	private final int REQUEST_SIZE = 5;
-	
+
 	private final int ELEVATOR_UPDATE_SIZE = 100;
-	
+
 	private final int TEARDOWN_SIZE = 10;
 
 	// Valid ranges for the number of
@@ -46,7 +46,7 @@ public class FloorSubsystem {
 
 	// List of existing floor objects
 	private ArrayList<Floor> floors;
-	
+
 	// Address to send messages to
 	private InetAddress addressToSend;
 
@@ -78,15 +78,15 @@ public class FloorSubsystem {
 			this.teardown();
 			System.exit(1);
 		}
-		
+
 		// Set the address to send to
 		try {
-            addressToSend = InetAddress.getLocalHost();
-        } catch (UnknownHostException e) {
-            System.out.println("Error: Unable to get local address.");
-            e.printStackTrace();
-            System.exit(1);
-        }
+			addressToSend = InetAddress.getLocalHost();
+		} catch (UnknownHostException e) {
+			System.out.println("Error: Unable to get local address.");
+			e.printStackTrace();
+			System.exit(1);
+		}
 	}
 
 	/**
@@ -153,7 +153,7 @@ public class FloorSubsystem {
 		}
 
 		this.numElevators = newNumElevators;
-		
+
 		for (Floor currFloor : floors) {
 			currFloor.setNumElevatorShafts(newNumElevators);
 		}
@@ -202,7 +202,7 @@ public class FloorSubsystem {
 		}
 
 		BufferedReader bufRead = new BufferedReader(input);
-		
+
 		System.out.println("Parsing test file...");
 
 		// Get the first line in the file
@@ -249,7 +249,7 @@ public class FloorSubsystem {
 			// Get the second and millisecond
 			secInt = Integer.parseInt(secParts[0]);
 			milliSecInt = Integer.parseInt(secParts[1]);
-			
+
 			// Get the time of request in milliseconds
 			milliSecInt += secInt * 1000;
 			milliSecInt += minInt * 60 * 1000;
@@ -273,9 +273,7 @@ public class FloorSubsystem {
 			// and make the request
 			for (Floor floor : floors) {
 				if (floor.getFloorNumber() == startFloorInt) {
-					floor.createElevatorRequest(milliSecInt, 
-												directionEnum, 
-												finalFloorInt);
+					floor.createElevatorRequest(milliSecInt, directionEnum, finalFloorInt);
 				}
 			}
 
@@ -297,7 +295,7 @@ public class FloorSubsystem {
 			e.printStackTrace();
 			System.exit(1);
 		}
-		
+
 		System.out.println("Finished parsing test file.");
 	}
 
@@ -322,10 +320,8 @@ public class FloorSubsystem {
 	 * 
 	 * @return void
 	 */
-	public void addElevatorRequest(int timeOfReq, 
-                        	       int startFloor, 
-                        	       UtilityInformation.ElevatorDirection dirPressed, 
-                        	       int finalFloor) {
+	public void addElevatorRequest(int timeOfReq, int startFloor, UtilityInformation.ElevatorDirection dirPressed,
+			int finalFloor) {
 		// Check that the given floors are valid
 		if ((startFloor < bottomFloor) || (startFloor > topFloor) || (finalFloor < bottomFloor)
 				|| (finalFloor > topFloor)) {
@@ -443,45 +439,46 @@ public class FloorSubsystem {
 		sendTeardownSignal();
 		sendReceiveSocket.close();
 	}
-	
-    public String toString() {
-        String toReturn = "";
-        
-        for (Floor currFloor : floors) {
-            toReturn += currFloor.toString();
-            toReturn += "\n";
-        }
-        
-        return(toReturn);
-    }
-    
-    public int getNumFloors() {
-        return numFloors;
-    }
 
-    public int getNumElevators() {
-        return numElevators;
-    }
-    
-    /**
-     * sendTeardownSignal
-     * 
-     * Sends a signal that the program should teardown.
-     * 
-     * Format:
-     * 
-     * @return void
-     */
-    public void sendTeardownSignal() {
-        // Construct a message to send with data from given parameters
-        byte[] msg = new byte[TEARDOWN_SIZE];
-        msg[0] = UtilityInformation.TEARDOWN_MODE;
-        msg[1] = -1;
-        
-        System.out.println("Sending teardown signal...");
-        sendSignal(msg, UtilityInformation.SCHEDULER_PORT_NUM, addressToSend);        
-        System.out.println("Teardown signal sent...");
-    }
+	@Override
+	public String toString() {
+		String toReturn = "";
+
+		for (Floor currFloor : floors) {
+			toReturn += currFloor.toString();
+			toReturn += "\n";
+		}
+
+		return (toReturn);
+	}
+
+	public int getNumFloors() {
+		return numFloors;
+	}
+
+	public int getNumElevators() {
+		return numElevators;
+	}
+
+	/**
+	 * sendTeardownSignal
+	 * 
+	 * Sends a signal that the program should teardown.
+	 * 
+	 * Format:
+	 * 
+	 * @return void
+	 */
+	public void sendTeardownSignal() {
+		// Construct a message to send with data from given parameters
+		byte[] msg = new byte[TEARDOWN_SIZE];
+		msg[0] = UtilityInformation.TEARDOWN_MODE;
+		msg[1] = -1;
+
+		System.out.println("Sending teardown signal...");
+		sendSignal(msg, UtilityInformation.SCHEDULER_PORT_NUM, addressToSend);
+		System.out.println("Teardown signal sent...");
+	}
 
 	/**
 	 * sendConfigurationSignal
@@ -502,13 +499,13 @@ public class FloorSubsystem {
 		msg[2] = (byte) numFloors;
 		msg[3] = -1;
 
-        System.out.println("Sending configuration signal...");
-		sendSignal(msg, UtilityInformation.SCHEDULER_PORT_NUM, addressToSend);		
-        System.out.println("Configuration signal sent...");
-        
-        System.out.println("Waiting for response to configuration signal...");
-		waitForSignal(CONFIG_REC_SIZE);		
-        System.out.println("Respone to configuration received.");
+		System.out.println("Sending configuration signal...");
+		sendSignal(msg, UtilityInformation.SCHEDULER_PORT_NUM, addressToSend);
+		System.out.println("Configuration signal sent...");
+
+		System.out.println("Waiting for response to configuration signal...");
+		waitForSignal(CONFIG_REC_SIZE);
+		System.out.println("Respone to configuration received.");
 	}
 
 	public void sendElevatorRequest(int sourceFloor, int destFloor, UtilityInformation.ElevatorDirection diRequest) {
@@ -520,16 +517,16 @@ public class FloorSubsystem {
 		msg[3] = (byte) destFloor;
 		msg[4] = -1;
 
-        System.out.println("Sending elevator request...");
-		sendSignal(msg, UtilityInformation.SCHEDULER_PORT_NUM, addressToSend);		
-        System.out.println("Elevator request sent...");
+		System.out.println("Sending elevator request...");
+		sendSignal(msg, UtilityInformation.SCHEDULER_PORT_NUM, addressToSend);
+		System.out.println("Elevator request sent...");
 	}
 
 	public void runSubsystem() {
 		Timer timer = new Timer();
 		for (int i = 0; i < serviceRequests.size(); i++) {
-		    this.toString();
-		    
+			this.toString();
+
 			Integer currReq[] = serviceRequests.get(i);
 
 			int startFloor = currReq[1];
@@ -542,7 +539,7 @@ public class FloorSubsystem {
 
 			if (i < serviceRequests.size() - 1) {
 				Integer nextReq[] = serviceRequests.get(i + 1);
-				
+
 				timeUntilNextRequest += nextReq[0] - currReq[0];
 
 			} else {
@@ -553,7 +550,7 @@ public class FloorSubsystem {
 				@Override
 				public void run() {
 					while (true) {
-					    this.toString();
+						this.toString();
 						waitForElevatorUpdate();
 					}
 				}
@@ -565,10 +562,9 @@ public class FloorSubsystem {
 		byte data[] = waitForSignal(ELEVATOR_UPDATE_SIZE);
 
 		byte floorNum = data[1];
-		
-		UtilityInformation.ElevatorDirection dir = UtilityInformation.ElevatorDirection
-				.values()[data[2]];
-		
+
+		UtilityInformation.ElevatorDirection dir = UtilityInformation.ElevatorDirection.values()[data[2]];
+
 		if (dir == UtilityInformation.ElevatorDirection.UP) {
 			floorNum++;
 		} else {
@@ -579,53 +575,53 @@ public class FloorSubsystem {
 			currFloor.updateElevatorLocation(1, floorNum, dir);
 		}
 	}
-	
+
 	public void sendSignal(byte[] msg, int portNumber, InetAddress address) {
-        sendPacket = new DatagramPacket(msg, msg.length, address, portNumber);
-        
-        // Print out info about the message being sent
-        System.out.println("FloorSubsystem: Sending packet:");
-        System.out.println("To host: " + sendPacket.getAddress());
-        System.out.println("Destination host port: " + sendPacket.getPort());
-        int len = sendPacket.getLength();
-        System.out.println("Length: " + len);
-        System.out.print("Containing (as bytes): ");
-        System.out.println(Arrays.toString(sendPacket.getData()));
-        
-        try {
-            sendReceiveSocket.send(sendPacket);
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.exit(1);
-        }
-        
-        System.out.println("FloorSubsystem: Packet sent.\n");
+		sendPacket = new DatagramPacket(msg, msg.length, address, portNumber);
+
+		// Print out info about the message being sent
+		System.out.println("FloorSubsystem: Sending packet:");
+		System.out.println("To host: " + sendPacket.getAddress());
+		System.out.println("Destination host port: " + sendPacket.getPort());
+		int len = sendPacket.getLength();
+		System.out.println("Length: " + len);
+		System.out.print("Containing (as bytes): ");
+		System.out.println(Arrays.toString(sendPacket.getData()));
+
+		try {
+			sendReceiveSocket.send(sendPacket);
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+
+		System.out.println("FloorSubsystem: Packet sent.\n");
 	}
-	
+
 	public byte[] waitForSignal(int expectedMsgSize) {
-        byte data[] = new byte[expectedMsgSize];
-        receivePacket = new DatagramPacket(data, data.length);
-        
-        System.out.println("FloorSubsystem: Waiting for response from host...");
+		byte data[] = new byte[expectedMsgSize];
+		receivePacket = new DatagramPacket(data, data.length);
 
-        try {
-            // Block until a datagram is received via sendReceiveSocket.
-            sendReceiveSocket.receive(receivePacket);
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.exit(1);
-        }
-        
-        // Print out information about the response
-        System.out.println("FloorSubsystem: Packet received:");
-        System.out.println("From host: " + receivePacket.getAddress());
-        System.out.println("Host port: " + receivePacket.getPort());
-        int len = receivePacket.getLength();
-        System.out.println("Length: " + len);
-        System.out.print("Containing (as bytes): ");
-        System.out.println(Arrays.toString(data) + "\n");
+		System.out.println("FloorSubsystem: Waiting for response from host...");
 
-        return(receivePacket.getData());
+		try {
+			// Block until a datagram is received via sendReceiveSocket.
+			sendReceiveSocket.receive(receivePacket);
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+
+		// Print out information about the response
+		System.out.println("FloorSubsystem: Packet received:");
+		System.out.println("From host: " + receivePacket.getAddress());
+		System.out.println("Host port: " + receivePacket.getPort());
+		int len = receivePacket.getLength();
+		System.out.println("Length: " + len);
+		System.out.print("Containing (as bytes): ");
+		System.out.println(Arrays.toString(data) + "\n");
+
+		return (receivePacket.getData());
 	}
 
 	/**
@@ -652,7 +648,7 @@ public class FloorSubsystem {
 		FloorSubsystem floorController = new FloorSubsystem(ui.getNumFloors(), ui.getNumElevators());
 
 		floorController.sendConfigurationSignal(floorController.getNumElevators(), floorController.getNumFloors());
-		
+
 		floorController.toString();
 
 		// While true
