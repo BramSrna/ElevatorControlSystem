@@ -113,7 +113,7 @@ public class Elevator {
 		System.out.println("Elevator " + this.getElevatorNumber());
 		System.out.println("Floor # " + this.getCurrentFloor());
 		for(int i=0; i<allButtons.length; i++) {
-			System.out.println("Floor Number " + i + ": " +allButtons[i] + ", Door: " + door);
+			System.out.println("Floor Number " + i + ": " +allButtons[i]);
 		}
 	}
 	/*
@@ -401,6 +401,7 @@ public class Elevator {
 		}
 		System.out.println("Elevator Door Opened");
 		door = doorState.OPEN;
+		System.out.println("Door: " + door + "on floor: " + currentFloor);
 	}
 
 	/*
@@ -414,6 +415,7 @@ public class Elevator {
 		}
 		System.out.println("Elevator Door Closed");
 		door = doorState.CLOSED;
+		System.out.println("Door: " + door + "on floor: " + currentFloor);
 	}
 	
 	
