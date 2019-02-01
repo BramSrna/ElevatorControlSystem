@@ -13,6 +13,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class FloorSubsystem {
+	// Sockets and packets used for UDP
 	private DatagramPacket sendPacket, receivePacket;
 	private DatagramSocket sendReceiveSocket;
 
@@ -55,12 +56,16 @@ public class FloorSubsystem {
 	 * 
 	 * Constructor
 	 * 
-	 * Create a new FloorSubsystem object. Initializes the number of floors to the
-	 * given number. Initialize the list of requests.
+	 * Create a new FloorSubsystem object. 
+	 * Initializes the number of floors to the given number. 
+	 * Initializes the list of floors and fills in with Floor objects.
+	 * Initializes the number of elevators.
+	 * Initialize the list of requests.
 	 * 
-	 * @param numFloors The number of floors for this system
+	 * @param 	numFloors 		The number of floors for this system
+	 * @param	numElevators	The number of elevators in the system
 	 * 
-	 * @return void
+	 * @return None
 	 */
 	public FloorSubsystem(int numFloors, int numElevators) {
 		serviceRequests = new ArrayList<Integer[]>();
@@ -140,7 +145,8 @@ public class FloorSubsystem {
 	 * setNumElevators
 	 * 
 	 * Sets the number of elevators to the new amount. Checks that the new number is
-	 * within the valid range.
+	 * within the valid range. Propagets the new information to all of the Floor
+	 * objects
 	 * 
 	 * @param newNumElevators The new number of elevators
 	 * 
@@ -163,16 +169,20 @@ public class FloorSubsystem {
 	 * parseInputFile
 	 * 
 	 * Parses the given text file containing requests. The requests are added to the
-	 * system. There should be one request per file. The requests should be in the
-	 * following format: Time Floor FloorButton CarButton hh:mm:ss.mmm n Up/Down m
+	 * system. There should be one request per line. The requests should be in the
+	 * following format: 
+	 * 		Time Floor FloorButton CarButton 
+	 * 		i.e. hh:mm:ss.mmm n Up/Down m
 	 * 
 	 * Example: 14:05:15.0 2 Up 4
 	 * 
 	 * I.e.: String Space Int Space String Space Int
 	 * 
-	 * Where: Time = Time that request is made Floor = Floor on which the passenger
-	 * is making the request FloorButton = Direction button the passenger pressed
-	 * (Up or Down) CarButton = Integer representing the desired destination floor
+	 * Where: 
+	 * 		Time = Time that request is made 
+	 * 		Floor = Floor on which the passenger is making the request 
+	 * 		FloorButton = Direction button the passenger pressed (Up or Down) 
+	 * 		CarButton = Integer representing the desired destination floor
 	 * 
 	 * @param pathToFile String containing a path to the file to parse
 	 * 
