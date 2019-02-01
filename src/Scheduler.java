@@ -67,6 +67,13 @@ public class Scheduler {
 			System.exit(1);
 		}
 
+		socketTearDown();
+	}
+
+	/**
+	 * Close send and recieve sockets.
+	 */
+	private void socketTearDown() {
 		recieveSocket.close();
 		sendSocket.close();
 	}
@@ -143,8 +150,7 @@ public class Scheduler {
 	private void sendTearDownMessage(DatagramPacket packet) {
 		byte[] tearDown = { UtilityInformation.TEARDOWN_MODE, UtilityInformation.END_OF_MESSAGE };
 		sendMessage(tearDown, tearDown.length, packet.getAddress(), UtilityInformation.ELEVATOR_PORT_NUM);
-		recieveSocket.close();
-		sendSocket.close();
+		socketTearDown();
 		System.exit(1);
 	}
 
