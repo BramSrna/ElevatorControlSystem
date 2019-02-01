@@ -49,8 +49,6 @@ public class Elevator {
 	// The destination floor
 	private int destinationFloor;
 	
-	
-
 	// USED ENUMS:
 	//Enum for Door
 	enum doorState {OPEN, CLOSED}
@@ -65,16 +63,6 @@ public class Elevator {
 	
 	//Start off stationary
 	private State currentState = State.ANALYZING_MESSAGE;
-	
-	// Final values for all modes (for messages) being exchanged
-	private final int CONFIG_MODE = 0;
-	private final int CURRFLOOR_MODE = 1;
-	private final int BUTTON_CLICKED_MODE = 3;
-	private final int MOVE_ELEVATOR_MODE = 4;
-	private final int DOOR_MOTOR_MODE = 5;
-	private final int DESTINATION_MODE = 6;
-	private final int TEARDOWN = 7;
-	private final int CONFIG_RESPONSE = 8;
 	
 	// The lamps indicate the floor(s) which will be visited by the elevator
 	private lampState[] allButtons;
@@ -268,7 +256,7 @@ public class Elevator {
 			numberOfFloors = data[2];
 
 			allButtons = new lampState[numberOfFloors];
-			byte[] response = { CONFIG_RESPONSE, 1, -1 };
+			byte[] response = {UtilityInformation.CONFIG_CONFIRM, 1, -1 };
 			this.sendData(response, schedulerIP, schedulerPort);
 			// adding required buttons to the list of buttons
 			for (int i = 0; i < numberOfFloors; i++) {
@@ -314,11 +302,11 @@ public class Elevator {
 	 * @param data array of bytes received and analyzed
 	 */
 	public String validPacket(byte[] data) {
-		if (data[0] == CONFIG_MODE) {
+		if (data[0] == UtilityInformation.CONFIG_MODE) {
 			return "config";
-		} else if (data[0] == BUTTON_CLICKED_MODE) {// send the number of floor clicked
+		} else if (data[0] == UtilityInformation.ELEVATOR_BUTTON_HIT_MODE) {// send the number of floor clicked
 			return "button clicked";
-		} else if (data[0] == MOVE_ELEVATOR_MODE) {
+		} else if (data[0] == UtilityInformation.ELEVATOR_DIRECTION_MODE) {
 			byte moveDirection = data[2];
 			if (moveDirection == 0) {
 				return "stay";
@@ -331,7 +319,7 @@ public class Elevator {
 			}
 
 			return "invalid";
-		} else if (data[0] == DOOR_MOTOR_MODE) {
+		} else if (data[0] == UtilityInformation.ELEVATOR_DIRECTION_MODE) {
 			byte doorState = data[1];
 			if (doorState == 1) {
 				return "open door";
@@ -339,9 +327,9 @@ public class Elevator {
 			if (doorState == 0) {
 				return "close door";
 			}
-		} else if (data[0] == DESTINATION_MODE) {
+		} else if (data[0] == UtilityInformation.SEND_DESTINATION_TO_ELEVATOR_MODE) {
 			return "destination";
-		} else if (data[0] == TEARDOWN) {
+		} else if (data[0] == UtilityInformation.TEARDOWN_MODE) {
 			System.out.println("Tear-Down Mode");
 			sendSocket.close();
 			receiveSocket.close();
@@ -361,7 +349,7 @@ public class Elevator {
 			Thread.currentThread().interrupt();
 		}
 		currentFloor++;
-		byte[] data = { CURRFLOOR_MODE, (byte) currentFloor, -1 };
+		byte[] data = { UtilityInformation.FLOOR_SENSOR_MODE , (byte) currentFloor, -1 };
 		currentState = State.ARRIVE_AT_FLOOR;
 		System.out.println("Elevator arrives on floor");
 		this.sendData(data, schedulerIP, schedulerPort);
