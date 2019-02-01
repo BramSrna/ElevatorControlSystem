@@ -366,7 +366,7 @@ public class Elevator {
 			Thread.currentThread().interrupt();
 		}
 		currentFloor--;
-		byte[] data = { CURRFLOOR_MODE, (byte) currentFloor, -1 };
+		byte[] data = { UtilityInformation.FLOOR_SENSOR_MODE, (byte) currentFloor, -1 };
 		System.out.println("Elevator arrives on floor");
 		this.sendData(data, schedulerIP, schedulerPort);
 	}
