@@ -449,9 +449,9 @@ public class FloorSubsystem {
 		sendTeardownSignal();
 		sendReceiveSocket.close();
 	}
-
-	@Override
+	
 	public String toString() {
+		System.out.println("-------------------------HERE---------------");
 		String toReturn = "";
 
 		for (Floor currFloor : floors) {
@@ -560,7 +560,6 @@ public class FloorSubsystem {
 				@Override
 				public void run() {
 					while (true) {
-						System.out.println(this.toString());
 						waitForElevatorUpdate();
 					}
 				}
@@ -584,6 +583,8 @@ public class FloorSubsystem {
 		for (Floor currFloor : floors) {
 			currFloor.updateElevatorLocation(1, floorNum, dir);
 		}
+		
+		System.out.println(this.toString());
 	}
 
 	public void sendSignal(byte[] msg, int portNumber, InetAddress address) {
