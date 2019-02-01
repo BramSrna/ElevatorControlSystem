@@ -214,7 +214,15 @@ public class Scheduler {
 		if (elevatorDirection.equals(UtilityInformation.ElevatorDirection.STATIONARY) && !floorsToVisit.isEmpty()) {
 			closeElevatorDoors(packet);
 			if (floorsToVisit.contains(floorElevatorIsCurrentlyOn)) {
-				floorsToVisit.remove(floorElevatorIsCurrentlyOn);
+				int indToRemove = 0;
+				
+				for (int i = 0; i < floorsToVisit.size(); i++) {
+					if (floorsToVisit.get(i) == (byte) floorElevatorIsCurrentlyOn) {
+						indToRemove = i;
+					}
+				}
+				
+				floorsToVisit.remove(indToRemove);
 			}
 			if (elevatorShouldGoUp()) {
 				sendElevatorUp(packet);
@@ -380,10 +388,9 @@ public class Scheduler {
 		if (floorsToVisit.contains(currentFloor)) {
 			stopElevator(recievedPacket);
 			openElevatorDoors(recievedPacket);
-		} else {
-			currentState = State.RESPONDING_TO_MESSAGE;
-			moveToFloor(recievedPacket);
 		}
+		currentState = State.RESPONDING_TO_MESSAGE;
+		moveToFloor(recievedPacket);
 		reachedFloor(currentFloor);
 	}
 
