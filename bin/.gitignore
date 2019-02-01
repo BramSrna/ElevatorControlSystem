@@ -1,20 +1,21 @@
-/Test Files/
-/UserInterface$ReturnVals.class
-/Scheduler$ElevatorDirection.class
-/Scheduler$Event.class
-/Scheduler$State.class
-/FloorSubsystem$1.class
-/HardwareState$ButtonState.class
-/HardwareState$ElevatorDirection.class
-/HardwareState$LampState.class
-/HardwareState.class
-/UtilityInformation$ButtonState.class
-/UtilityInformation$ElevatorDirection.class
-/UtilityInformation$LampState.class
-/UtilityInformation.class
-/SchedulerTest.class
 /Elevator$Event.class
 /Elevator$State.class
 /Elevator$lampState.class
 /Elevator.class
+/ElevatorSubsystem.class
+/Floor.class
+/FloorSubsystem$1.class
+/FloorSubsystem.class
+/FloorSubsystemTests.class
+/Scheduler$Event.class
+/Scheduler$State.class
+/Scheduler.class
+/SchedulerTest.class
+/Test Files/
 /TestHost.class
+/UserInterface$ReturnVals.class
+/UserInterface.class
+/UtilityInformation$ButtonState.class
+/UtilityInformation$ElevatorDirection.class
+/UtilityInformation$LampState.class
+/UtilityInformation.class

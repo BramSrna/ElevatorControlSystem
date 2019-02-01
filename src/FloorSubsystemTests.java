@@ -1,3 +1,5 @@
+
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.DatagramPacket;
@@ -13,33 +15,24 @@ import java.util.Arrays;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class FloorSubsystemTests {
     private TestHost host;
+    private String filePath;
+    private PrintWriter writer;
+    private FloorSubsystem testController;
+    private int numFloors;
+    private int numElevators;
+    
+    private ArrayList<Integer[]> reqs;
     
     @BeforeEach
     void setUp() throws Exception {
+    	numFloors = 11;
+    	numElevators = 1;
         host = new TestHost(1);
-    }
-    
-    @AfterEach
-    void tearDown() throws Exception {
-        host.teardown();
-        host = null;
-    }
-
-    /**
-     * testSampleInput
-     * 
-     * Tests the FloorSubsystem with a created input file.
-     * Output needs to be checked to ensure requests are created properly.
-     * 
-     * @input   None
-     * 
-     * @return  None
-     */
-    @Test
-    void testSampleInput() {
+        
         String filePath = "test.txt";
         PrintWriter writer = null;
         
@@ -59,14 +52,41 @@ class FloorSubsystemTests {
         writer.println("00:56:42.7 8 UP 9");
         writer.println("03:34:19.2 6 down 1");
         
+     // Parse the created file
+        FloorSubsystem testController = new FloorSubsystem(numFloors, numElevators);
+        
+        testController.parseInputFile(filePath);
+        reqs = testController.getRequests();
+        
+        Thread t = new Thread(host);
+        t.start();
+        
+    }
+    
+    @AfterEach
+    void tearDown() throws Exception {
+    	testController.teardown();
+    	host.teardown();
+        host = null;
         writer.close();
         
-        // Parse the created file
-        FloorSubsystem testFloors = new FloorSubsystem(10, 1);
         
-        testFloors.parseInputFile(filePath);
+        testController = null;
+    }
+
+    /**
+     * testSampleInput
+     * 
+     * Tests the FloorSubsystem with a created input file.
+     * Output needs to be checked to ensure requests are created properly.
+     * 
+     * @input   None
+     * 
+     * @return  None
+     */
+    @Test
+    void testSampleInput() {
         
-        ArrayList<Integer[]> reqs = testFloors.getRequests();
         
         // Print the requests
         for (Integer[] req : reqs) {
@@ -85,19 +105,25 @@ class FloorSubsystemTests {
     
     @Test
     void testConfigMessage() {
-        int numFloors = 11;
-        int numElevators = 1;
         
         host.setExpectedNumMessages(1);
-        Thread t = new Thread(host);
-        t.start();
         
-        FloorSubsystem testController = new FloorSubsystem(numFloors, numElevators);
-        
+                
         testController.sendConfigurationSignal(numElevators, numFloors);
         
-        testController.teardown();
-        testController = null;
+        
+    }
+    
+    @Test
+    void testElevatorRequestTiming() {
+    	Integer[] req1 = reqs.get(1);
+    	Integer[] req2 = reqs.get(2);
+    	
+    	int msReq1 = req1[0] * 60 * 60 * 1000 + req1[1] * 60 * 1000 + req1[2] * 1000;
+    	int msReq2 = req2[0] * 60 * 60 * 1000 + req2[1] * 60 * 1000 + req2[2] * 1000;
+    	
+    	assertEquals(msReq2 - msReq1, 1444000);
+    	
     }
 
 }
