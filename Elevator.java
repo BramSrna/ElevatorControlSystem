@@ -319,7 +319,7 @@ public class Elevator {
 			}
 
 			return "invalid";
-		} else if (data[0] == UtilityInformation.ELEVATOR_DIRECTION_MODE) {
+		} else if (data[0] == UtilityInformation.ELEVATOR_DOOR_MODE) {
 			byte doorState = data[1];
 			if (doorState == 1) {
 				return "open door";
