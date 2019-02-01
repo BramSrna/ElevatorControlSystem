@@ -16,6 +16,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class FloorSubsystemTests {
     private TestHost host;
@@ -135,7 +136,21 @@ class FloorSubsystemTests {
     	
     	assertTrue(calcVal > expectedVal - 1000 && calcVal < expectedVal + 1000
     			, "Calculated time should be wthin 1000 ms of expected time");
-    	
     }
-
+    
+    @Test
+    void testFloorRangeCheck() {
+    	int[] toCheck = FloorSubsystem.getValidFloorValueRange();
+    	
+    	assertEquals(toCheck[0], 1, "Minimum floor configuration should be 1");
+    	assertEquals(toCheck[1], 1000, "Maximum floor configuration should be 1000");
+    }
+    
+    @Test
+    void testElevatorRangeCheck() {
+    	int[] toCheck = FloorSubsystem.getValidElevatorValueRange();
+    	
+    	assertEquals(toCheck[0], 1, "Minimum # of elevators configuration should be 1");
+    	assertEquals(toCheck[1], 1, "Maximum # of elevators configuration should be 1");
+    }
 }
