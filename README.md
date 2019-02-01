@@ -5,7 +5,13 @@ controller (the Scheduler), a simulator for the elevator cars (which includes, t
 and a simulator for the floors (which includes, buttons, lights). 
 
 Group 1: 
-Samy Ibrahim (101037927) : Elevator.java, elevatorSubsystemTest.java, testHost.java, Elevator UML and State 
+Samy Ibrahim (101037927) : Elevator.java, elevatorSubsystemTest.java, testHost.java, Elevator UML and State
+
+Tri Nhan (101023872) : 
+
+Abraham Srna (100997482) :
+
+Haseeb Khan() :
 
 Detailed Set-Up:
 

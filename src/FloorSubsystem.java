@@ -553,17 +553,16 @@ public class FloorSubsystem {
 				timeUntilNextRequest += nextReq[0] - currReq[0];
 
 			} else {
-				timeUntilNextRequest = 10 * 1000;
+				timeUntilNextRequest = -1;
 			}
-
-			timer.schedule(new TimerTask() {
-				@Override
-				public void run() {
-					while (true) {
-						waitForElevatorUpdate();
-					}
-				}
-			}, timeUntilNextRequest);
+			
+			System.out.println(String.format("Time to wait: %d", timeUntilNextRequest));
+			
+			long startTime = System.currentTimeMillis();
+			long endTime = startTime + timeUntilNextRequest;
+			while ((System.currentTimeMillis() < endTime) || (timeUntilNextRequest == -1)) {
+			  waitForElevatorUpdate();
+			}
 		}
 	}
 
@@ -573,12 +572,6 @@ public class FloorSubsystem {
 		byte floorNum = data[1];
 
 		UtilityInformation.ElevatorDirection dir = UtilityInformation.ElevatorDirection.values()[data[2]];
-
-//		if (dir == UtilityInformation.ElevatorDirection.UP) {
-//			floorNum++;
-//		} else {
-//			floorNum--;
-//		}
 
 		for (Floor currFloor : floors) {
 			currFloor.updateElevatorLocation(1, floorNum, dir);
