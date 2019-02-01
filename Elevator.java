@@ -32,14 +32,14 @@ public class Elevator {
 	DatagramSocket sendSocket, receiveSocket;
 	
 	// Information for System
-	InetAddress schedulerIP;
-	int schedulerPort = 420;
+	private InetAddress schedulerIP;
+	private int schedulerPort = 420;
 	
 	// The elevator car number
 	private int elevatorNumber = 1;
 	
 	// The current floor the elevator is on
-	int currentFloor = 0;
+	private int currentFloor = 0;
 	
 	// The number of elevators and floors, initialized to 0
 	// These are set during the initial config
@@ -47,32 +47,7 @@ public class Elevator {
 	private int numberOfFloors = 0;
 	
 	// The destination floor
-	int destinationFloor;
-	// The lamps indicate the floor(s) which will be visited by the elevator
-	private lampState[] allButtons;
-	
-	public Elevator() {
-		try {
-			// Construct a Datagram socket and bind it to any available port on the local host machine. This socket will be used to
-			// send UDP Datagram packets.
-			sendSocket = new DatagramSocket();
-
-			// Construct a Datagram socket and bind it to port 420 (the Scheduler) on the local host machine. This socket will be used to
-			// receive UDP Datagram packets.
-			receiveSocket = new DatagramSocket(UtilityInformation.ELEVATOR_PORT_NUM);
-
-			// to test socket timeout (2 seconds)
-			// receiveSocket.setSoTimeout(2000);
-		} catch (SocketException se) {
-			se.printStackTrace();
-			System.exit(1);
-		}
-	}
-	
-	public int getElevatorNumber() {return this.elevatorNumber;}
-	public int getCurrentFloor() {return this.currentFloor;}
-	public int getNumberOfElevators() {return this.numberOfElevators;}
-	public int getNumberOfFloors() {return this.numberOfFloors;}
+	private int destinationFloor;
 
 	// USED ENUMS:
 	// Enum for all lights
@@ -87,13 +62,45 @@ public class Elevator {
 	
 	// Final values for all modes (for messages) being exchanged
 	private final int CONFIG_MODE = 0;
+	private final int CURRFLOOR_MODE = 1;
 	private final int BUTTON_CLICKED_MODE = 3;
 	private final int MOVE_ELEVATOR_MODE = 4;
 	private final int DOOR_MOTOR_MODE = 5;
 	private final int DESTINATION_MODE = 6;
-	private final int CURRFLOOR_MODE = 1;
 	private final int TEARDOWN = 7;
 	private final int CONFIG_RESPONSE = 8;
+	
+	// The lamps indicate the floor(s) which will be visited by the elevator
+	private lampState[] allButtons;
+	
+	public Elevator() {
+		try {
+			schedulerIP = InetAddress.getLocalHost();
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		try {
+			// Construct a Datagram socket and bind it to any available port on the local
+			// host machine. This socket will be used to
+			// send UDP Datagram packets.
+			sendSocket = new DatagramSocket();
+
+			// Construct a Datagram socket and bind it to port 420 (the Scheduler) on the
+			// local host machine. This socket will be used to
+			// receive UDP Datagram packets.
+			receiveSocket = new DatagramSocket(UtilityInformation.ELEVATOR_PORT_NUM);
+		} catch (SocketException se) {
+			se.printStackTrace();
+			System.exit(1);
+		}
+	}
+	
+	public int getElevatorNumber() {return this.elevatorNumber;}
+	public int getCurrentFloor() {return this.currentFloor;}
+	public int getNumberOfElevators() {return this.numberOfElevators;}
+	public int getNumberOfFloors() {return this.numberOfFloors;}
 	
 	public void display() {
 		// Simply display 
@@ -103,7 +110,13 @@ public class Elevator {
 			System.out.println("Floor Number " + i + ": " +allButtons[i]);
 		}
 	}
-
+	/*
+	 * This method sends an array of bytes to a specific Ip address and port number.
+	 * 
+	 * @param data the array of bytes being sent 
+	 * @param IP the target IP address for the destination of the data
+	 * @param port the port number on the destination computer
+	 */
 	public void sendData(byte[] data, InetAddress IP, int port) {
 		sendPacket = new DatagramPacket(data, data.length, IP, schedulerPort);
 		System.out.println("Elevator: Sending packet:");
@@ -128,10 +141,6 @@ public class Elevator {
 	 * floors to consider. After that, it is still waiting to receive data from the scheduler. If the first byte of
 	 * the messages matches with one of the valid modes (0,3,4,5) then an action is
 	 * performed, if not, it is considered invalid.
-	 * 
-	 * Expected Communication: 1) Receive configuration once Do Forever: 2) Receive
-	 * what floor to go to from the scheduler (and go there) 3) Receive when to
-	 * open/close the door from the scheduler
 	 */
 	public void receiveData() {
 		byte data[] = new byte[100];
@@ -161,32 +170,32 @@ public class Elevator {
 			System.out.println("Invalid packet received");
 			System.exit(1);
 		}
-		
+
 		// Depending on the type of message, a certain event will be raised
-		if(check.equals("config")) {
+		if (check.equals("config")) {
 			currentState = State.ANALYZING_MESSAGE;
 			eventOccured(Event.CONFIG_RECIEVED, receivePacket, check, data);
 		}
-		if(check.equals("button clicked")) {
+		if (check.equals("button clicked")) {
 			currentState = State.ANALYZING_MESSAGE;
 			eventOccured(Event.BUTTON_PUSHED_IN_ELEVATOR, receivePacket, check, data);
 		}
-		if(check.equals("destination")) {
+		if (check.equals("destination")) {
 			currentState = State.ANALYZING_MESSAGE;
 			eventOccured(Event.UPDATE_DEST, receivePacket, check, data);
 		}
-		if(check.equals("go up") | check.equals("go down") | check.equals("stay") ) {
+		if (check.equals("go up") | check.equals("go down") | check.equals("stay")) {
 			currentState = State.CURRENTLY_MOVING;
-			if(check.equals("stay")) {
+			if (check.equals("stay")) {
 				eventOccured(Event.STOP_ELEVATOR, receivePacket, check, data);
 			}
-			if(check.equals("go up") | check.equals("go down")) {
+			if (check.equals("go up") | check.equals("go down")) {
 				eventOccured(Event.ELEVATOR_MOVING, receivePacket, check, data);
 			}
 		}
-		if(check.equals("open door") | check.equals("close door") ) {
+		if (check.equals("open door") | check.equals("close door")) {
 			// if not, the elevator is not at the floor yet
-			if(currentState.equals(State.ARRIVE_AT_FLOOR)) {
+			if (currentState.equals(State.ARRIVE_AT_FLOOR)) {
 				eventOccured(Event.ELEVATOR_MOVING, receivePacket, check, data);
 			}
 		}
@@ -194,89 +203,110 @@ public class Elevator {
 
 	/*
 	 * Separately analyzing the different events that occur in the system
+	 * 
+	 * @param event the event that occurred
+	 * @param packet DatagramPacket received and analyzed
+	 * @param valid the type of message received (valid messages only)
+	 * @param data array of bytes received and analyzed
 	 */
 	public void eventOccured(Event event, DatagramPacket packet, String valid, byte[] data) {
 		switch (currentState) {
 		case ANALYZING_MESSAGE:
-			if(event.equals(Event.CONFIG_RECIEVED)) {
+			if (event.equals(Event.CONFIG_RECIEVED)) {
 				this.performAction("config", data);
 			}
 			if (event.equals(Event.BUTTON_PUSHED_IN_ELEVATOR)) {
 				this.performAction("button clicked", data);
-			} 
-			if(event.equals(Event.UPDATE_DEST)) {
+			}
+			if (event.equals(Event.UPDATE_DEST)) {
 				performAction("destination", data);
-			}	
+			}
 			break;
-			
+
 		case CURRENTLY_MOVING:
 			if (event.equals(Event.ELEVATOR_MOVING)) {
-				if(valid.equals("go up")) {
+				if (valid.equals("go up")) {
 					this.performAction("go up", data);
 				}
-				if(valid.equals("go down")) {
+				if (valid.equals("go down")) {
 					this.performAction("go down", data);
 				}
-			} 
-			if(event.equals(Event.STOP_ELEVATOR)) {
+			}
+			if (event.equals(Event.STOP_ELEVATOR)) {
 				this.performAction("stop", data);
 			}
 			break;
-			
+
 		case ARRIVE_AT_FLOOR: // represents the sensor in the elevator
-			if(event.equals(Event.OPEN_DOOR)) {
+			if (event.equals(Event.OPEN_DOOR)) {
 				performAction("open door", data);
 			}
-			if(event.equals(Event.CLOSE_DOOR)) {
+			if (event.equals(Event.CLOSE_DOOR)) {
 				performAction("close door", data);
 			}
 			currentState = State.ANALYZING_MESSAGE;
 			break;
 		}
 	}
-
 	
-	
-	// called within exchangeData() method to perform required actions
+	/*
+	 * Takes the validated String values from valid packet and performs the actions necessary 
+	 * 
+	 * @param str the string indicating what type of message was received
+	 * @param data the array of bytes received to be decoded
+	 */
 	public void performAction(String str, byte[] data) {
 		// Setting up our "Building" with configurable number of elevators and floors
 		if (str.equals("config")) {
 			numberOfElevators = data[1];
 			numberOfFloors = data[2];
-			
+
 			allButtons = new lampState[numberOfFloors];
-			byte[] response = {CONFIG_RESPONSE, 1, -1};
+			byte[] response = { CONFIG_RESPONSE, 1, -1 };
 			this.sendData(response, schedulerIP, schedulerPort);
 			// adding required buttons to the list of buttons
 			for (int i = 0; i < numberOfFloors; i++) {
 				allButtons[i] = lampState.OFF; // currently making everything OFF
 			}
 		}
-		
-		if(str.equals("open door")) {this.openDoor();}
-		if(str.equals("close door")) {this.closeDoor();}
-		if(str.equals("go up")) {this.goUp();}
-		if(str.equals("go down")) {this.goDown();}
-		if(str.equals("stop")) {this.Stop();}
-		
+
+		if (str.equals("open door")) {
+			this.openDoor();
+		}
+		if (str.equals("close door")) {
+			this.closeDoor();
+		}
+		if (str.equals("go up")) {
+			this.goUp();
+		}
+		if (str.equals("go down")) {
+			this.goDown();
+		}
+		if (str.equals("stop")) {
+			this.Stop();
+		}
+
 		// Do we need this? We're not sending any messages
 		if (str.equals("button clicked")) {
-			
+
 			// button clicked by user (in the elevator), send that to scheduler
 			byte clickedFloor = 5; // ex. 5, not sure how we will do this
 			byte[] clickedButton = { 3, clickedFloor, -1 };
 			this.sendData(clickedButton, schedulerIP, schedulerPort);
 		}
-		
+
 		// getting destination from scheduler for each input
-		if(str.equals("destination")) {
+		if (str.equals("destination")) {
 			destinationFloor = data[1];
 			allButtons[destinationFloor] = lampState.ON;
-		}	
+		}
 	}
-
 	
-	// Method to validate the form of the array of bytes received from the Scheduler
+	/*
+	 * Method to validate the form of the array of bytes received from the Scheduler
+	 * 
+	 * @param data array of bytes received and analyzed
+	 */
 	public String validPacket(byte[] data) {
 		if (data[0] == CONFIG_MODE) {
 			return "config";
@@ -284,22 +314,28 @@ public class Elevator {
 			return "button clicked";
 		} else if (data[0] == MOVE_ELEVATOR_MODE) {
 			byte moveDirection = data[2];
-			if(moveDirection==0) {return "stay";} // stop
-			if(moveDirection==1) {return "go up";}
-			if(moveDirection==2) {return "go down";}
-			
+			if (moveDirection == 0) {
+				return "stay";
+			} // stop
+			if (moveDirection == 1) {
+				return "go up";
+			}
+			if (moveDirection == 2) {
+				return "go down";
+			}
+
 			return "invalid";
 		} else if (data[0] == DOOR_MOTOR_MODE) {
 			byte doorState = data[1];
-			if(doorState == 1) {
+			if (doorState == 1) {
 				return "open door";
 			}
-			if(doorState == 0) {
+			if (doorState == 0) {
 				return "close door";
 			}
 		} else if (data[0] == DESTINATION_MODE) {
 			return "destination";
-		} else if(data[0] == TEARDOWN) {
+		} else if (data[0] == TEARDOWN) {
 			System.out.println("Tear-Down Mode");
 			sendSocket.close();
 			receiveSocket.close();
@@ -308,11 +344,10 @@ public class Elevator {
 		return "invalid"; // anything else is an invalid request.
 	}
 
-	// Make the elevator move up one floor
+	/*
+	 * Method to make the elevator move up one floor.
+	 */
 	public void goUp() {
-		byte[] data = {CURRFLOOR_MODE, (byte) currentFloor, -1};
-		//currentState = State.ARRIVE_AT_FLOOR;
-		//eventOccured(Event.CLOSE_DOOR, receivePacket, "close door", data);
 		System.out.println("Elevator Moving Up One Floor");
 		try {
 			Thread.sleep(5000); // it takes approximately 5 seconds to go up one floor
@@ -320,16 +355,16 @@ public class Elevator {
 			Thread.currentThread().interrupt();
 		}
 		currentFloor++;
+		byte[] data = { CURRFLOOR_MODE, (byte) currentFloor, -1 };
 		currentState = State.ARRIVE_AT_FLOOR;
 		System.out.println("Elevator arrives on floor");
-		//eventOccured(Event.OPEN_DOOR, receivePacket, "open door", data);
 		this.sendData(data, schedulerIP, schedulerPort);
-		//Send to receiver what floor im at 
 	}
 
-	// Make the elevator move (down)
+	/*
+	 * Method to make the elevator move down one floor.
+	 */
 	public void goDown() {
-		byte[] data = {CURRFLOOR_MODE, (byte) currentFloor, -1};
 		System.out.println("Elevator Moving Down One Floor");
 		try {
 			Thread.sleep(5000); // it takes approximately 5 seconds to go up one floor
@@ -337,15 +372,21 @@ public class Elevator {
 			Thread.currentThread().interrupt();
 		}
 		currentFloor--;
+		byte[] data = { CURRFLOOR_MODE, (byte) currentFloor, -1 };
 		System.out.println("Elevator arrives on floor");
 		this.sendData(data, schedulerIP, schedulerPort);
 	}
 	
+	/*
+	 * Method to make the elevator stop moving.
+	 */
 	public void Stop() {
 		System.out.println("The elevator has stopped moving");
 	}
 
-	// Open the elevator door
+	/*
+	 * Method to open the elevator door.
+	 */
 	public void openDoor() {
 		try {
 			Thread.sleep(1500); // it takes approximately 1 second for the door to open
@@ -355,7 +396,9 @@ public class Elevator {
 		System.out.println("Elevator Door Opened");
 	}
 
-	// Close the elevator door
+	/*
+	 * Method to close the elevator door.
+	 */
 	public void closeDoor() {
 		try {
 			Thread.sleep(1500); // it takes approximately 1.5 second for the door to close
@@ -364,7 +407,42 @@ public class Elevator {
 		}
 		System.out.println("Elevator Door Closed");
 	}
-
+	
+	
+	/*
+	 * Method used for JUnit testing to mimic receiving.
+	 */
+	public byte[] receiveTest() {        
+        // Initialize the DatagramPacket used to receive requests
+        byte data[] = new byte[100];
+        receivePacket = new DatagramPacket(data, data.length);
+       
+        System.out.println("Test: Waiting for Packet.\n");
+    
+        // Wait on the DatagramSocket to receive a request
+        try {        
+            System.out.println("Test: Waiting...");
+            receiveSocket.receive(receivePacket);
+        } catch (IOException e) {
+            System.out.print("Test: IO Exception: likely:");
+            System.out.println("Test: Receive Socket Timed Out.\n" + e);
+            e.printStackTrace();
+            System.exit(1);
+        }
+    
+        // Print out information about the received packet
+        System.out.println("Test: Packet received:");
+        System.out.println("Test: To address: " + receivePacket.getAddress());
+        System.out.println("Test: To port: " + receivePacket.getPort());
+        int len = receivePacket.getLength();
+        System.out.println("Test: Length: " + len);
+        System.out.print("Test: Containing (as bytes): ");
+        System.out.println(Arrays.toString(data) + "\n");
+        return data;
+    }
+	
+	
+	
 	public static void main(String[] args) {
 		// for now we only have one elevator
 		Elevator elevator1 = new Elevator();
