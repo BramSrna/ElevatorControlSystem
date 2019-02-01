@@ -574,11 +574,11 @@ public class FloorSubsystem {
 
 		UtilityInformation.ElevatorDirection dir = UtilityInformation.ElevatorDirection.values()[data[2]];
 
-		if (dir == UtilityInformation.ElevatorDirection.UP) {
-			floorNum++;
-		} else {
-			floorNum--;
-		}
+//		if (dir == UtilityInformation.ElevatorDirection.UP) {
+//			floorNum++;
+//		} else {
+//			floorNum--;
+//		}
 
 		for (Floor currFloor : floors) {
 			currFloor.updateElevatorLocation(1, floorNum, dir);

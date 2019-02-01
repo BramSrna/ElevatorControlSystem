@@ -46,8 +46,14 @@ public class Elevator {
 	
 	// The destination floor
 	private int destinationFloor;
+	
+	
 
 	// USED ENUMS:
+	//Enum for Door
+	enum doorState {OPEN, CLOSED}
+	private doorState door = doorState.CLOSED;
+	
 	// Enum for all lights
 	enum lampState {OFF, ON}
 	// State machine states
@@ -105,7 +111,7 @@ public class Elevator {
 		System.out.println("Elevator " + this.getElevatorNumber());
 		System.out.println("Floor # " + this.getCurrentFloor());
 		for(int i=0; i<allButtons.length; i++) {
-			System.out.println("Floor Number " + i + ": " +allButtons[i]);
+			System.out.println("Floor Number " + i + ": " +allButtons[i] + ", Door: " + door);
 		}
 	}
 	/*
@@ -392,6 +398,7 @@ public class Elevator {
 			Thread.currentThread().interrupt();
 		}
 		System.out.println("Elevator Door Opened");
+		door = doorState.OPEN;
 	}
 
 	/*
@@ -404,6 +411,7 @@ public class Elevator {
 			Thread.currentThread().interrupt();
 		}
 		System.out.println("Elevator Door Closed");
+		door = doorState.CLOSED;
 	}
 	
 	
