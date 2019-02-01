@@ -132,7 +132,7 @@ public class Scheduler {
 	 * 
 	 * @param packet
 	 */
-	private void sendConfigConfirmMessage(DatagramPacket packet) {
+	protected void sendConfigConfirmMessage(DatagramPacket packet) {
 		sendMessage(packet.getData(), packet.getData().length, packet.getAddress(), UtilityInformation.FLOOR_PORT_NUM);
 
 	}
@@ -156,7 +156,7 @@ public class Scheduler {
 	 * 
 	 * @param configPacket
 	 */
-	private void sendConfigPacketToElevator(DatagramPacket configPacket) {
+	protected void sendConfigPacketToElevator(DatagramPacket configPacket) {
 		System.out.println("Sending config file to Elevator...\n");
 		sendMessage(configPacket.getData(), configPacket.getData().length, configPacket.getAddress(),
 				UtilityInformation.ELEVATOR_PORT_NUM);
@@ -189,7 +189,7 @@ public class Scheduler {
 	 * 
 	 * @param recievedData
 	 */
-	private void extractFloorRequestedNumberAndGenerateResponseMessageAndActions(DatagramPacket recievedPacket) {
+	protected void extractFloorRequestedNumberAndGenerateResponseMessageAndActions(DatagramPacket recievedPacket) {
 		System.out.println("Elevator was requested at: " + recievedPacket.getData()[1] + " in the direction "
 				+ recievedPacket.getData()[2] + " with destination " + recievedPacket.getData()[3] + "\n");
 		byte[] destinationFloor = { UtilityInformation.SEND_DESTINATION_TO_ELEVATOR_MODE, recievedPacket.getData()[3],
@@ -242,7 +242,7 @@ public class Scheduler {
 	 * 
 	 * @param packet
 	 */
-	private void stopElevator(DatagramPacket packet) {
+	protected void stopElevator(DatagramPacket packet) {
 		byte[] stopElevator = { UtilityInformation.ELEVATOR_DIRECTION_MODE, floorElevatorIsCurrentlyOn,
 				UtilityInformation.ELEVATOR_STAY, UtilityInformation.END_OF_MESSAGE };
 		sendMessage(stopElevator, stopElevator.length, packet.getAddress(), UtilityInformation.ELEVATOR_PORT_NUM);
@@ -255,7 +255,7 @@ public class Scheduler {
 	 * 
 	 * @param packet
 	 */
-	private void sendElevatorUp(DatagramPacket packet) {
+	protected void sendElevatorUp(DatagramPacket packet) {
 		byte[] goUp = { UtilityInformation.ELEVATOR_DIRECTION_MODE, floorElevatorIsCurrentlyOn,
 				UtilityInformation.ELEVATOR_UP, UtilityInformation.END_OF_MESSAGE };
 		System.out.println("Sending elevator up... \n");
@@ -269,7 +269,7 @@ public class Scheduler {
 	 * 
 	 * @param packet
 	 */
-	private void sendElevatorDown(DatagramPacket packet) {
+	protected void sendElevatorDown(DatagramPacket packet) {
 		byte[] goDown = { UtilityInformation.ELEVATOR_DIRECTION_MODE, floorElevatorIsCurrentlyOn,
 				UtilityInformation.ELEVATOR_DOWN, UtilityInformation.END_OF_MESSAGE };
 		System.out.println("Sending elevator down... \n");
@@ -283,7 +283,7 @@ public class Scheduler {
 	 * 
 	 * @param packet
 	 */
-	private void closeElevatorDoors(DatagramPacket packet) {
+	protected void closeElevatorDoors(DatagramPacket packet) {
 		byte[] closeDoor = { UtilityInformation.ELEVATOR_DOOR_MODE, UtilityInformation.DOOR_CLOSE,
 				UtilityInformation.END_OF_MESSAGE };
 		sendMessage(closeDoor, closeDoor.length, packet.getAddress(), UtilityInformation.ELEVATOR_PORT_NUM);
