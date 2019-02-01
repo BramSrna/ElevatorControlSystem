@@ -71,8 +71,8 @@ public class Scheduler {
 	 * Close send and recieve sockets.
 	 */
 	private void socketTearDown() {
-		recieveSocket.close();
-		sendSocket.close();
+//		recieveSocket.close();
+//		sendSocket.close();
 	}
 
 	/**
@@ -138,7 +138,8 @@ public class Scheduler {
 	}
 
 	/**
-	 * If the floor people get scared.
+	 * If the tear down message was sent from Floor, relay the message to Elevator
+	 * and shut everything down.
 	 * 
 	 * @param packet
 	 */
@@ -293,7 +294,7 @@ public class Scheduler {
 	 * 
 	 * @param packet
 	 */
-	private void openElevatorDoors(DatagramPacket packet) {
+	protected void openElevatorDoors(DatagramPacket packet) {
 		byte[] openDoor = { UtilityInformation.ELEVATOR_DOOR_MODE, UtilityInformation.DOOR_OPEN,
 				UtilityInformation.END_OF_MESSAGE };
 		sendMessage(openDoor, openDoor.length, packet.getAddress(), UtilityInformation.ELEVATOR_PORT_NUM);
