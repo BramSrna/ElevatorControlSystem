@@ -57,9 +57,6 @@ public class Scheduler {
 		try {
 			System.out.println("Scheduler is waiting for data...");
 			recieveSocket.receive(recievePacket);
-			System.out.print("Scheduler received message: ");
-			System.out.print("Containing (as bytes): ");
-			System.out.println(Arrays.toString(recievePacket.getData()));
 			eventOccured(Event.MESSAGE_RECIEVED, recievePacket);
 		} catch (IOException e) {
 			System.out.println("Recieve Socket failure!");
@@ -160,7 +157,7 @@ public class Scheduler {
 	 * @param configPacket
 	 */
 	private void sendConfigPacketToElevator(DatagramPacket configPacket) {
-		System.out.println("Sending config file to Elevator...");
+		System.out.println("Sending config file to Elevator...\n");
 		sendMessage(configPacket.getData(), configPacket.getData().length, configPacket.getAddress(),
 				UtilityInformation.ELEVATOR_PORT_NUM);
 	}
