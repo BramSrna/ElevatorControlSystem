@@ -57,9 +57,6 @@ public class Scheduler {
 		try {
 			System.out.println("Scheduler is waiting for data...");
 			recieveSocket.receive(recievePacket);
-			System.out.print("Scheduler received message: ");
-			System.out.print("Containing (as bytes): ");
-			System.out.println(Arrays.toString(recievePacket.getData()));
 			eventOccured(Event.MESSAGE_RECIEVED, recievePacket);
 		} catch (IOException e) {
 			System.out.println("Recieve Socket failure!");
@@ -67,6 +64,13 @@ public class Scheduler {
 			System.exit(1);
 		}
 
+		socketTearDown();
+	}
+
+	/**
+	 * Close send and recieve sockets.
+	 */
+	private void socketTearDown() {
 		recieveSocket.close();
 		sendSocket.close();
 	}
@@ -84,16 +88,13 @@ public class Scheduler {
 			if (event.equals(Event.CONFIG_MESSAGE)) {
 				sendConfigPacketToElevator(packet);
 				currentState = State.RESPONDING_TO_MESSAGE;
-				eventOccured(Event.MOVE_ELEVATOR, packet);
+				eventOccured(Event.CONFIG_MESSAGE, packet);
 			} else if (event.equals(Event.BUTTON_PUSHED_IN_ELEVATOR)) {
-
 				extractElevatorButtonFloorAndGenerateResponseMessageAndActions(packet);
 				currentState = State.RESPONDING_TO_MESSAGE;
 				moveToFloor(packet);
 			} else if (event.equals(Event.FLOOR_SENSOR_ACTIVATED)) {
-
 				extractFloorReachedNumberAndGenerateResponseMessageAndActions(packet);
-
 			} else if (event.equals(Event.FLOOR_REQUESTED)) {
 				extractFloorRequestedNumberAndGenerateResponseMessageAndActions(packet);
 				currentState = State.RESPONDING_TO_MESSAGE;
@@ -103,7 +104,7 @@ public class Scheduler {
 			} else if (event.equals(Event.CONFIRM_CONFIG)) {
 				sendConfigConfirmMessage(packet);
 				currentState = State.RESPONDING_TO_MESSAGE;
-				eventOccured(Event.MOVE_ELEVATOR, packet);
+				eventOccured(Event.CONFIRM_CONFIG, packet);
 			}
 
 			break;
@@ -114,7 +115,8 @@ public class Scheduler {
 			}
 			break;
 		case RESPONDING_TO_MESSAGE:
-			if (event.equals(Event.MOVE_ELEVATOR)) {
+			if (event.equals(Event.MOVE_ELEVATOR) || event.equals(Event.CONFIG_MESSAGE)
+					|| event.equals(Event.CONFIRM_CONFIG)) {
 				currentState = State.WAITING;
 			}
 			break;
@@ -126,7 +128,7 @@ public class Scheduler {
 	}
 
 	/**
-	 * If elevator people also get scared.
+	 * Send the confirm config message to the Floor.
 	 * 
 	 * @param packet
 	 */
@@ -143,8 +145,8 @@ public class Scheduler {
 	private void sendTearDownMessage(DatagramPacket packet) {
 		byte[] tearDown = { UtilityInformation.TEARDOWN_MODE, UtilityInformation.END_OF_MESSAGE };
 		sendMessage(tearDown, tearDown.length, packet.getAddress(), UtilityInformation.ELEVATOR_PORT_NUM);
-		recieveSocket.close();
-		sendSocket.close();
+		System.out.println("\n\nTEARING DOWN!\n\n");
+		socketTearDown();
 		System.exit(1);
 	}
 
@@ -154,7 +156,7 @@ public class Scheduler {
 	 * @param configPacket
 	 */
 	private void sendConfigPacketToElevator(DatagramPacket configPacket) {
-		System.out.println("Sending config file to Elevator...");
+		System.out.println("Sending config file to Elevator...\n");
 		sendMessage(configPacket.getData(), configPacket.getData().length, configPacket.getAddress(),
 				UtilityInformation.ELEVATOR_PORT_NUM);
 	}
