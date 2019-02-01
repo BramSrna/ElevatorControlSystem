@@ -99,16 +99,16 @@ public class Floor {
     	if ((floorNum == this.getFloorNumber()) && 
     		(direction == UtilityInformation.ElevatorDirection.STATIONARY)) {
     		// Turn off up/down buttons if the elevator is stopping at this floor
-			arrivalLamp.set(elevatorShaftNum, UtilityInformation.LampState.ON);
+			arrivalLamp.set(elevatorShaftNum - 1, UtilityInformation.LampState.ON);
 			downButton = UtilityInformation.ButtonState.UNPRESSED;
 			upButton = UtilityInformation.ButtonState.UNPRESSED;
     	} else {
-    		arrivalLamp.set(elevatorShaftNum, UtilityInformation.LampState.OFF);
+    		arrivalLamp.set(elevatorShaftNum - 1, UtilityInformation.LampState.OFF);
     	}
     	
     	// Update the elevator location and direction
-    	elevatorLocation.set(elevatorShaftNum, floorNum);
-    	arrivalLampDir.set(elevatorShaftNum, direction);
+    	elevatorLocation.set(elevatorShaftNum - 1, floorNum);
+    	arrivalLampDir.set(elevatorShaftNum - 1, direction);
     }
 
 	/**
@@ -203,7 +203,7 @@ public class Floor {
 	 * @return void
 	 */
 	public void setArrivalLamp(UtilityInformation.LampState newLampState, int elevatorShaftNum) {
-		arrivalLamp.set(elevatorShaftNum, newLampState);
+		arrivalLamp.set(elevatorShaftNum - 1, newLampState);
 	}
 
 	/**
@@ -230,7 +230,7 @@ public class Floor {
 	 * @return void
 	 */
 	public void setArrivalLampDir(UtilityInformation.ElevatorDirection newDirection, int elevatorShaftNum) {
-		arrivalLampDir.set(elevatorShaftNum, newDirection);
+		arrivalLampDir.set(elevatorShaftNum - 1, newDirection);
 	}
 	
 	/**
@@ -288,18 +288,18 @@ public class Floor {
 	public String toString() {	    
 	    String toReturn = "";
 	    
-	    toReturn += String.format("Floor Number: %d ", floorNum);
+	    toReturn += String.format("Floor Number: %d", floorNum);
 	    
 	    for (int i = 0; i < numElevatorShafts; i++) {
-	        toReturn += String.format("Elevator: %d", i);
+	        toReturn += String.format("; Elevator: %d", i);
 	        toReturn += String.format(", Floor: %d", elevatorLocation.get(i));
-            toReturn += String.format(", Direction", arrivalLampDir.get(i));
-            toReturn += String.format(", ArrivalLamp: %d ", i, arrivalLamp.get(i));
+            toReturn += String.format(", Direction: %s", arrivalLampDir.get(i).toString());
+            toReturn += String.format(", ArrivalLamp: %s", arrivalLamp.get(i).toString());
 	    }
 	    
-        toReturn += String.format("Up Button: %s ", upButton.toString());
+        toReturn += String.format("; Up Button: %s", upButton.toString());
        
-        toReturn += String.format("Down Button: %s ", downButton.toString());
+        toReturn += String.format("; Down Button: %s", downButton.toString());
 	    
         return(toReturn);
 	    

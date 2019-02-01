@@ -48,8 +48,14 @@ public class Elevator {
 	
 	// The destination floor
 	private int destinationFloor;
+	
+	
 
 	// USED ENUMS:
+	//Enum for Door
+	enum doorState {OPEN, CLOSED}
+	private doorState door = doorState.CLOSED;
+	
 	// Enum for all lights
 	enum lampState {OFF, ON}
 	// State machine states
@@ -394,6 +400,8 @@ public class Elevator {
 			Thread.currentThread().interrupt();
 		}
 		System.out.println("Elevator Door Opened");
+		door = doorState.OPEN;
+		System.out.println("Door: " + door + "on floor: " + currentFloor);
 	}
 
 	/*
@@ -406,42 +414,9 @@ public class Elevator {
 			Thread.currentThread().interrupt();
 		}
 		System.out.println("Elevator Door Closed");
+		door = doorState.CLOSED;
+		System.out.println("Door: " + door + "on floor: " + currentFloor);
 	}
-	
-	
-	/*
-	 * Method used for JUnit testing to mimic receiving.
-	 */
-	public byte[] receiveTest() {        
-        // Initialize the DatagramPacket used to receive requests
-        byte data[] = new byte[100];
-        receivePacket = new DatagramPacket(data, data.length);
-       
-        System.out.println("Test: Waiting for Packet.\n");
-    
-        // Wait on the DatagramSocket to receive a request
-        try {        
-            System.out.println("Test: Waiting...");
-            receiveSocket.receive(receivePacket);
-        } catch (IOException e) {
-            System.out.print("Test: IO Exception: likely:");
-            System.out.println("Test: Receive Socket Timed Out.\n" + e);
-            e.printStackTrace();
-            System.exit(1);
-        }
-    
-        // Print out information about the received packet
-        System.out.println("Test: Packet received:");
-        System.out.println("Test: To address: " + receivePacket.getAddress());
-        System.out.println("Test: To port: " + receivePacket.getPort());
-        int len = receivePacket.getLength();
-        System.out.println("Test: Length: " + len);
-        System.out.print("Test: Containing (as bytes): ");
-        System.out.println(Arrays.toString(data) + "\n");
-        return data;
-    }
-	
-	
 	
 	public static void main(String[] args) {
 		// for now we only have one elevator

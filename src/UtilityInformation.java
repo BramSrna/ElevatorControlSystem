@@ -11,7 +11,7 @@ public class UtilityInformation {
 	}
 
 	public enum ElevatorDirection {
-		DOWN, UP, STATIONARY
+		STATIONARY, UP, DOWN
 	}
 
 	// Modes
