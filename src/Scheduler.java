@@ -88,7 +88,7 @@ public class Scheduler {
 			if (event.equals(Event.CONFIG_MESSAGE)) {
 				sendConfigPacketToElevator(packet);
 				currentState = State.RESPONDING_TO_MESSAGE;
-				eventOccured(Event.MOVE_ELEVATOR, packet);
+				eventOccured(Event.CONFIG_MESSAGE, packet);
 			} else if (event.equals(Event.BUTTON_PUSHED_IN_ELEVATOR)) {
 				extractElevatorButtonFloorAndGenerateResponseMessageAndActions(packet);
 				currentState = State.RESPONDING_TO_MESSAGE;
@@ -104,7 +104,7 @@ public class Scheduler {
 			} else if (event.equals(Event.CONFIRM_CONFIG)) {
 				sendConfigConfirmMessage(packet);
 				currentState = State.RESPONDING_TO_MESSAGE;
-				eventOccured(Event.MOVE_ELEVATOR, packet);
+				eventOccured(Event.CONFIRM_CONFIG, packet);
 			}
 
 			break;
@@ -115,7 +115,8 @@ public class Scheduler {
 			}
 			break;
 		case RESPONDING_TO_MESSAGE:
-			if (event.equals(Event.MOVE_ELEVATOR)) {
+			if (event.equals(Event.MOVE_ELEVATOR) || event.equals(Event.CONFIG_MESSAGE)
+					|| event.equals(Event.CONFIRM_CONFIG)) {
 				currentState = State.WAITING;
 			}
 			break;
