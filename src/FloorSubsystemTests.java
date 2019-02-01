@@ -2,10 +2,6 @@
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -58,8 +54,9 @@ class FloorSubsystemTests {
         
      // Parse the created file
         testController = new FloorSubsystem(numFloors, numElevators);
-        
         testController.parseInputFile(filePath);
+        
+        // Grab the arrayList of requests for use later
         reqs = testController.getRequests();
         
         System.out.println("------------------------- FINISHED SETUP -------------------------");
@@ -81,6 +78,7 @@ class FloorSubsystemTests {
             System.exit(1);
         }
         
+        // Tear down the various datagram sockets in the Floor subsystem and test host
     	testController.teardown();
     	host.teardown();
     	
@@ -113,11 +111,11 @@ class FloorSubsystemTests {
     @Test
     void testConfigMessage() {        
         host.setExpectedNumMessages(1);
-        
+        // Create a thread for the test host to run off
         Thread t = new Thread(host);
         t.start();
         
-                
+        // Send Config signal
         testController.sendConfigurationSignal(numElevators, numFloors);
         
         
@@ -125,15 +123,19 @@ class FloorSubsystemTests {
     
     @Test
     void testElevatorRequestTiming() {
+    	// Select the two closer timed requests for comparison
     	Integer[] req1 = reqs.get(1);
     	Integer[] req2 = reqs.get(2);
     	
+    	// Grab the timed requests respective values in ms
     	int msReq1 = req1[0];
     	int msReq2 = req2[0];
     	
+    	// caluclate the calculated value and set what it should be
     	int expectedVal = 1203300;
     	int calcVal = msReq2 - msReq1;
     	
+    	// Check if the timed values are within a acceptable range of each other
     	assertTrue(calcVal > expectedVal - 1000 && calcVal < expectedVal + 1000
     			, "Calculated time should be wthin 1000 ms of expected time");
     }
