@@ -1,1 +1,11 @@
 "# ElevatorControlSystem" 
+
+Description: The team designed and implemented an elevator control system and simulator. The system consists of an elevator
+controller (the Scheduler), a simulator for the elevator cars (which includes, the lights, buttons, doors and motors)
+and a simulator for the floors (which includes, buttons, lights). 
+
+Group 1: 
+Samy Ibrahim (101037927) : Elevator.java, elevatorSubsystemTest.java, testHost.java, Elevator UML and State 
+
+Detailed Set-Up:
+
