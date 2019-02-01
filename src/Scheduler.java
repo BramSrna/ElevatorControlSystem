@@ -90,14 +90,11 @@ public class Scheduler {
 				currentState = State.RESPONDING_TO_MESSAGE;
 				eventOccured(Event.MOVE_ELEVATOR, packet);
 			} else if (event.equals(Event.BUTTON_PUSHED_IN_ELEVATOR)) {
-
 				extractElevatorButtonFloorAndGenerateResponseMessageAndActions(packet);
 				currentState = State.RESPONDING_TO_MESSAGE;
 				moveToFloor(packet);
 			} else if (event.equals(Event.FLOOR_SENSOR_ACTIVATED)) {
-
 				extractFloorReachedNumberAndGenerateResponseMessageAndActions(packet);
-
 			} else if (event.equals(Event.FLOOR_REQUESTED)) {
 				extractFloorRequestedNumberAndGenerateResponseMessageAndActions(packet);
 				currentState = State.RESPONDING_TO_MESSAGE;
@@ -130,7 +127,7 @@ public class Scheduler {
 	}
 
 	/**
-	 * If elevator people also get scared.
+	 * Send the confirm config message to the Floor.
 	 * 
 	 * @param packet
 	 */
@@ -147,6 +144,7 @@ public class Scheduler {
 	private void sendTearDownMessage(DatagramPacket packet) {
 		byte[] tearDown = { UtilityInformation.TEARDOWN_MODE, UtilityInformation.END_OF_MESSAGE };
 		sendMessage(tearDown, tearDown.length, packet.getAddress(), UtilityInformation.ELEVATOR_PORT_NUM);
+		System.out.println("\n\nTEARING DOWN!\n\n");
 		socketTearDown();
 		System.exit(1);
 	}
