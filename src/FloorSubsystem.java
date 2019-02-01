@@ -535,7 +535,7 @@ public class FloorSubsystem {
 	public void runSubsystem() {
 		Timer timer = new Timer();
 		for (int i = 0; i < serviceRequests.size(); i++) {
-			this.toString();
+			System.out.println(this.toString());
 
 			Integer currReq[] = serviceRequests.get(i);
 
@@ -560,7 +560,7 @@ public class FloorSubsystem {
 				@Override
 				public void run() {
 					while (true) {
-						this.toString();
+						System.out.println(this.toString());
 						waitForElevatorUpdate();
 					}
 				}
@@ -659,7 +659,7 @@ public class FloorSubsystem {
 
 		floorController.sendConfigurationSignal(floorController.getNumElevators(), floorController.getNumFloors());
 
-		floorController.toString();
+		System.out.println(floorController.toString());
 
 		// While true
 		// Display the valid options to the user
@@ -673,12 +673,12 @@ public class FloorSubsystem {
 				floorController.setNumElevators(ui.getNumElevators());
 				floorController.sendConfigurationSignal(floorController.getNumElevators(),
 						floorController.getNumFloors());
-				floorController.toString();
+				System.out.println(floorController.toString());
 			} else if (val == UserInterface.ReturnVals.NEW_TEST_FILE) {
 				// If a new test file was entered, parse the file
 				floorController.parseInputFile(ui.getTestFile());
 				floorController.runSubsystem();
-				floorController.toString();
+				System.out.println(floorController.toString());
 			} else if (val == UserInterface.ReturnVals.TEARDOWN) {
 				// If teardown was selected,
 				// Send the teardown signal
