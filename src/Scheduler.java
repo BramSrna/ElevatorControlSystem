@@ -22,7 +22,8 @@ public class Scheduler {
 
 	}
 
-	private DatagramSocket recieveSocket, sendSocket;
+	private DatagramSocket recieveSocket = null;
+	private DatagramSocket sendSocket = null;
 	private DatagramPacket recievePacket, sendPacket;
 	private List<Byte> floorsToVisit;
 	private UtilityInformation.ElevatorDirection elevatorDirection;
@@ -71,8 +72,12 @@ public class Scheduler {
 	 * Close send and recieve sockets.
 	 */
 	private void socketTearDown() {
-		recieveSocket.close();
-		sendSocket.close();
+		if (recieveSocket != null) {
+			recieveSocket.close();
+		}
+		if (sendSocket != null) {
+			sendSocket.close();
+		}
 	}
 
 	/**
