@@ -71,7 +71,7 @@ public class Scheduler {
 	/**
 	 * Close send and recieve sockets.
 	 */
-	private void socketTearDown() {
+	protected void socketTearDown() {
 		if (recieveSocket != null) {
 			recieveSocket.close();
 		}
