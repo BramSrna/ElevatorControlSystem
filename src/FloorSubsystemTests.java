@@ -15,7 +15,7 @@ import java.util.Arrays;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class FloorSubsystemTests {
     private TestHost host;
@@ -131,8 +131,10 @@ class FloorSubsystemTests {
     	int msReq2 = req2[0];
     	
     	int expectedVal = 1203300;
+    	int calcVal = msReq2 - msReq1;
     	
-    	assertEquals(expectedVal, msReq2 - msReq1);
+    	assertTrue(calcVal > expectedVal - 1000 && calcVal < expectedVal + 1000
+    			, "Calculated time should be wthin 1000 ms of expected time");
     	
     }
 
