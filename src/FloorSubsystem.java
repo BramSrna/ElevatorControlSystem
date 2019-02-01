@@ -38,7 +38,7 @@ public class FloorSubsystem {
 	private static final int MAX_NUM_FLOORS = 1000;
 
 	private static final int MIN_NUM_ELEVATORS = 1;
-	private static final int MAX_NUM_ELEVATORS = 1000;
+	private static final int MAX_NUM_ELEVATORS = 1;
 
 	// List of service requests parsed from the input file
 	// Sorted in order of time that requests are made
