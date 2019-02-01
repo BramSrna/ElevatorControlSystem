@@ -294,7 +294,7 @@ public class Scheduler {
 	 * 
 	 * @param packet
 	 */
-	private void openElevatorDoors(DatagramPacket packet) {
+	protected void openElevatorDoors(DatagramPacket packet) {
 		byte[] openDoor = { UtilityInformation.ELEVATOR_DOOR_MODE, UtilityInformation.DOOR_OPEN,
 				UtilityInformation.END_OF_MESSAGE };
 		sendMessage(openDoor, openDoor.length, packet.getAddress(), UtilityInformation.ELEVATOR_PORT_NUM);
