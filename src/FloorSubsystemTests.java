@@ -29,12 +29,13 @@ class FloorSubsystemTests {
     
     @BeforeEach
     void setUp() throws Exception {
+    	System.out.println("------------------------- SETTING UP NEW TEST... -------------------------");
     	numFloors = 11;
     	numElevators = 1;
-        host = new TestHost(1);
+        host = new TestHost(0);
         
-        String filePath = "test.txt";
-        PrintWriter writer = null;
+        filePath = "test.txt";
+        writer = null;
         
         // Create the file
         try {
@@ -52,26 +53,40 @@ class FloorSubsystemTests {
         writer.println("00:56:42.7 8 UP 9");
         writer.println("03:34:19.2 6 down 1");
         
+        writer.close();
+        
      // Parse the created file
-        FloorSubsystem testController = new FloorSubsystem(numFloors, numElevators);
+        testController = new FloorSubsystem(numFloors, numElevators);
         
         testController.parseInputFile(filePath);
         reqs = testController.getRequests();
         
-        Thread t = new Thread(host);
-        t.start();
+        System.out.println("------------------------- FINISHED SETUP -------------------------");
+        System.out.println("------------------------- STARTING TEST -------------------------");
         
     }
     
     @AfterEach
     void tearDown() throws Exception {
+    	System.out.println("------------------------- FINISHED TEST -------------------------");
+    	System.out.println("------------------------- TEARING DOWN NEW TEST... -------------------------");
+    	
+        // Delete the test text file
+        try {
+            Files.deleteIfExists(Paths.get(filePath));
+        } catch (Exception e) {
+            System.out.println("Error: Unable to delete test text file.");
+            e.printStackTrace();
+            System.exit(1);
+        }
+        
     	testController.teardown();
     	host.teardown();
+    	
         host = null;
-        writer.close();
-        
-        
         testController = null;
+        
+        System.out.println("------------------------- FINISHED TEARDOWN -------------------------");
     }
 
     /**
@@ -86,27 +101,20 @@ class FloorSubsystemTests {
      */
     @Test
     void testSampleInput() {
-        
+    	host.setExpectedNumMessages(0);
         
         // Print the requests
         for (Integer[] req : reqs) {
-            System.out.println(Arrays.toString(req) + "\n");
-        }
-        
-        // Delete the test text file
-        try {
-            Files.deleteIfExists(Paths.get(filePath));
-        } catch (IOException e) {
-            System.out.println("Error: Unable to delete test text file.");
-            e.printStackTrace();
-            System.exit(1);
+            System.out.println(String.format("CHECK OUTPUT: %s", Arrays.toString(req) + "\n"));
         }
     }
     
     @Test
-    void testConfigMessage() {
-        
+    void testConfigMessage() {        
         host.setExpectedNumMessages(1);
+        
+        Thread t = new Thread(host);
+        t.start();
         
                 
         testController.sendConfigurationSignal(numElevators, numFloors);
@@ -119,10 +127,12 @@ class FloorSubsystemTests {
     	Integer[] req1 = reqs.get(1);
     	Integer[] req2 = reqs.get(2);
     	
-    	int msReq1 = req1[0] * 60 * 60 * 1000 + req1[1] * 60 * 1000 + req1[2] * 1000;
-    	int msReq2 = req2[0] * 60 * 60 * 1000 + req2[1] * 60 * 1000 + req2[2] * 1000;
+    	int msReq1 = req1[0];
+    	int msReq2 = req2[0];
     	
-    	assertEquals(msReq2 - msReq1, 1444000);
+    	int expectedVal = 1203300;
+    	
+    	assertEquals(expectedVal, msReq2 - msReq1);
     	
     }
 
