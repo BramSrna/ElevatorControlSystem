@@ -138,7 +138,8 @@ public class Scheduler {
 	}
 
 	/**
-	 * If the floor people get scared.
+	 * If the tear down message was sent from Floor, relay the message to Elevator
+	 * and shut everything down.
 	 * 
 	 * @param packet
 	 */
