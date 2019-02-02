@@ -215,13 +215,13 @@ public class Scheduler {
 			closeElevatorDoors(packet);
 			if (floorsToVisit.contains(floorElevatorIsCurrentlyOn)) {
 				int indToRemove = 0;
-				
+
 				for (int i = 0; i < floorsToVisit.size(); i++) {
-					if (floorsToVisit.get(i) == (byte) floorElevatorIsCurrentlyOn) {
+					if (floorsToVisit.get(i) == floorElevatorIsCurrentlyOn) {
 						indToRemove = i;
 					}
 				}
-				
+
 				floorsToVisit.remove(indToRemove);
 			}
 			if (elevatorShouldGoUp()) {
