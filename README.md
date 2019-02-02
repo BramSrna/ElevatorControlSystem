@@ -69,6 +69,6 @@ Breakdown of responsibilities for Iteration #1:
 
     Abraham Srna (100997482) : Floor.java, FloorSubsystem.java, FloorSubsystemTests.java, TestHost.java, UserInterface.java, UtilityInformation.java, Floor UML diagram
 
-    Haseeb Khan() : Scheduler.java, SchedulerTest.java, TestHost.java, UtilityInformation.java, Scheduler UML diagram, Scheduler State diagram
+    Haseeb Khan(101009713) : Scheduler.java, SchedulerTest.java, TestHost.java, UtilityInformation.java, Scheduler UML diagram, Scheduler State diagram
     
     Hashim Hussen (100996269) : Elevator.java, elevatorSubsystemTest.java, testHost.java, Elevator UML and State
