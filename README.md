@@ -59,8 +59,8 @@ Running the project:
   Once the final request is complete, the user can then exit the program, causing a teardown signal to be sent through the system, exiting all running files.
 
 Breakdown of responsibilities for Iteration #1:
+  
   Group 1: 
-    Samy Ibrahim (101037927) : Elevator.java, elevatorSubsystemTest.java, testHost.java, Elevator UML and State
 
     Samy Ibrahim (101037927): Elevator.java, elevatorSubsystem.java, testHost.java, UtilityInformation.java, Elevator UML Class diagram, and State diagram
     
