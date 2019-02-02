@@ -81,8 +81,8 @@ public class Scheduler {
 	}
 
 	/**
-	 * Based on an event that occurred, determine what action needs to be taken.
-	 * Also changes the state if the scheduler.
+	 * Based on an event that occurred in a given state, determine what action needs
+	 * to be taken. Also changes the state of the scheduler.
 	 * 
 	 * @param event
 	 * @param packet
@@ -168,7 +168,7 @@ public class Scheduler {
 	}
 
 	/**
-	 * Read the message and call the appropriate event
+	 * Read the message recieved and call the appropriate event
 	 * 
 	 * @param recievedPacket
 	 */
@@ -211,19 +211,18 @@ public class Scheduler {
 	 * @param packet
 	 */
 	private void moveToFloor(DatagramPacket packet) {
+		if (floorsToVisit.contains(floorElevatorIsCurrentlyOn)) {
+			int indToRemove = 0;
+			// Remove the current floor from the list
+			for (int i = 0; i < floorsToVisit.size(); i++) {
+				if (floorsToVisit.get(i) == floorElevatorIsCurrentlyOn) {
+					indToRemove = i;
+				}
+			}
+			floorsToVisit.remove(indToRemove);
+		}
 		if (elevatorDirection.equals(UtilityInformation.ElevatorDirection.STATIONARY) && !floorsToVisit.isEmpty()) {
 			closeElevatorDoors(packet);
-			if (floorsToVisit.contains(floorElevatorIsCurrentlyOn)) {
-				int indToRemove = 0;
-
-				for (int i = 0; i < floorsToVisit.size(); i++) {
-					if (floorsToVisit.get(i) == floorElevatorIsCurrentlyOn) {
-						indToRemove = i;
-					}
-				}
-
-				floorsToVisit.remove(indToRemove);
-			}
 			if (elevatorShouldGoUp()) {
 				sendElevatorUp(packet);
 			} else {
@@ -366,7 +365,9 @@ public class Scheduler {
 	}
 
 	/**
-	 * For when someone on the Elevator presses a button
+	 * For when someone on the Elevator presses a button NOTE: This is not used yet,
+	 * as nobody can press a button while in the elevator in real-time at the
+	 * moment.
 	 * 
 	 * @param recievedData
 	 */
