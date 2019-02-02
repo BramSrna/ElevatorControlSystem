@@ -317,7 +317,7 @@ public class FloorSubsystem {
 	}
 
 	/**
-	 * addRequest
+	 * addElevatorRequest
 	 * 
 	 * Adds a request to the list of requests with the given information.
 	 * 
