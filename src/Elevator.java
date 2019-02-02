@@ -93,6 +93,7 @@ public class Elevator {
 	public int getCurrentFloor() {return this.currentFloor;}
 	public int getNumberOfElevators() {return this.numberOfElevators;}
 	public int getNumberOfFloors() {return this.numberOfFloors;}
+	public doorState getDoorState() {return this.door;}
 	
 	public void display() {
 		// Simply display 
