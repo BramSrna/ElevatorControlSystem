@@ -21,6 +21,7 @@ class FloorSubsystemTests {
     private FloorSubsystem testController;
     private int numFloors;
     private int numElevators;
+    private int requestCount;
     
     private ArrayList<Integer[]> reqs;
     
@@ -43,6 +44,8 @@ class FloorSubsystemTests {
             System.exit(1);
         }
         
+        requestCount = 5;
+        
         // Write the requests to the text file
         writer.println("14:05:15.0 2 Up 4");
         writer.println("03:14:15.9 7 down 0");
@@ -52,7 +55,7 @@ class FloorSubsystemTests {
         
         writer.close();
         
-     // Parse the created file
+        // Parse the created file
         testController = new FloorSubsystem(numFloors, numElevators);
         testController.parseInputFile(filePath);
         
@@ -101,6 +104,8 @@ class FloorSubsystemTests {
     @Test
     void testSampleInput() {
     	host.setExpectedNumMessages(0);
+    	
+    	assertEquals(reqs.size(), requestCount);
         
         // Print the requests
         for (Integer[] req : reqs) {
@@ -116,9 +121,39 @@ class FloorSubsystemTests {
         t.start();
         
         // Send Config signal
-        testController.sendConfigurationSignal(numElevators, numFloors);
+        testController.sendConfigurationSignal(numFloors, numElevators);
         
         
+    }
+    
+    @Test
+    void testElevatorRequestMessage() {        
+        host.setExpectedNumMessages(1);
+        // Create a thread for the test host to run off
+        Thread t = new Thread(host);
+        t.start();
+        
+        int sourceFloor = 0;
+        int endFloor = 15;
+        UtilityInformation.ElevatorDirection dir = UtilityInformation.ElevatorDirection.UP;
+        
+        // Send Config signal
+        testController.sendElevatorRequest(sourceFloor, endFloor, dir);
+        
+        
+    }
+    
+    @Test
+    void testTeardownMessage() {
+        host.setExpectedNumMessages(1);
+        // Create a thread for the test host to run off
+        Thread t = new Thread(host);
+        t.start();
+        
+        // Send teardown signal
+        testController.teardown();
+        
+        testController = new FloorSubsystem(numFloors, numElevators);
     }
     
     @Test
@@ -154,5 +189,71 @@ class FloorSubsystemTests {
     	
     	assertEquals(toCheck[0], 1, "Minimum # of elevators configuration should be 1");
     	assertEquals(toCheck[1], 1, "Maximum # of elevators configuration should be 1");
+    }
+    
+    @Test
+    void testSetNumElevators() {
+        int newNumElevators = 1;
+        
+        testController.setNumElevators(newNumElevators);
+        
+        assertEquals(testController.getNumElevators(), newNumElevators);
+        
+        ArrayList<Floor> check = testController.getListOfFloors();
+        
+        for (Floor currFloor : check) {
+            assertEquals(currFloor.getNumElevatorShafts(), newNumElevators);
+        }
+    }
+    
+    @Test
+    void testSetNumFloors() {
+        int newNumFloors = 20;
+        
+        testController.setNumFloors(newNumFloors);
+        
+        ArrayList<Floor> check = testController.getListOfFloors();
+        
+        assertEquals(check.size(), newNumFloors);
+        
+        int checkFloorNums[] = new int[newNumFloors];
+        
+        for (int i = 0; i < newNumFloors; i++) {
+            checkFloorNums[i] = -1;
+        }
+        
+        for (Floor currFloor : check) {
+            checkFloorNums[currFloor.getFloorNumber()] = currFloor.getFloorNumber();
+        }
+        
+        assertEquals(checkFloorNums[0], 0);        
+        for (int i = 1; i < newNumFloors - 1; i++) {
+            checkFloorNums[i] = checkFloorNums[i - 1];
+        }
+        assertEquals(checkFloorNums[newNumFloors - 1], newNumFloors - 1);  
+        
+        newNumFloors = 5;
+        
+        testController.setNumFloors(newNumFloors);
+        
+        check = testController.getListOfFloors();
+        
+        assertEquals(check.size(), newNumFloors);
+        
+        checkFloorNums = new int[newNumFloors];
+        
+        for (int i = 0; i < newNumFloors; i++) {
+            checkFloorNums[i] = -1;
+        }
+        
+        for (Floor currFloor : check) {
+            checkFloorNums[currFloor.getFloorNumber()] = currFloor.getFloorNumber();
+        }
+        
+        assertEquals(checkFloorNums[0], 0);        
+        for (int i = 1; i < newNumFloors - 1; i++) {
+            checkFloorNums[i] = checkFloorNums[i - 1];
+        }
+        assertEquals(checkFloorNums[newNumFloors - 1], newNumFloors - 1);  
     }
 }

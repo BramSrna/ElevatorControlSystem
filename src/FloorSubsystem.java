@@ -451,7 +451,6 @@ public class FloorSubsystem {
 	}
 	
 	public String toString() {
-		System.out.println("-------------------------HERE---------------");
 		String toReturn = "";
 
 		for (Floor currFloor : floors) {
@@ -533,7 +532,6 @@ public class FloorSubsystem {
 	}
 
 	public void runSubsystem() {
-		Timer timer = new Timer();
 		for (int i = 0; i < serviceRequests.size(); i++) {
 			System.out.println(this.toString());
 
@@ -626,6 +624,10 @@ public class FloorSubsystem {
 		System.out.println(Arrays.toString(data) + "\n");
 
 		return (receivePacket.getData());
+	}
+	
+	public ArrayList<Floor> getListOfFloors(){
+	    return(floors);
 	}
 
 	/**
