@@ -68,4 +68,5 @@ Breakdown of responsibilities for Iteration #1:
 
     Haseeb Khan() : Scheduler.java, SchedulerTest.java, TestHost.java, UtilityInformation.java, Scheduler UML diagram, Scheduler State diagram
 
+     Samy Ibrahim (101037927): Elevator.java. elevatorSubsystemTest.java, test.Host, Elevator UML and State
     Hashim Hussen (100996269) : Elevator.java, elevatorSubsystemTest.java, testHost.java, Elevator UML and State
