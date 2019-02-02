@@ -36,27 +36,28 @@ Setup instructions:
 	8. Click finish
 
 To test the program using JUnit test cases:
-  Each system contains corresponding JUnit test cases. To run the JUnit test, perform teh following:
-    1. Select the Junit test file to run in Eclipse.
-    2. Press the "Run" button at the top of the Eclipse interface.
-    3. Repeat for the other JUnit test files
+  Each system contains corresponding JUnit test cases. To run the JUnit test, perform the following:
+	1. Select the Junit test file to run in Eclipse. The JUnit test files are: ElevatorSubsystemTests.java, FloorSubsystemTests.java, and SchedulerTest.java.
+	2. Press the "Run" button at the top of the Eclipse interface.
+	3. Repeat for the other JUnit test files
+    
 To test the program using a file: 
 	1. Run Elevator.java, Scheduler.java, and FloorSubsystem.java concurrently.
 	      To run them, right-click the java file and select Run As > Java Application.
 	2. Repeat this for all three java files.
 	      Note: The order of the run files is unimportant. On some systems, it takes Eclipse a while to finish starting a file, in which case, errors will occur when the other files are run. If this happens, wait a few moments and then run the next file.
-  3. Once all three files are running, open the FloorSubsystem console.
-  4. Follow the UI prompts, entering numbers for the number of elevators and number of floors.
-  5. When the configuraiton is finished and the menu is displayed, enter "3" and then browse and select the file you want to use.
+	3. Once all three files are running, open the FloorSubsystem console.
+	4. Follow the UI prompts, entering numbers for the number of elevators and number of floors.
+	5. When the configuraiton is finished and the menu is displayed, enter "3" and then browse and select the file you want to use. Test file is in the directory ElevatorControlSystem -> src -> Test Files -> 5s tests -> OneRequest.txt.
 
 Running the project: 
-	Once the configuration information (# of floors, # of elevators) is given, the FloorSubsystem will send this information to the Scheduler, which will forward it to the Elevator. A confirmation will then be sent back.
-  When this is complete, the user will select a test file.
-  The test file will then be parsed.
-  The FloorSubsystem will then send these requests to the Scheduler with the appropriate spacing between requests.
-  The Scheduler will receive the requests and then use this information to control the elevator(s).
-  The Scheduler will send instructions to the Elevator system and FloorSubsystem containing movement requests, button and lamp states, door operations, and other important information.
-  Once the final request is complete, the user can then exit the program, causing a teardown signal to be sent through the system, exiting all running files.
+	- Once the configuration information (# of floors, # of elevators) is given, the FloorSubsystem will send this information to the Scheduler, which will forward it to the Elevator. A confirmation will then be sent back.
+	- When this is complete, the user will select a test file.
+	- The test file will then be parsed.
+	- The FloorSubsystem will then send these requests to the Scheduler with the appropriate spacing between requests.
+	- The Scheduler will receive the requests and then use this information to control the elevator(s).
+	- The Scheduler will send instructions to the Elevator system and FloorSubsystem containing movement requests, button and lamp states, door operations, and other important information.
+	- Once the final request is complete, the user can then exit the program, causing a teardown signal to be sent through the system, exiting all running files.
 
 Breakdown of responsibilities for Iteration #1:
   
