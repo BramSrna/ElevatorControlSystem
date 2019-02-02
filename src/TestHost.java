@@ -7,38 +7,59 @@ import java.net.UnknownHostException;
 import java.util.Arrays;
 
 public class TestHost implements Runnable {
-	private int RECEIVE_PORT = UtilityInformation.SCHEDULER_PORT_NUM;
+    private static final int DEFAULT_RECEIVE_PORT = 
+            UtilityInformation.SCHEDULER_PORT_NUM; 
+    
+    // The port to receive packets on
+	private int RECEIVE_PORT; 
 
-	private InetAddress address;
+	private InetAddress address; // The address to receive and send packets on
 
+	// The DatagramSockets and DatagramPackets used for UDP
 	private DatagramSocket sendSocket, receiveSocket;
 	private DatagramPacket sendPacket, receivePacket;
 
+	// Expected number of messages to receive
 	private int expectedNumMessages;
 
+	/**
+	 * testHost
+	 * 
+	 * Constructor
+	 * 
+	 * Creates a new TestHost object.
+	 * Initializes the port and address for receiving.
+	 * This object acts as a simple EchoServer.
+	 * 
+	 * @param expectedNumMessages  The expected number of messages to receive
+	 * 
+	 * @return None
+	 */
 	public TestHost(int expectedNumMessages) {
-		try {
-			sendSocket = new DatagramSocket();
-
-			receiveSocket = new DatagramSocket(RECEIVE_PORT);
-		} catch (SocketException se) {
-			se.printStackTrace();
-			System.exit(1);
-		}
-
-		try {
-			address = InetAddress.getLocalHost();
-		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		this.expectedNumMessages = expectedNumMessages;
+	    this(expectedNumMessages, DEFAULT_RECEIVE_PORT);
 
 	}
 
+	/**
+	 * TestHost
+	 * 
+	 * Constructor
+	 * 
+	 * Creates a new TestHost object.
+	 * Initializes the port to receive on to the given port number.
+	 * Initializes the port and address for receiving.
+	 * This object acts as a simple EchoServer.
+	 * 
+	 * @param expectedNumMessages  The expected number of messages to receive
+	 * @param portNumber           The port number to receive packets from
+	 * 
+	 * @return None
+	 */
 	public TestHost(int expectedNumMessages, int portNumber) {
+	    // Set the port to the given port
 		RECEIVE_PORT = portNumber;
+		
+		// Initialize the send and receive sockets
 		try {
 			sendSocket = new DatagramSocket();
 
@@ -48,6 +69,7 @@ public class TestHost implements Runnable {
 			System.exit(1);
 		}
 
+		// Initialize the address to send information on
 		try {
 			address = InetAddress.getLocalHost();
 		} catch (UnknownHostException e) {
@@ -59,6 +81,16 @@ public class TestHost implements Runnable {
 
 	}
 
+	/**
+	 * teardown
+	 * 
+	 * Teardown this TestHost object.
+	 * Set the packets to null and close the sockets.
+	 * 
+	 * @param  None
+	 * 
+	 * @return None
+	 */
 	public void teardown() {
 		sendPacket = null;
 		receivePacket = null;
@@ -68,9 +100,22 @@ public class TestHost implements Runnable {
 		receiveSocket.close();
 	}
 
+	/**
+	 * sendPacket
+	 * 
+	 * Send a DatagramPacket containing the given message
+	 * to the given port at the given address. Prints out
+	 * information about the packet being sent.
+	 * 
+	 * @param msg      The message to place in the DatagramPacket
+	 * @param address  The address to send the message to
+	 * @param portNum  The port number to send the message to
+	 * 
+	 * @return void
+	 */
 	public void sendPacket(byte[] msg, InetAddress address, int portNum) {
-		// Create the DatagramPacket to return
-		// Send the created response to the port that the message was received on
+		// Create the DatagramPacket to send
+		// Send the created response to the given port number
 		sendPacket = new DatagramPacket(msg, msg.length, address, portNum);
 
 		// Print out information about the packet being sent
@@ -82,7 +127,7 @@ public class TestHost implements Runnable {
 		System.out.print("Test: Containing (as bytes): ");
 		System.out.println(Arrays.toString(sendPacket.getData()));
 
-		// Send the response packet
+		// Send the packet
 		try {
 			sendSocket.send(sendPacket);
 		} catch (IOException e) {
@@ -93,6 +138,17 @@ public class TestHost implements Runnable {
 		System.out.println("Test: packet sent");
 	}
 
+	/**
+	 * receivePacket
+	 * 
+	 * Waits on the port for a DatagramPacket containing
+	 * a message of the given expected length. Prints out
+	 * information about the packet received.
+	 * 
+	 * @param expectedLen  Expected length of the DatagramPacket being sent
+	 * 
+	 * @return void
+	 */
 	public void receivePacket(int expectedLen) {
 		// Initialize the DatagramPacket used to receive requests
 		byte data[] = new byte[expectedLen];
@@ -121,29 +177,67 @@ public class TestHost implements Runnable {
 		System.out.println(Arrays.toString(data) + "\n");
 	}
 
-	public void checkStop(byte[] arrToCheck) {
-		if (arrToCheck[0] == (byte) -1) {
-			teardown();
-			System.exit(1);
-		}
-	}
-
+	/**
+	 * getPortNum
+	 * 
+	 * Return the current port number used to
+	 * receive information
+	 * 
+	 * @param  None
+	 * 
+	 * @return The port number information is received on
+	 */
 	public int getPortNum() {
 		return (RECEIVE_PORT);
 	}
 
+	/**
+	 * getAddress
+	 * 
+	 * Return the address currently used to send data
+	 * through.
+	 * 
+	 * @param  None
+	 * 
+	 * @return The address that data is received through
+	 */
 	public InetAddress getAddress() {
 		return (address);
 	}
 
+	/**
+	 * setExpectedNumMessages
+	 * 
+	 * Set the expected number of messages to receive
+	 * before closing the TestHost.
+	 * 
+	 * @param expectedNum  The expected number of messages to receive
+	 * 
+	 * @return void
+	 */
 	public void setExpectedNumMessages(int expectedNum) {
 		expectedNumMessages = expectedNum;
 	}
 
+	/**
+	 * run
+	 * 
+	 * Overridden
+	 * 
+	 * Run the TestHost when called in a Thread object.
+	 * Repeats the following for the number of expected messages:
+	 *     Receive packet
+	 *     Send packet with the same contents back to the sender.
+	 *     
+	 * @param  None
+	 * 
+	 * @return void
+	 */
 	@Override
 	public void run() {
 		int expectedLen = 100;
 
+		// Receive and echo the expected number of messages
 		for (int i = 0; i < expectedNumMessages; i++) {
 			receivePacket(expectedLen);
 			sendPacket(receivePacket.getData(), receivePacket.getAddress(), receivePacket.getPort());

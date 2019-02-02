@@ -1,5 +1,3 @@
-
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
@@ -15,27 +13,53 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class FloorSubsystemTests {
+    // TestHost used to receive and echo signals
     private TestHost host;
+    
+    // Variables used for writing the sample test file
     private String filePath;
     private PrintWriter writer;
-    private FloorSubsystem testController;
-    private int numFloors;
-    private int numElevators;
+    
+    // Number of requests in the sample file
     private int requestCount;
     
+    // FloorSubsystem used for testing
+    private FloorSubsystem testController;
+    
+    // Configuration values for creating the test FloorSubsystem
+    private int numFloors;
+    private int numElevators;
+    
+    // The parsed requests from the sample test file
     private ArrayList<Integer[]> reqs;
     
+    /**
+     * setUp
+     * 
+     * Sets up the test environment for each test.
+     * Initializes the needed objects and writes a
+     * sample test file.
+     * 
+     * @throws Exception    Throws an exception if an error occurs
+     * 
+     * @param   None
+     * 
+     * @return  void
+     */
     @BeforeEach
     void setUp() throws Exception {
     	System.out.println("------------------------- SETTING UP NEW TEST... -------------------------");
+    	// Set the number of floors and elevators
     	numFloors = 11;
     	numElevators = 1;
+    	
+    	// Initialize the TestHost for receiving signalsS
         host = new TestHost(0);
         
         filePath = "test.txt";
         writer = null;
         
-        // Create the file
+        // Create the sample test file
         try {
             writer = new PrintWriter(filePath, StandardCharsets.UTF_8);
         } catch (IOException e1) {
@@ -67,6 +91,19 @@ class FloorSubsystemTests {
         
     }
     
+    /**
+     * tearDown
+     * 
+     * Tear down the test environment after each test.
+     * Deletes the test file. Tears down the created
+     * objects and set the variables to null.
+     * 
+     * @throws Exception    Throws an exception when an error occurs
+     * 
+     * @param   None
+     * 
+     * @return  None
+     */
     @AfterEach
     void tearDown() throws Exception {
     	System.out.println("------------------------- FINISHED TEST -------------------------");
@@ -99,12 +136,13 @@ class FloorSubsystemTests {
      * 
      * @input   None
      * 
-     * @return  None
+     * @return  void
      */
     @Test
     void testSampleInput() {
     	host.setExpectedNumMessages(0);
     	
+    	// Check that the proper amount of requests were read in
     	assertEquals(reqs.size(), requestCount);
         
         // Print the requests
@@ -113,9 +151,21 @@ class FloorSubsystemTests {
         }
     }
     
+    /**
+     * testConfigMessage
+     * 
+     * Tests that the configuration message is send and
+     * that a response is received. Output should be checked
+     * to ensure that the test completes successfully.
+     * 
+     * @param   None
+     * 
+     * @return  void
+     */
     @Test
     void testConfigMessage() {        
         host.setExpectedNumMessages(1);
+        
         // Create a thread for the test host to run off
         Thread t = new Thread(host);
         t.start();
@@ -126,13 +176,26 @@ class FloorSubsystemTests {
         
     }
     
+    /**
+     * testElevatorRequestMessage
+     * 
+     * Tests that an elevator request is send out
+     * properly. Output should be checked to ensure
+     * that the test completes successfully.
+     * 
+     * @param   None
+     * 
+     * @return  void
+     */
     @Test
-    void testElevatorRequestMessage() {        
+    void testElevatorRequestMessage() { 
         host.setExpectedNumMessages(1);
+        
         // Create a thread for the test host to run off
         Thread t = new Thread(host);
         t.start();
         
+        // Create the information to send in the request
         int sourceFloor = 0;
         int endFloor = 15;
         UtilityInformation.ElevatorDirection dir = UtilityInformation.ElevatorDirection.UP;
@@ -143,9 +206,21 @@ class FloorSubsystemTests {
         
     }
     
+    /**
+     * testTeardownMessage
+     * 
+     * Test that a teardown message can be sent properly
+     * through the system. Output needs to be checked to
+     * endure the test is successful.
+     * 
+     * @param   None
+     * 
+     * @return  void
+     */
     @Test
     void testTeardownMessage() {
         host.setExpectedNumMessages(1);
+        
         // Create a thread for the test host to run off
         Thread t = new Thread(host);
         t.start();
@@ -153,9 +228,22 @@ class FloorSubsystemTests {
         // Send teardown signal
         testController.teardown();
         
+        // Remake the FloorSubsystem so that
+        // the teardown method does not crash
         testController = new FloorSubsystem(numFloors, numElevators);
     }
     
+    /**
+     * testElevatorRequestTiming
+     * 
+     * Test that the conversion of the parsed times to
+     * milliseconds is done properly and that the
+     * requests are stored in ascending order.
+     * 
+     * @param   None
+     * 
+     * @return  void
+     */
     @Test
     void testElevatorRequestTiming() {
     	// Select the two closer timed requests for comparison
@@ -166,7 +254,7 @@ class FloorSubsystemTests {
     	int msReq1 = req1[0];
     	int msReq2 = req2[0];
     	
-    	// caluclate the calculated value and set what it should be
+    	// Calculate the calculated value and set what it should be
     	int expectedVal = 1203300;
     	int calcVal = msReq2 - msReq1;
     	
@@ -175,6 +263,15 @@ class FloorSubsystemTests {
     			, "Calculated time should be wthin 1000 ms of expected time");
     }
     
+    /**
+     * testFloorRangeCheck
+     * 
+     * Test that the range of valid floors works properly.
+     * 
+     * @param   None
+     * 
+     * @return  void
+     */
     @Test
     void testFloorRangeCheck() {
     	int[] toCheck = FloorSubsystem.getValidFloorValueRange();
@@ -183,6 +280,15 @@ class FloorSubsystemTests {
     	assertEquals(toCheck[1], 1000, "Maximum floor configuration should be 1000");
     }
     
+    /**
+     * testElevatorRangeCheck
+     * 
+     * Test that the range of valid elevator amounts works properly.
+     * 
+     * @param   None
+     * 
+     * @return  void
+     */
     @Test
     void testElevatorRangeCheck() {
     	int[] toCheck = FloorSubsystem.getValidElevatorValueRange();
@@ -191,14 +297,27 @@ class FloorSubsystemTests {
     	assertEquals(toCheck[1], 1, "Maximum # of elevators configuration should be 1");
     }
     
+    /**
+     * testSetNumElevators
+     * 
+     * Test that the number of elevators can be set
+     * properly and check that the updated value is
+     * propagated down to the Floor objects.
+     * 
+     * @param   None
+     * 
+     * @return  void
+     */
     @Test
     void testSetNumElevators() {
         int newNumElevators = 1;
         
+        // Set the new number of elevators
         testController.setNumElevators(newNumElevators);
         
         assertEquals(testController.getNumElevators(), newNumElevators);
         
+        // Check that the Floor objects also have the new value
         ArrayList<Floor> check = testController.getListOfFloors();
         
         for (Floor currFloor : check) {
@@ -206,40 +325,63 @@ class FloorSubsystemTests {
         }
     }
     
+    /**
+     * testSetNummFloors
+     * 
+     * Test that the number of floors in the FloorSubsystem
+     * can be set properly. Check that the list of Floors
+     * is properly maintained at that the proper Floors are
+     * removed when the number is dropped.
+     * 
+     * @param   None
+     * 
+     * @return  void
+     */
     @Test
     void testSetNumFloors() {
         int newNumFloors = 20;
         
+        // Set the new number of floors
         testController.setNumFloors(newNumFloors);
         
+        // Check that the new number of floors was set
         ArrayList<Floor> check = testController.getListOfFloors();
         
         assertEquals(check.size(), newNumFloors);
         
+        // Create an array used to check that the proper floor numbers were kept
         int checkFloorNums[] = new int[newNumFloors];
         
+        // Set the array to all -1
         for (int i = 0; i < newNumFloors; i++) {
             checkFloorNums[i] = -1;
         }
         
+        // Update each index to the corresponding floor value
         for (Floor currFloor : check) {
             checkFloorNums[currFloor.getFloorNumber()] = currFloor.getFloorNumber();
         }
         
+        // Check that the proper floors were kept
         assertEquals(checkFloorNums[0], 0);        
         for (int i = 1; i < newNumFloors - 1; i++) {
             checkFloorNums[i] = checkFloorNums[i - 1];
         }
         assertEquals(checkFloorNums[newNumFloors - 1], newNumFloors - 1);  
         
+        // Repeat the above process, this time lowering the number
+        // of floors, instead of increasing it
         newNumFloors = 5;
         
+        // Set the number of floors
         testController.setNumFloors(newNumFloors);
         
         check = testController.getListOfFloors();
         
         assertEquals(check.size(), newNumFloors);
         
+        // Repeat the array check for ensuring that
+        // the proper Floor objects were deleted.
         checkFloorNums = new int[newNumFloors];
         
         for (int i = 0; i < newNumFloors; i++) {

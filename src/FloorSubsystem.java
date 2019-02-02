@@ -9,14 +9,13 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class FloorSubsystem {
 	// Sockets and packets used for UDP
 	private DatagramPacket sendPacket, receivePacket;
 	private DatagramSocket sendReceiveSocket;
 
+	// Important floor indices
 	private int bottomFloor; // Lowest possible floor
 	private int topFloor; // Highest possible floor
 	private int numFloors; // Number of floors that the elevator services
@@ -90,6 +89,7 @@ public class FloorSubsystem {
 		} catch (UnknownHostException e) {
 			System.out.println("Error: Unable to get local address.");
 			e.printStackTrace();
+			this.teardown();
 			System.exit(1);
 		}
 	}
@@ -107,6 +107,7 @@ public class FloorSubsystem {
 	public void setNumFloors(int newNumFloors) {
 		if ((newNumFloors < MIN_NUM_FLOORS) || (newNumFloors > MAX_NUM_FLOORS)) {
 			System.out.println("Error: Floor value is outside of valid range.");
+			this.teardown();
 			System.exit(1);
 		}
 
@@ -145,8 +146,8 @@ public class FloorSubsystem {
 	 * setNumElevators
 	 * 
 	 * Sets the number of elevators to the new amount. Checks that the new number is
-	 * within the valid range. Propagets the new information to all of the Floor
-	 * objects
+	 * within the valid range. Propagates the new information to all of the Floor
+	 * objects that belong to this FloorSubsystem.
 	 * 
 	 * @param newNumElevators The new number of elevators
 	 * 
@@ -155,11 +156,13 @@ public class FloorSubsystem {
 	public void setNumElevators(int newNumElevators) {
 		if ((newNumElevators < MIN_NUM_ELEVATORS) || (newNumElevators > MAX_NUM_ELEVATORS)) {
 			System.out.println("Error: Elevator value is outside of valid range.");
+			this.teardown();
 			System.exit(1);
 		}
 
 		this.numElevators = newNumElevators;
 
+		// Update all of the Floor objects that belong to this FloorSubsystem
 		for (Floor currFloor : floors) {
 			currFloor.setNumElevatorShafts(newNumElevators);
 		}
@@ -208,6 +211,7 @@ public class FloorSubsystem {
 		} catch (FileNotFoundException e) {
 			System.out.println("Error: File could not be found: " + pathToFile);
 			e.printStackTrace();
+			this.teardown();
 			System.exit(1);
 		}
 
@@ -222,6 +226,7 @@ public class FloorSubsystem {
 		} catch (IOException e) {
 			System.out.println("Error while reading file: " + pathToFile);
 			e.printStackTrace();
+			this.teardown();
 			System.exit(1);
 		}
 
@@ -293,6 +298,7 @@ public class FloorSubsystem {
 			} catch (IOException e) {
 				System.out.println("Error while reading file: " + pathToFile);
 				e.printStackTrace();
+				this.teardown();
 				System.exit(1);
 			}
 		}
@@ -303,6 +309,7 @@ public class FloorSubsystem {
 		} catch (IOException e) {
 			System.out.println("Error: Unable to close input file.");
 			e.printStackTrace();
+			this.teardown();
 			System.exit(1);
 		}
 
@@ -314,28 +321,28 @@ public class FloorSubsystem {
 	 * 
 	 * Adds a request to the list of requests with the given information.
 	 * 
-	 * The requests use the following format: 1st byte = Hour request was made 2nd
-	 * byte = Minute request was made 3rd byte = Second request was made 4th byte =
-	 * Millisecond request was made 5th byte = Floor where request was made 6th byte
-	 * = Direction user wants to travel (0 = Down, 1 = Up) 7th byte = Floor where
-	 * user wants to travel
+	 * The requests use the following format: 
+	 *     0th byte = Time the request was made in ms
+	 *     1st byte = Floor where request was made
+	 *     2nd byte = Direction user wants to travel (0 = Down, 1 = Up)
+	 *     3rd byte = Floor where user wants to travel
 	 * 
-	 * @param hrOfReq    : Hour that request was made
-	 * @param minOfReq   : Minute that request was made
-	 * @param secOfReq   : Second that request was made
-	 * @param msOfReq    : Millisecond that request was made
+	 * @param timeOfReq  : Time the request was made in ms
 	 * @param startFloor : Floor where request was made
 	 * @param dirPressed : Direction that used wants to travel
 	 * @param finalFloor : Floor that user wants to travel to
 	 * 
 	 * @return void
 	 */
-	public void addElevatorRequest(int timeOfReq, int startFloor, UtilityInformation.ElevatorDirection dirPressed,
-			int finalFloor) {
+	public void addElevatorRequest(int timeOfReq, 
+                        	       int startFloor,
+                        	       UtilityInformation.ElevatorDirection dirPressed,
+                        	       int finalFloor) {
 		// Check that the given floors are valid
 		if ((startFloor < bottomFloor) || (startFloor > topFloor) || (finalFloor < bottomFloor)
 				|| (finalFloor > topFloor)) {
 			System.out.println("Error: Invalid request. One or both floors given is invalid.");
+			this.teardown();
 			System.exit(1);
 		}
 
@@ -343,6 +350,7 @@ public class FloorSubsystem {
 		if (((startFloor == bottomFloor) && (dirPressed == UtilityInformation.ElevatorDirection.DOWN))
 				|| ((startFloor == topFloor) && (dirPressed == UtilityInformation.ElevatorDirection.UP))) {
 			System.out.println("Error: Invalid request. Direction invalid for given floor.");
+			this.teardown();
 			System.exit(1);
 		}
 
@@ -350,6 +358,7 @@ public class FloorSubsystem {
 		if (((dirPressed == UtilityInformation.ElevatorDirection.DOWN) && (finalFloor > startFloor))
 				|| ((dirPressed == UtilityInformation.ElevatorDirection.UP) && (finalFloor < startFloor))) {
 			System.out.println("Error: Invalid request. " + "Given floor numbers do not match desired direction.");
+			this.teardown();
 			System.exit(1);
 		}
 
@@ -395,7 +404,13 @@ public class FloorSubsystem {
 	 * Static method
 	 * 
 	 * Returns the range of valid number of floor values. Returns the range as an
-	 * array of 2 values. Format: Byte 0 - Minimum value Byte 1 - Maximum value
+	 * array of 2 values. 
+	 * 
+	 * Format: 
+	 *     Byte 0 - Minimum value 
+	 *     Byte 1 - Maximum value
+	 * 
+	 * @param  None
 	 * 
 	 * @return int[] First byte is minimum value Second byte is maximum value
 	 */
@@ -414,7 +429,13 @@ public class FloorSubsystem {
 	 * Static method
 	 * 
 	 * Returns the range of valid number of elevator values. Returns the range as an
-	 * array of 2 values. Format: Byte 0 - Minimum value Byte 1 - Maximum value
+	 * array of 2 values. 
+	 * 
+	 * Format: 
+	 *     Byte 0 - Minimum value 
+	 *     Byte 1 - Maximum value
+	 *     
+	 * @param  None
 	 * 
 	 * @return int[] First byte is minimum value Second byte is maximum value
 	 */
@@ -432,6 +453,8 @@ public class FloorSubsystem {
 	 * 
 	 * Return the current list of requests.
 	 * 
+	 * @param  None
+	 * 
 	 * @return ArrayList<Integer[]> : The current list of requests
 	 */
 	public ArrayList<Integer[]> getRequests() {
@@ -443,6 +466,8 @@ public class FloorSubsystem {
 	 * 
 	 * Sends a teardown signal and then closes all open sockets.
 	 * 
+	 * @param  None
+	 * 
 	 * @return void
 	 */
 	public void teardown() {
@@ -450,9 +475,21 @@ public class FloorSubsystem {
 		sendReceiveSocket.close();
 	}
 	
+	/**
+	 * toString
+	 * 
+	 * Overridden
+	 * 
+	 * Returns a String object describing this FloorSubsystem
+	 * 
+	 * @param  None
+	 * 
+	 * @return String  String representing this FloorSubsystem
+	 */
 	public String toString() {
 		String toReturn = "";
 
+		// Add the information about each Floor object in the FloorSubsystem
 		for (Floor currFloor : floors) {
 			toReturn += currFloor.toString();
 			toReturn += "\n";
@@ -461,10 +498,28 @@ public class FloorSubsystem {
 		return (toReturn);
 	}
 
+	/**
+	 * getNumFloors
+	 * 
+	 * Return the current number of Floor objects in this FloorSubsystem
+	 * 
+	 * @param  None
+	 * 
+	 * @return int The number of Floor objects in this FloorSubsystem
+	 */
 	public int getNumFloors() {
 		return numFloors;
 	}
 
+	/**
+	 * getNumElevators
+	 * 
+	 * Return the current number of Elevators that the system is configured to use.
+	 * 
+	 * @param  NoneS
+	 * 
+	 * @return int The number of elevators that the system is configured to
+	 */
 	public int getNumElevators() {
 		return numElevators;
 	}
@@ -475,6 +530,10 @@ public class FloorSubsystem {
 	 * Sends a signal that the program should teardown.
 	 * 
 	 * Format:
+	 *     Byte 0: UtilityInformation.TEARDOWN_MODE
+	 *     Byte 1: -1
+	 *     
+	 * @param  None
 	 * 
 	 * @return void
 	 */
@@ -484,6 +543,7 @@ public class FloorSubsystem {
 		msg[0] = UtilityInformation.TEARDOWN_MODE;
 		msg[1] = -1;
 
+		// Send the signal
 		System.out.println("Sending teardown signal...");
 		sendSignal(msg, UtilityInformation.SCHEDULER_PORT_NUM, addressToSend);
 		System.out.println("Teardown signal sent...");
@@ -492,8 +552,14 @@ public class FloorSubsystem {
 	/**
 	 * sendConfigurationSignal
 	 * 
-	 * Sends a configuration signal with the number of elevators and elevator shaft
-	 * number.
+	 * Sends a configuration signal with the number of elevators
+     * and the number of floors in the system
+	 * 
+	 * Format:
+	 *     Byte 0: UtilityInformation.CONFIG_MODE
+	 *     Byte 1: The number of elevators in the system
+	 *     Byte 2: The number of floors in the system
+	 *     Byte 3: -1
 	 * 
 	 * @param numElevators The amount for elevators the building has
 	 * @param numFloors    The amount of floors the buidling has
@@ -508,15 +574,35 @@ public class FloorSubsystem {
 		msg[2] = (byte) numFloors;
 		msg[3] = -1;
 
+		// Send the signal
 		System.out.println("Sending configuration signal...");
 		sendSignal(msg, UtilityInformation.SCHEDULER_PORT_NUM, addressToSend);
 		System.out.println("Configuration signal sent...");
 
+		// Wait for a confirmation from the Scheduler before commencing the program
 		System.out.println("Waiting for response to configuration signal...");
 		waitForSignal(CONFIG_REC_SIZE);
 		System.out.println("Respone to configuration received.");
 	}
 
+	/**
+	 * sendElevatorRequest
+	 * 
+	 * Sends a new elevator request made at a Floor to the Scheduler.
+	 * 
+	 * Format:
+	 *     Byte 0: UtilityInformation.FLOOR_REQUEST_MODE
+	 *     Byte 1: The floor number where the request was made
+	 *     Byte 2: Direction that the user wants to travel
+	 *     Byte 3: The floor number that the user wants to travel to
+	 *     Byte 4: -1
+	 *     
+	 * @param sourceFloor  Floor number where request was made
+	 * @param destFloor    Floor number that the user wants to travel to
+	 * @param diRequest    Direction that the user wants to travel to
+	 * 
+	 * @return None
+	 */
 	public void sendElevatorRequest(int sourceFloor, int destFloor, UtilityInformation.ElevatorDirection diRequest) {
 		// Construct a message to send with data from given parameters
 		byte[] msg = new byte[REQUEST_SIZE];
@@ -526,25 +612,52 @@ public class FloorSubsystem {
 		msg[3] = (byte) destFloor;
 		msg[4] = -1;
 
+		// Send the signal
 		System.out.println("Sending elevator request...");
 		sendSignal(msg, UtilityInformation.SCHEDULER_PORT_NUM, addressToSend);
 		System.out.println("Elevator request sent...");
 	}
 
+	/**
+	 * runSubsystem
+	 * 
+	 * Runs the FloorSubsystem object. 
+	 * 
+	 * Loops through all elevator requests in the system and sends
+	 * the requests to the Scheduler at the proper time. Request 0
+	 * is sent at the beginning of execution and subsequent requests
+	 * are made the proper amount of ms after the previous request.
+	 * 
+	 * While not sending a request, the system is waiting for elevator
+	 * location updates from the Scheduler.
+	 * 
+	 * @param  None
+	 * 
+	 * @return None
+	 */
 	public void runSubsystem() {
+	    // Loop through all requests and send 
+	    // them to the Scheduler at the proper time
+	    // Wait for elevator requests while not sending
+	    // elevator requests
 		for (int i = 0; i < serviceRequests.size(); i++) {
 			System.out.println(this.toString());
 
+			// Get the current request
 			Integer currReq[] = serviceRequests.get(i);
 
 			int startFloor = currReq[1];
 			int endFloor = currReq[3];
 			int dir = currReq[2];
 
+			// Send the request to the Scheduler
 			sendElevatorRequest(startFloor, endFloor, UtilityInformation.ElevatorDirection.values()[dir]);
 
 			int timeUntilNextRequest = 0;
 
+			// Calculate the time until the next request
+			// If no next request exists, permanently wait
+			// until execution is stopped
 			if (i < serviceRequests.size() - 1) {
 				Integer nextReq[] = serviceRequests.get(i + 1);
 
@@ -556,29 +669,66 @@ public class FloorSubsystem {
 			
 			System.out.println(String.format("Time to wait: %d", timeUntilNextRequest));
 			
+			// Calculate when to send the next request
 			long startTime = System.currentTimeMillis();
 			long endTime = startTime + timeUntilNextRequest;
+			
+			// Wait for elevator updates while waiting to send the next request
 			while ((System.currentTimeMillis() < endTime) || (timeUntilNextRequest == -1)) {
 			  waitForElevatorUpdate();
 			}
 		}
 	}
 
+	/**
+	 * waitForElevatorUpdate
+	 * 
+	 * Waits for a signal from the Scheduler containg a
+	 * signal telling an elevator to move. The request
+	 * is parsed and important information is forwared to
+	 * all Floor objects in the FloorSubsystem.
+	 * 
+	 * @param  None
+	 * 
+	 * @return None
+	 */
 	public void waitForElevatorUpdate() {
 		byte data[] = waitForSignal(ELEVATOR_UPDATE_SIZE);
 
+		// Get the floor number and elevator number
 		byte floorNum = data[1];
-
+		
+		// Request currently does not contain the elevator number,
+		// so hardcode the value to 1 for now.
+		int elevatorNum = 1; 
+		
+		// Get the direction of the elevator
 		UtilityInformation.ElevatorDirection dir = UtilityInformation.ElevatorDirection.values()[data[2]];
 
+		// Propagate the information through all Floor
+		// objects in the FloorSubsystem
 		for (Floor currFloor : floors) {
-			currFloor.updateElevatorLocation(1, floorNum, dir);
+			currFloor.updateElevatorLocation(elevatorNum, floorNum, dir);
 		}
 		
 		System.out.println(this.toString());
 	}
 
+	/**
+	 * sendSignal
+	 * 
+	 * Sends the given message to the port number through
+	 * the given address. Information about the created
+	 * packet is printed before sending.
+	 * 
+	 * @param msg          byte[] consisting of the message to send
+	 * @param portNumber   The port to send the created packet to
+	 * @param address      The address to send the packet through
+	 * 
+	 * @return None
+	 */
 	public void sendSignal(byte[] msg, int portNumber, InetAddress address) {
+	    // Create the DatagramPacket
 		sendPacket = new DatagramPacket(msg, msg.length, address, portNumber);
 
 		// Print out info about the message being sent
@@ -590,17 +740,32 @@ public class FloorSubsystem {
 		System.out.print("Containing (as bytes): ");
 		System.out.println(Arrays.toString(sendPacket.getData()));
 
+		// Send the packet
 		try {
 			sendReceiveSocket.send(sendPacket);
 		} catch (IOException e) {
 			e.printStackTrace();
+			this.teardown();
 			System.exit(1);
 		}
 
 		System.out.println("FloorSubsystem: Packet sent.\n");
 	}
 
+	/**
+	 * waitForSignal
+	 * 
+	 * Waits for a packet of the given size to be
+	 * sent by the Scheduler. When the packet is received,
+	 * information about the packet is printed. The message (byte[])
+	 * in the packet is then returned.
+	 * 
+	 * @param expectedMsgSize  The expected size of the message to receive
+	 * 
+	 * @return The byte[] send in the DatagramPacket
+	 */
 	public byte[] waitForSignal(int expectedMsgSize) {
+	    // Create the receive packet
 		byte data[] = new byte[expectedMsgSize];
 		receivePacket = new DatagramPacket(data, data.length);
 
@@ -611,6 +776,7 @@ public class FloorSubsystem {
 			sendReceiveSocket.receive(receivePacket);
 		} catch (IOException e) {
 			e.printStackTrace();
+			this.teardown();
 			System.exit(1);
 		}
 
@@ -626,6 +792,16 @@ public class FloorSubsystem {
 		return (receivePacket.getData());
 	}
 	
+	/**
+	 * getListOfFloors
+	 * 
+	 * Get the list of Floor objects that exist
+	 * in the FloorSubsystem.
+	 * 
+	 * @param  None
+	 * 
+	 * @return ArrayList<Floor> containing all of the Floor objects in the system
+	 */
 	public ArrayList<Floor> getListOfFloors(){
 	    return(floors);
 	}
@@ -637,8 +813,8 @@ public class FloorSubsystem {
 	 * 
 	 * Main method
 	 * 
-	 * Creates a new UserInterface class to get input from the user. Uses the input
-	 * to control a FloorSubsystem.
+	 * Creates a new UserInterface class to get input from the user. 
+	 * Uses the input to control a FloorSubsystem.
 	 * 
 	 * @param args
 	 * 

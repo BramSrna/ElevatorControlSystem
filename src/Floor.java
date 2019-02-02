@@ -1,15 +1,18 @@
 import java.util.ArrayList;
 
 public class Floor {
-	private FloorSubsystem controller;
+	private FloorSubsystem controller; // The FloorSubsystem that this object belongs to
 
-	private int floorNum;
-	private int numElevatorShafts;
+	private int floorNum; // The number of this floor
+	private int numElevatorShafts; // The number of elevator shafts on this floor
 
+	// Information for the arrival lamps and their directions
+	// There is one set of arrival lamsp and directions for each elevator on the floor
 	private ArrayList<Integer> elevatorLocation;
 	private ArrayList<UtilityInformation.LampState> arrivalLamp;
 	private ArrayList<UtilityInformation.ElevatorDirection> arrivalLampDir;
 
+	// Information for the buttons the floor
 	private UtilityInformation.ButtonState upButton;
 	private UtilityInformation.ButtonState downButton;
 
@@ -54,12 +57,9 @@ public class Floor {
 	 * Tells the FloorSubsystem that a new request was made at this Floor. Sets the
 	 * corresponding lamp and button values.
 	 * 
-	 * @param hourOfCall Hour that call was made
-	 * @param minOfCall  Minute that call was made
-	 * @param secOfCall  Second that call was made
-	 * @param msOfCall   Millisecond that call was made
-	 * @param direction  Direction that the user wants to travel
-	 * @param endFloor   Floor that user wants to travel to
+	 * @param timeOfReq    Time at which the request was made in ms
+	 * @param direction    Direction that the user wants to travel
+	 * @param endFloor     Floor that user wants to travel to
 	 * 
 	 * @return void
 	 */
@@ -149,16 +149,22 @@ public class Floor {
 	public void setNumElevatorShafts(int numElevatorShafts) {
 		this.numElevatorShafts = numElevatorShafts;
 		
+		// Update the array lists which are dependent on the number of elevators
 		if (elevatorLocation.size() > numElevatorShafts) {
+		    // If size is less than the number of elevators,
+		    // add values to the array list
 			while (elevatorLocation.size() > numElevatorShafts) {
 				elevatorLocation.remove(elevatorLocation.size() - 1);
 			}
 		} else {
+		    // If size is greater than the number of elevators,
+            // remove values from teh array list
 			while (elevatorLocation.size() < numElevatorShafts) {
 				elevatorLocation.add(0);
 			}
 		}
 		
+		// Repeat the same as above for the next array list
 		if (arrivalLamp.size() > numElevatorShafts) {
 			while (arrivalLamp.size() > numElevatorShafts) {
 				arrivalLamp.remove(arrivalLamp.size() - 1);
@@ -169,6 +175,7 @@ public class Floor {
 			}
 		}
 		
+		// Repeat the same as above for the next array list
 		if (arrivalLampDir.size() > numElevatorShafts) {
 			while (arrivalLampDir.size() > numElevatorShafts) {
 				arrivalLampDir.remove(arrivalLampDir.size() - 1);
@@ -185,7 +192,7 @@ public class Floor {
 	 * 
 	 * Returns the state of the arrival lamp
 	 * 
-	 * @param None
+	 * @param elevatorShaftNum The elevator shaft that the arrival lamp belongs to
 	 * 
 	 * @return lampState The state of the arrival lamp
 	 */
@@ -198,7 +205,8 @@ public class Floor {
 	 * 
 	 * Set the state of the arrival lamp
 	 * 
-	 * @param arrivalLamp The new value for the arrivalLamp
+	 * @param  newLampState        The new lamp state for the arrival lamp
+	 * @param  elevatorShaftNum    The elevator shaft that the arrival lamp belongs to
 	 * 
 	 * @return void
 	 */
@@ -211,7 +219,7 @@ public class Floor {
 	 * 
 	 * Returns the direction set on the arrivalLamp
 	 * 
-	 * @param None
+	 * @param elevatorShaftNum The elevator shaft that the arrival lamp belongs to
 	 * 
 	 * @return FloorSubsystem.Direction Direction currently being displayed on the
 	 *         lamp
@@ -225,7 +233,8 @@ public class Floor {
 	 * 
 	 * Sets the current direction displayed on the lamp.
 	 * 
-	 * @param arrivalLampDir The direction currently displayed on the lamp
+	 * @param  newDirection        The new direction for the arrival lamp
+	 * @param  elevatorShaftNum    The elevator shaft that the lamp belongs to
 	 * 
 	 * @return void
 	 */
@@ -251,7 +260,7 @@ public class Floor {
 	 * 
 	 * Sets the state of the upButton to the given state.
 	 * 
-	 * @param downButton The new state of the upButton
+	 * @param newState The new state of the upButton
 	 * 
 	 * @return	void
 	 */
@@ -277,7 +286,7 @@ public class Floor {
 	 * 
 	 * Sets the state of the downButton to the given state.
 	 * 
-	 * @param downButton The new state of the downButton
+	 * @param newState The new state of the downButton
 	 * 
 	 * @return	void
 	 */
@@ -285,11 +294,23 @@ public class Floor {
 		this.downButton = newState;
 	}
 	
+	/**
+	 * toString
+	 * 
+	 * Overridden
+	 * 
+	 * Returns a String describing this Floor object
+	 * 
+	 * @param  None
+	 * 
+	 * @return String  String describing this Floor object
+	 */
 	public String toString() {	    
 	    String toReturn = "";
 	    
 	    toReturn += String.format("Floor Number: %d", floorNum);
 	    
+	    // Add the information about the lamps
 	    for (int i = 0; i < numElevatorShafts; i++) {
 	        toReturn += String.format("; Elevator: %d", i);
 	        toReturn += String.format(", Floor: %d", elevatorLocation.get(i));
