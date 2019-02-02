@@ -343,7 +343,7 @@ public class Elevator {
 	public void goUp() {
 		System.out.println("Elevator Moving Up One Floor");
 		try {
-			Thread.sleep(5000); // it takes approximately 5 seconds to go up one floor
+			Thread.sleep(UtilityInformation.TIME_UP_ONE_FLOOR); // it takes approximately 5 seconds to go up one floor
 		} catch (InterruptedException ex) {
 			Thread.currentThread().interrupt();
 		}
@@ -360,7 +360,7 @@ public class Elevator {
 	public void goDown() {
 		System.out.println("Elevator Moving Down One Floor");
 		try {
-			Thread.sleep(5000); // it takes approximately 5 seconds to go up one floor
+			Thread.sleep(UtilityInformation.TIME_DOWN_ONE_FLOOR); // it takes approximately 5 seconds to go up one floor
 		} catch (InterruptedException ex) {
 			Thread.currentThread().interrupt();
 		}
@@ -382,7 +382,7 @@ public class Elevator {
 	 */
 	public void openDoor() {
 		try {
-			Thread.sleep(1500); // it takes approximately 1 second for the door to open
+			Thread.sleep(UtilityInformation.OPEN_DOOR_TIME); // it takes approximately 1 second for the door to open
 		} catch (InterruptedException ex) {
 			Thread.currentThread().interrupt();
 		}
@@ -396,7 +396,7 @@ public class Elevator {
 	 */
 	public void closeDoor() {
 		try {
-			Thread.sleep(1500); // it takes approximately 1.5 second for the door to close
+			Thread.sleep(UtilityInformation.CLOSE_DOOR_TIME); // it takes approximately 1.5 second for the door to close
 		} catch (InterruptedException ex) {
 			Thread.currentThread().interrupt();
 		}
