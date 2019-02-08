@@ -34,38 +34,27 @@ public class Scheduler {
 		floorsToVisit = new ArrayList<Byte>();
 		elevatorDirection = UtilityInformation.ElevatorDirection.STATIONARY;
 		currentState = State.WAITING;
-	}
-
-	public static void main(String[] args) {
-		Scheduler scheduler = new Scheduler();
-		while (true) {
-			scheduler.recieveAndSendData();
+		
+		try {
+			sendSocket = new DatagramSocket();
+		} catch (SocketException e1) {
+			e1.printStackTrace();
+			System.exit(1);
 		}
-	}
-
-	/**
-	 * Recieve messages and send messages according to the type of message recieved
-	 */
-	private void recieveAndSendData() {
+		
 		try {
 			recieveSocket = new DatagramSocket(UtilityInformation.SCHEDULER_PORT_NUM);
 		} catch (SocketException e) {
 			e.printStackTrace();
 			System.exit(1);
 		}
-		byte[] data = new byte[UtilityInformation.MAX_BYTE_ARRAY_SIZE];
-		recievePacket = new DatagramPacket(data, data.length);
-		try {
-			System.out.println("Scheduler is waiting for data...");
-			recieveSocket.receive(recievePacket);
-			eventOccured(Event.MESSAGE_RECIEVED, recievePacket);
-		} catch (IOException e) {
-			System.out.println("Recieve Socket failure!");
-			e.printStackTrace();
-			System.exit(1);
-		}
+	}
 
-		socketTearDown();
+	public static void main(String[] args) {
+		Scheduler scheduler = new Scheduler();
+		while (true) {
+			scheduler.receiveMessage();
+		}
 	}
 
 	/**
@@ -425,18 +414,31 @@ public class Scheduler {
 	 * @param destPortNum
 	 */
 	private void sendMessage(byte[] responseData, int packetLength, InetAddress destAddress, int destPortNum) {
-		try {
-			sendSocket = new DatagramSocket();
-		} catch (SocketException e1) {
-			e1.printStackTrace();
-			System.exit(1);
-		}
 		sendPacket = new DatagramPacket(responseData, packetLength, destAddress, destPortNum);
+		
 		try {
 			System.out.println("Scheduler is sending data...");
 			sendSocket.send(sendPacket);
 		} catch (IOException e) {
 			System.out.println("Send socket failure!");
+			e.printStackTrace();
+			System.exit(1);
+		}
+	}
+	
+	/**
+	 * Recieve a message
+	 */
+	private void receiveMessage() {
+		byte[] data = new byte[UtilityInformation.MAX_BYTE_ARRAY_SIZE];
+		recievePacket = new DatagramPacket(data, data.length);
+		
+		try {
+			System.out.println("Scheduler is waiting for data...");
+			recieveSocket.receive(recievePacket);
+			eventOccured(Event.MESSAGE_RECIEVED, recievePacket);
+		} catch (IOException e) {
+			System.out.println("Recieve Socket failure!");
 			e.printStackTrace();
 			System.exit(1);
 		}
