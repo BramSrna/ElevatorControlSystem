@@ -29,6 +29,8 @@ public class Scheduler {
 	private UtilityInformation.ElevatorDirection elevatorDirection;
 	private byte floorElevatorIsCurrentlyOn;
 	private State currentState;
+	
+	private final int MODE_BYTE_IND = 0;
 
 	public Scheduler() {
 		floorsToVisit = new ArrayList<Byte>();
@@ -162,19 +164,28 @@ public class Scheduler {
 	 * @param recievedPacket
 	 */
 	private void readMessage(DatagramPacket recievedPacket) {
-		byte mode = recievedPacket.getData()[0];
-		if (mode == UtilityInformation.CONFIG_MODE) {
+		byte mode = recievedPacket.getData()[MODE_BYTE_IND];
+		
+		if (mode == UtilityInformation.CONFIG_MODE) { // 0
 			eventOccured(Event.CONFIG_MESSAGE, recievedPacket);
-		} else if (mode == UtilityInformation.ELEVATOR_BUTTON_HIT_MODE) {
-			eventOccured(Event.BUTTON_PUSHED_IN_ELEVATOR, recievedPacket);
-		} else if (mode == UtilityInformation.FLOOR_SENSOR_MODE) {
+		} else if (mode == UtilityInformation.FLOOR_SENSOR_MODE) { // 1
 			eventOccured(Event.FLOOR_SENSOR_ACTIVATED, recievedPacket);
-		} else if (mode == UtilityInformation.FLOOR_REQUEST_MODE) {
+		} else if (mode == UtilityInformation.FLOOR_REQUEST_MODE) { // 2
 			eventOccured(Event.FLOOR_REQUESTED, recievedPacket);
-		} else if (mode == UtilityInformation.TEARDOWN_MODE) {
+		} else if (mode == UtilityInformation.ELEVATOR_BUTTON_HIT_MODE) { // 3
+			eventOccured(Event.BUTTON_PUSHED_IN_ELEVATOR, recievedPacket);
+		} else if (mode == UtilityInformation.ELEVATOR_DIRECTION_MODE) { // 4
+			
+		} else if (mode == UtilityInformation.ELEVATOR_DOOR_MODE) { // 5
+			
+		} else if (mode == UtilityInformation.SEND_DESTINATION_TO_ELEVATOR_MODE) { // 6
+			
+		} else if (mode == UtilityInformation.TEARDOWN_MODE) { // 7
 			eventOccured(Event.TEARDOWN, recievedPacket);
-		} else if (mode == UtilityInformation.CONFIG_CONFIRM) {
+		} else if (mode == UtilityInformation.CONFIG_CONFIRM) { // 8
 			eventOccured(Event.CONFIRM_CONFIG, recievedPacket);
+		} else {
+			System.out.println(String.format("Error in readMessage: Undefined mode: %d", mode));
 		}
 	}
 
@@ -403,6 +414,39 @@ public class Scheduler {
 	 */
 	private void reachedFloor(byte floor) {
 		floorsToVisit.removeAll(Arrays.asList(floor));
+	}
+	
+	private void transitionState(State startState, Event occuredEvent) {
+		disableStateActivity(startState);
+		
+		runExitAction(startState);
+		
+		State newState = null;
+		
+		runTransitionAction(startState, newState, occuredEvent);
+		runEntryAction(newState);
+		
+		enableStateActivity(newState);
+	}
+	
+	private void runEntryAction(State entryState) {
+		
+	}
+	
+	private void runTransitionAction(State exitState, State entryState, Event occuredEvent) {
+		
+	}
+	
+	private void runExitAction(State exitState) {
+		
+	}
+	
+	private void enableStateActivity(State currState) {
+		
+	}
+	
+	private void disableStateActivity(State currState) {
+		
 	}
 
 	/**
