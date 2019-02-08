@@ -126,6 +126,7 @@ public class SchedulerAlgorithm {
 	private void removeRequest(ArrayList<Byte> request) {
 		// TODO Is this correct?
 		elevatorRequests.removeAll(Arrays.asList(request));
+		System.out.println("New requests: " + elevatorRequests.toString());
 
 	}
 
