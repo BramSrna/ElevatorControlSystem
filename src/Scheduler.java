@@ -29,43 +29,34 @@ public class Scheduler {
 	private UtilityInformation.ElevatorDirection elevatorDirection;
 	private byte floorElevatorIsCurrentlyOn;
 	private State currentState;
+	
+	private final int MODE_BYTE_IND = 0;
 
 	public Scheduler() {
 		floorsToVisit = new ArrayList<Byte>();
 		elevatorDirection = UtilityInformation.ElevatorDirection.STATIONARY;
 		currentState = State.WAITING;
-	}
-
-	public static void main(String[] args) {
-		Scheduler scheduler = new Scheduler();
-		while (true) {
-			scheduler.recieveAndSendData();
+		
+		try {
+			sendSocket = new DatagramSocket();
+		} catch (SocketException e1) {
+			e1.printStackTrace();
+			System.exit(1);
 		}
-	}
-
-	/**
-	 * Recieve messages and send messages according to the type of message recieved
-	 */
-	private void recieveAndSendData() {
+		
 		try {
 			recieveSocket = new DatagramSocket(UtilityInformation.SCHEDULER_PORT_NUM);
 		} catch (SocketException e) {
 			e.printStackTrace();
 			System.exit(1);
 		}
-		byte[] data = new byte[UtilityInformation.MAX_BYTE_ARRAY_SIZE];
-		recievePacket = new DatagramPacket(data, data.length);
-		try {
-			System.out.println("Scheduler is waiting for data...");
-			recieveSocket.receive(recievePacket);
-			eventOccured(Event.MESSAGE_RECIEVED, recievePacket);
-		} catch (IOException e) {
-			System.out.println("Recieve Socket failure!");
-			e.printStackTrace();
-			System.exit(1);
-		}
+	}
 
-		socketTearDown();
+	public static void main(String[] args) {
+		Scheduler scheduler = new Scheduler();
+		while (true) {
+			scheduler.receiveMessage();
+		}
 	}
 
 	/**
@@ -173,19 +164,28 @@ public class Scheduler {
 	 * @param recievedPacket
 	 */
 	private void readMessage(DatagramPacket recievedPacket) {
-		byte mode = recievedPacket.getData()[0];
-		if (mode == UtilityInformation.CONFIG_MODE) {
+		byte mode = recievedPacket.getData()[MODE_BYTE_IND];
+		
+		if (mode == UtilityInformation.CONFIG_MODE) { // 0
 			eventOccured(Event.CONFIG_MESSAGE, recievedPacket);
-		} else if (mode == UtilityInformation.ELEVATOR_BUTTON_HIT_MODE) {
-			eventOccured(Event.BUTTON_PUSHED_IN_ELEVATOR, recievedPacket);
-		} else if (mode == UtilityInformation.FLOOR_SENSOR_MODE) {
+		} else if (mode == UtilityInformation.FLOOR_SENSOR_MODE) { // 1
 			eventOccured(Event.FLOOR_SENSOR_ACTIVATED, recievedPacket);
-		} else if (mode == UtilityInformation.FLOOR_REQUEST_MODE) {
+		} else if (mode == UtilityInformation.FLOOR_REQUEST_MODE) { // 2
 			eventOccured(Event.FLOOR_REQUESTED, recievedPacket);
-		} else if (mode == UtilityInformation.TEARDOWN_MODE) {
+		} else if (mode == UtilityInformation.ELEVATOR_BUTTON_HIT_MODE) { // 3
+			eventOccured(Event.BUTTON_PUSHED_IN_ELEVATOR, recievedPacket);
+		} else if (mode == UtilityInformation.ELEVATOR_DIRECTION_MODE) { // 4
+			
+		} else if (mode == UtilityInformation.ELEVATOR_DOOR_MODE) { // 5
+			
+		} else if (mode == UtilityInformation.SEND_DESTINATION_TO_ELEVATOR_MODE) { // 6
+			
+		} else if (mode == UtilityInformation.TEARDOWN_MODE) { // 7
 			eventOccured(Event.TEARDOWN, recievedPacket);
-		} else if (mode == UtilityInformation.CONFIG_CONFIRM) {
+		} else if (mode == UtilityInformation.CONFIG_CONFIRM) { // 8
 			eventOccured(Event.CONFIRM_CONFIG, recievedPacket);
+		} else {
+			System.out.println(String.format("Error in readMessage: Undefined mode: %d", mode));
 		}
 	}
 
@@ -415,6 +415,39 @@ public class Scheduler {
 	private void reachedFloor(byte floor) {
 		floorsToVisit.removeAll(Arrays.asList(floor));
 	}
+	
+	private void transitionState(State startState, Event occuredEvent) {
+		disableStateActivity(startState);
+		
+		runExitAction(startState);
+		
+		State newState = null;
+		
+		runTransitionAction(startState, newState, occuredEvent);
+		runEntryAction(newState);
+		
+		enableStateActivity(newState);
+	}
+	
+	private void runEntryAction(State entryState) {
+		
+	}
+	
+	private void runTransitionAction(State exitState, State entryState, Event occuredEvent) {
+		
+	}
+	
+	private void runExitAction(State exitState) {
+		
+	}
+	
+	private void enableStateActivity(State currState) {
+		
+	}
+	
+	private void disableStateActivity(State currState) {
+		
+	}
 
 	/**
 	 * Send a message
@@ -425,18 +458,31 @@ public class Scheduler {
 	 * @param destPortNum
 	 */
 	private void sendMessage(byte[] responseData, int packetLength, InetAddress destAddress, int destPortNum) {
-		try {
-			sendSocket = new DatagramSocket();
-		} catch (SocketException e1) {
-			e1.printStackTrace();
-			System.exit(1);
-		}
 		sendPacket = new DatagramPacket(responseData, packetLength, destAddress, destPortNum);
+		
 		try {
 			System.out.println("Scheduler is sending data...");
 			sendSocket.send(sendPacket);
 		} catch (IOException e) {
 			System.out.println("Send socket failure!");
+			e.printStackTrace();
+			System.exit(1);
+		}
+	}
+	
+	/**
+	 * Recieve a message
+	 */
+	private void receiveMessage() {
+		byte[] data = new byte[UtilityInformation.MAX_BYTE_ARRAY_SIZE];
+		recievePacket = new DatagramPacket(data, data.length);
+		
+		try {
+			System.out.println("Scheduler is waiting for data...");
+			recieveSocket.receive(recievePacket);
+			eventOccured(Event.MESSAGE_RECIEVED, recievePacket);
+		} catch (IOException e) {
+			System.out.println("Recieve Socket failure!");
 			e.printStackTrace();
 			System.exit(1);
 		}
