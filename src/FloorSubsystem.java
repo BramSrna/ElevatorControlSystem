@@ -10,10 +10,10 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class FloorSubsystem {
+public class FloorSubsystem extends ServerPattern{
 	// Sockets and packets used for UDP
 	private DatagramPacket sendPacket, receivePacket;
-	private DatagramSocket sendReceiveSocket;
+	private DatagramSocket sendSocket;
 
 	// Important floor indices
 	private int bottomFloor; // Lowest possible floor
@@ -49,6 +49,8 @@ public class FloorSubsystem {
 
 	// Address to send messages to
 	private InetAddress addressToSend;
+	
+	private ArrayList<Thread> floorThreads;
 
 	/**
 	 * FloorSubsystem
@@ -67,16 +69,19 @@ public class FloorSubsystem {
 	 * @return None
 	 */
 	public FloorSubsystem(int numFloors, int numElevators) {
+	    super(UtilityInformation.FLOOR_PORT_NUM, "FloorSubsystem");
+	    
 		serviceRequests = new ArrayList<Integer[]>();
 
 		floors = new ArrayList<Floor>();
+		floorThreads = new ArrayList<Thread>();
 
 		this.setNumElevators(numElevators);
 		this.setNumFloors(numFloors);
 
 		// Initialize the DatagramSocket
 		try {
-			sendReceiveSocket = new DatagramSocket(UtilityInformation.FLOOR_PORT_NUM);
+			sendSocket = new DatagramSocket();
 		} catch (SocketException se) {
 			se.printStackTrace();
 			this.teardown();
@@ -139,6 +144,12 @@ public class FloorSubsystem {
 			for (Floor currFloor : toRemove) {
 				floors.remove(currFloor);
 			}
+		}
+		
+		floorThreads.clear();
+		
+		for (Floor currFloor : floors) {
+		    floorThreads.add(new Thread(currFloor));
 		}
 	}
 
@@ -229,6 +240,8 @@ public class FloorSubsystem {
 			this.teardown();
 			System.exit(1);
 		}
+		
+		int timeOfFirstRequest = -1;
 
 		// Parse the current line
 		// Add the request
@@ -269,6 +282,10 @@ public class FloorSubsystem {
 			milliSecInt += secInt * 1000;
 			milliSecInt += minInt * 60 * 1000;
 			milliSecInt += hourInt * 60 * 60 * 1000;
+			
+			if (timeOfFirstRequest == -1) {
+			    timeOfFirstRequest = milliSecInt;
+			}
 
 			try {
 				startFloorInt = Integer.parseInt(startFloorStr);
@@ -288,7 +305,8 @@ public class FloorSubsystem {
 			// and make the request
 			for (Floor floor : floors) {
 				if (floor.getFloorNumber() == startFloorInt) {
-					floor.createElevatorRequest(milliSecInt, directionEnum, finalFloorInt);
+				    System.out.println(String.format("TIME: %d", milliSecInt - timeOfFirstRequest));
+					floor.createElevatorRequest(milliSecInt - timeOfFirstRequest, directionEnum, finalFloorInt);
 				}
 			}
 
@@ -314,88 +332,6 @@ public class FloorSubsystem {
 		}
 
 		System.out.println("Finished parsing test file.");
-	}
-
-	/**
-	 * addElevatorRequest
-	 * 
-	 * Adds a request to the list of requests with the given information.
-	 * 
-	 * The requests use the following format: 
-	 *     0th byte = Time the request was made in ms
-	 *     1st byte = Floor where request was made
-	 *     2nd byte = Direction user wants to travel (0 = Down, 1 = Up)
-	 *     3rd byte = Floor where user wants to travel
-	 * 
-	 * @param timeOfReq  : Time the request was made in ms
-	 * @param startFloor : Floor where request was made
-	 * @param dirPressed : Direction that used wants to travel
-	 * @param finalFloor : Floor that user wants to travel to
-	 * 
-	 * @return void
-	 */
-	public void addElevatorRequest(int timeOfReq, 
-                        	       int startFloor,
-                        	       UtilityInformation.ElevatorDirection dirPressed,
-                        	       int finalFloor) {
-		// Check that the given floors are valid
-		if ((startFloor < bottomFloor) || (startFloor > topFloor) || (finalFloor < bottomFloor)
-				|| (finalFloor > topFloor)) {
-			System.out.println("Error: Invalid request. One or both floors given is invalid.");
-			this.teardown();
-			System.exit(1);
-		}
-
-		// Check that the direction is valid for the floor
-		if (((startFloor == bottomFloor) && (dirPressed == UtilityInformation.ElevatorDirection.DOWN))
-				|| ((startFloor == topFloor) && (dirPressed == UtilityInformation.ElevatorDirection.UP))) {
-			System.out.println("Error: Invalid request. Direction invalid for given floor.");
-			this.teardown();
-			System.exit(1);
-		}
-
-		// Check that the start + end floors match the given direction
-		if (((dirPressed == UtilityInformation.ElevatorDirection.DOWN) && (finalFloor > startFloor))
-				|| ((dirPressed == UtilityInformation.ElevatorDirection.UP) && (finalFloor < startFloor))) {
-			System.out.println("Error: Invalid request. " + "Given floor numbers do not match desired direction.");
-			this.teardown();
-			System.exit(1);
-		}
-
-		// Formulate byte array
-		Integer request[] = new Integer[REQUEST_SIZE];
-
-		int timeInd = 0;
-		int startFloorInd = 1;
-		int dirInd = 2;
-		int finalFloorInd = 3;
-
-		// Set all of the values
-		request[timeInd] = timeOfReq;
-		request[startFloorInd] = startFloor;
-		request[dirInd] = dirPressed.ordinal();
-		request[finalFloorInd] = finalFloor;
-
-		// Add it to the list of requests
-		if (serviceRequests.isEmpty()) {
-			// If empty, just add the request
-			serviceRequests.add(request);
-		} else {
-			// If not empty add it to the proper spot in the list
-			Integer currReq[];
-			int i = 0;
-			while (i < serviceRequests.size()) {
-				currReq = serviceRequests.get(i);
-
-				// Check if current request should be after new request
-				if (request[timeInd] < currReq[timeInd]) {
-					break;
-				}
-
-				i++;
-			}
-			serviceRequests.add(i, request);
-		}
 	}
 
 	/**
@@ -449,19 +385,6 @@ public class FloorSubsystem {
 	}
 
 	/**
-	 * getRequests
-	 * 
-	 * Return the current list of requests.
-	 * 
-	 * @param  None
-	 * 
-	 * @return ArrayList<Integer[]> : The current list of requests
-	 */
-	public ArrayList<Integer[]> getRequests() {
-		return (serviceRequests);
-	}
-
-	/**
 	 * teardown
 	 * 
 	 * Sends a teardown signal and then closes all open sockets.
@@ -472,7 +395,7 @@ public class FloorSubsystem {
 	 */
 	public void teardown() {
 		sendTeardownSignal();
-		sendReceiveSocket.close();
+		sendSocket.close();
 	}
 	
 	/**
@@ -581,7 +504,7 @@ public class FloorSubsystem {
 
 		// Wait for a confirmation from the Scheduler before commencing the program
 		System.out.println("Waiting for response to configuration signal...");
-		waitForSignal(CONFIG_REC_SIZE);
+		this.getNextRequest();
 		System.out.println("Respone to configuration received.");
 	}
 
@@ -636,82 +559,27 @@ public class FloorSubsystem {
 	 * @return None
 	 */
 	public void runSubsystem() {
-	    // Loop through all requests and send 
-	    // them to the Scheduler at the proper time
-	    // Wait for elevator requests while not sending
-	    // elevator requests
-		for (int i = 0; i < serviceRequests.size(); i++) {
-			System.out.println(this.toString());
+	    while (true) {
+	        byte data[] = this.getNextRequest();
 
-			// Get the current request
-			Integer currReq[] = serviceRequests.get(i);
+	        // Get the floor number and elevator number
+	        byte floorNum = data[1];
+	        
+	        // Request currently does not contain the elevator number,
+	        // so hardcode the value to 1 for now.
+	        int elevatorNum = 1; 
+	        
+	        // Get the direction of the elevator
+	        UtilityInformation.ElevatorDirection dir = UtilityInformation.ElevatorDirection.values()[data[2]];
 
-			int startFloor = currReq[1];
-			int endFloor = currReq[3];
-			int dir = currReq[2];
-
-			// Send the request to the Scheduler
-			sendElevatorRequest(startFloor, endFloor, UtilityInformation.ElevatorDirection.values()[dir]);
-
-			int timeUntilNextRequest = 0;
-
-			// Calculate the time until the next request
-			// If no next request exists, permanently wait
-			// until execution is stopped
-			if (i < serviceRequests.size() - 1) {
-				Integer nextReq[] = serviceRequests.get(i + 1);
-
-				timeUntilNextRequest += nextReq[0] - currReq[0];
-
-			} else {
-				timeUntilNextRequest = -1;
-			}
-			
-			System.out.println(String.format("Time to wait: %d", timeUntilNextRequest));
-			
-			// Calculate when to send the next request
-			long startTime = System.currentTimeMillis();
-			long endTime = startTime + timeUntilNextRequest;
-			
-			// Wait for elevator updates while waiting to send the next request
-			while ((System.currentTimeMillis() < endTime) || (timeUntilNextRequest == -1)) {
-			  waitForElevatorUpdate();
-			}
-		}
-	}
-
-	/**
-	 * waitForElevatorUpdate
-	 * 
-	 * Waits for a signal from the Scheduler containg a
-	 * signal telling an elevator to move. The request
-	 * is parsed and important information is forwared to
-	 * all Floor objects in the FloorSubsystem.
-	 * 
-	 * @param  None
-	 * 
-	 * @return None
-	 */
-	public void waitForElevatorUpdate() {
-		byte data[] = waitForSignal(ELEVATOR_UPDATE_SIZE);
-
-		// Get the floor number and elevator number
-		byte floorNum = data[1];
-		
-		// Request currently does not contain the elevator number,
-		// so hardcode the value to 1 for now.
-		int elevatorNum = 1; 
-		
-		// Get the direction of the elevator
-		UtilityInformation.ElevatorDirection dir = UtilityInformation.ElevatorDirection.values()[data[2]];
-
-		// Propagate the information through all Floor
-		// objects in the FloorSubsystem
-		for (Floor currFloor : floors) {
-			currFloor.updateElevatorLocation(elevatorNum, floorNum, dir);
-		}
-		
-		System.out.println(this.toString());
+	        // Propagate the information through all Floor
+	        // objects in the FloorSubsystem
+	        for (Floor currFloor : floors) {
+	            currFloor.updateElevatorLocation(elevatorNum, floorNum, dir);
+	        }
+	        
+	        System.out.println(this.toString());
+	    }
 	}
 
 	/**
@@ -742,7 +610,7 @@ public class FloorSubsystem {
 
 		// Send the packet
 		try {
-			sendReceiveSocket.send(sendPacket);
+			sendSocket.send(sendPacket);
 		} catch (IOException e) {
 			e.printStackTrace();
 			this.teardown();
@@ -750,46 +618,6 @@ public class FloorSubsystem {
 		}
 
 		System.out.println("FloorSubsystem: Packet sent.\n");
-	}
-
-	/**
-	 * waitForSignal
-	 * 
-	 * Waits for a packet of the given size to be
-	 * sent by the Scheduler. When the packet is received,
-	 * information about the packet is printed. The message (byte[])
-	 * in the packet is then returned.
-	 * 
-	 * @param expectedMsgSize  The expected size of the message to receive
-	 * 
-	 * @return The byte[] send in the DatagramPacket
-	 */
-	public byte[] waitForSignal(int expectedMsgSize) {
-	    // Create the receive packet
-		byte data[] = new byte[expectedMsgSize];
-		receivePacket = new DatagramPacket(data, data.length);
-
-		System.out.println("FloorSubsystem: Waiting for response from host...");
-
-		try {
-			// Block until a datagram is received via sendReceiveSocket.
-			sendReceiveSocket.receive(receivePacket);
-		} catch (IOException e) {
-			e.printStackTrace();
-			this.teardown();
-			System.exit(1);
-		}
-
-		// Print out information about the response
-		System.out.println("FloorSubsystem: Packet received:");
-		System.out.println("From host: " + receivePacket.getAddress());
-		System.out.println("Host port: " + receivePacket.getPort());
-		int len = receivePacket.getLength();
-		System.out.println("Length: " + len);
-		System.out.print("Containing (as bytes): ");
-		System.out.println(Arrays.toString(data) + "\n");
-
-		return (receivePacket.getData());
 	}
 	
 	/**
@@ -804,6 +632,12 @@ public class FloorSubsystem {
 	 */
 	public ArrayList<Floor> getListOfFloors(){
 	    return(floors);
+	}
+	
+	public void startFloorThreads() {
+	    for (Thread thread : floorThreads) {
+	        thread.start();
+	    }
 	}
 
 	/**
@@ -849,6 +683,7 @@ public class FloorSubsystem {
 			} else if (val == UserInterface.ReturnVals.NEW_TEST_FILE) {
 				// If a new test file was entered, parse the file
 				floorController.parseInputFile(ui.getTestFile());
+				floorController.startFloorThreads();
 				floorController.runSubsystem();
 				System.out.println(floorController.toString());
 			} else if (val == UserInterface.ReturnVals.TEARDOWN) {
@@ -862,4 +697,10 @@ public class FloorSubsystem {
 		}
 
 	}
+
+    @Override
+    public void handleRequest() {
+        // TODO Auto-generated method stub
+        
+    }
 }

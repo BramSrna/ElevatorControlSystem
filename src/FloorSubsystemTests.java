@@ -84,7 +84,7 @@ class FloorSubsystemTests {
         testController.parseInputFile(filePath);
         
         // Grab the arrayList of requests for use later
-        reqs = testController.getRequests();
+        //reqs = testController.getRequests();
         
         System.out.println("------------------------- FINISHED SETUP -------------------------");
         System.out.println("------------------------- STARTING TEST -------------------------");
