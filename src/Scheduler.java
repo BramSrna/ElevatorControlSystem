@@ -8,7 +8,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class Scheduler {
+public class Scheduler extends ServerPattern {
 
 	// State machine
 	enum State {
@@ -22,9 +22,8 @@ public class Scheduler {
 
 	}
 
-	private DatagramSocket recieveSocket = null;
 	private DatagramSocket sendSocket = null;
-	private DatagramPacket recievePacket, sendPacket;
+	private DatagramPacket sendPacket;
 	private List<Byte> floorsToVisit;
 	private UtilityInformation.ElevatorDirection elevatorDirection;
 	private byte floorElevatorIsCurrentlyOn;
@@ -33,6 +32,8 @@ public class Scheduler {
 	private final int MODE_BYTE_IND = 0;
 
 	public Scheduler() {
+	    super(UtilityInformation.SCHEDULER_PORT_NUM, "Scheduler");
+	    
 		floorsToVisit = new ArrayList<Byte>();
 		elevatorDirection = UtilityInformation.ElevatorDirection.STATIONARY;
 		currentState = State.WAITING;
@@ -43,29 +44,17 @@ public class Scheduler {
 			e1.printStackTrace();
 			System.exit(1);
 		}
-		
-		try {
-			recieveSocket = new DatagramSocket(UtilityInformation.SCHEDULER_PORT_NUM);
-		} catch (SocketException e) {
-			e.printStackTrace();
-			System.exit(1);
-		}
 	}
 
 	public static void main(String[] args) {
 		Scheduler scheduler = new Scheduler();
-		while (true) {
-			scheduler.receiveMessage();
-		}
+		scheduler.runSheduler();
 	}
 
 	/**
 	 * Close send and recieve sockets.
 	 */
 	protected void socketTearDown() {
-		if (recieveSocket != null) {
-			recieveSocket.close();
-		}
 		if (sendSocket != null) {
 			sendSocket.close();
 		}
@@ -107,7 +96,7 @@ public class Scheduler {
 		case WAITING:
 			if (event.equals(Event.MESSAGE_RECIEVED)) {
 				currentState = State.READING_MESSAGE;
-				readMessage(recievePacket);
+				readMessage(packet);
 			}
 			break;
 		case RESPONDING_TO_MESSAGE:
@@ -470,21 +459,10 @@ public class Scheduler {
 		}
 	}
 	
-	/**
-	 * Recieve a message
-	 */
-	private void receiveMessage() {
-		byte[] data = new byte[UtilityInformation.MAX_BYTE_ARRAY_SIZE];
-		recievePacket = new DatagramPacket(data, data.length);
-		
-		try {
-			System.out.println("Scheduler is waiting for data...");
-			recieveSocket.receive(recievePacket);
-			eventOccured(Event.MESSAGE_RECIEVED, recievePacket);
-		} catch (IOException e) {
-			System.out.println("Recieve Socket failure!");
-			e.printStackTrace();
-			System.exit(1);
-		}
+	public void runSheduler() {
+        while (true) {
+            DatagramPacket nextReq = this.getNextRequest();
+            eventOccured(Event.MESSAGE_RECIEVED, nextReq);
+        }
 	}
 }

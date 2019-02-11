@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public abstract class ServerPattern {
-    private ArrayList<byte[]> receivedSignals;
+    private ArrayList<DatagramPacket> receivedSignals;
     
     private SignalReceiver receiver;
     
@@ -19,7 +19,7 @@ public abstract class ServerPattern {
     public ServerPattern(int portNum, String name) {
         this.name = name;
         
-        receivedSignals = new ArrayList<byte[]>();
+        receivedSignals = new ArrayList<DatagramPacket>();
         receivedSignalsEmpty = true;
         
         receiver = new SignalReceiver(portNum, this, name);
@@ -28,9 +28,7 @@ public abstract class ServerPattern {
         receiverThread.start();
     }
     
-    public abstract void handleRequest();
-    
-    public synchronized void signalReceived(byte[] newSignal, int priority) {
+    public synchronized void signalReceived(DatagramPacket newSignal, int priority) {
         while (receivedSignals.size() >= MAX_NUM_SIGNALS) {
             try {
                 wait();
@@ -46,7 +44,7 @@ public abstract class ServerPattern {
         notifyAll();
     }
     
-    public synchronized byte[] getNextRequest() {
+    public synchronized DatagramPacket getNextRequest() {
         while (receivedSignalsEmpty) {
             try {
                 wait();
@@ -56,7 +54,7 @@ public abstract class ServerPattern {
             }
         }
         
-        byte[] toReturn = receivedSignals.get(0);
+        DatagramPacket toReturn = receivedSignals.get(0);
         receivedSignals.remove(0);
         
         if (receivedSignals.size() == 0) {
@@ -108,12 +106,14 @@ class SignalReceiver implements Runnable {
      * 
      * @return The byte[] send in the DatagramPacket
      */
-    public byte[] waitForSignal(int expectedMsgSize) {
+    public DatagramPacket waitForSignal() {
         // Create the receive packet
+        int expectedMsgSize = 100;
+        
         byte data[] = new byte[expectedMsgSize];
         receivePacket = new DatagramPacket(data, data.length);
 
-        System.out.println("FloorSubsystem: Waiting for response from host...");
+        System.out.println(String.format("%s: Waiting for message...", name));
 
         try {
             // Block until a datagram is received via sendSocket.
@@ -131,15 +131,15 @@ class SignalReceiver implements Runnable {
         int len = receivePacket.getLength();
         System.out.println("Length: " + len);
         System.out.print("Containing (as bytes): ");
-        System.out.println(Arrays.toString(data) + "\n");
+        System.out.println(Arrays.toString(receivePacket.getData()) + "\n");
 
-        return (receivePacket.getData());
+        return (receivePacket);
     }
 
     @Override
     public void run() {
         while (true) {
-            byte[] signal = waitForSignal(5);
+            DatagramPacket signal = waitForSignal();
             controller.signalReceived(signal, 0);            
         }        
     }
