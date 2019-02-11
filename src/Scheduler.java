@@ -8,23 +8,13 @@ public class Scheduler extends ServerPattern {
 
 	// State machine
 	enum State {
-		START, 
-		WAITING, 
-		READING_MESSAGE, 
-		RESPONDING_TO_MESSAGE, 
-		END
+		START, WAITING, READING_MESSAGE, RESPONDING_TO_MESSAGE, END
 	}
 
 	// External and internal events
 	enum Event {
-		MESSAGE_RECIEVED, 
-		CONFIG_MESSAGE, 
-		BUTTON_PUSHED_IN_ELEVATOR, 
-		FLOOR_SENSOR_ACTIVATED, 
-		FLOOR_REQUESTED,
-		MOVE_ELEVATOR, 
-		TEARDOWN, 
-		CONFIRM_CONFIG
+		MESSAGE_RECIEVED, CONFIG_MESSAGE, BUTTON_PUSHED_IN_ELEVATOR, FLOOR_SENSOR_ACTIVATED, FLOOR_REQUESTED,
+		MOVE_ELEVATOR, TEARDOWN, CONFIRM_CONFIG
 	}
 
 	private DatagramSocket sendSocket = null;
@@ -77,6 +67,7 @@ public class Scheduler extends ServerPattern {
 		switch (currentState) {
 		case READING_MESSAGE:
 			if (event.equals(Event.CONFIG_MESSAGE)) {
+				algor.setNumberOfElevators(packet.getData()[1]);
 				sendConfigPacketToElevator(packet);
 				currentState = State.RESPONDING_TO_MESSAGE;
 				eventOccured(Event.CONFIG_MESSAGE, packet);
@@ -330,8 +321,8 @@ public class Scheduler extends ServerPattern {
 	 * @param recievedData
 	 */
 	private void extractFloorReachedNumberAndGenerateResponseMessageAndActions(DatagramPacket recievedPacket) {
-
-		algor.elevatorHasReachedFloor(recievedPacket.getData()[1]);
+		// TODO Make sure the elevator number matches position in ArrayList in algor
+		algor.elevatorHasReachedFloor(recievedPacket.getData()[1], recievedPacket.getData()[2]);
 		if (algor.getStopElevator()) {
 			stopElevator(recievedPacket);
 			openElevatorDoors(recievedPacket);
@@ -343,17 +334,17 @@ public class Scheduler extends ServerPattern {
 	private void transitionState(State startState, Event occuredEvent) {
 		disableStateActivity(startState);
 		runExitAction(startState);
-		
-		State newState = changeState(startState, occuredEvent);	
+
+		State newState = changeState(startState, occuredEvent);
 		runTransitionAction(startState, newState, occuredEvent);
-		
+
 		runEntryAction(newState);
 		enableStateActivity(newState);
 	}
-	
+
 	private State changeState(State startState, Event occuredEvent) {
 		State newState = null;
-		
+
 		switch (startState) {
 		case WAITING:
 			switch (occuredEvent) {
@@ -361,11 +352,10 @@ public class Scheduler extends ServerPattern {
 				newState = State.READING_MESSAGE;
 				break;
 			default:
-				System.out.println(String.format("Error in transitionState: Unhandled Event %s in State %s.", 
-						   startState.toString(), 
-						   occuredEvent.toString()));
+				System.out.println(String.format("Error in transitionState: Unhandled Event %s in State %s.",
+						startState.toString(), occuredEvent.toString()));
 				System.exit(1);
-				
+
 			}
 		case READING_MESSAGE:
 			switch (occuredEvent) {
@@ -385,9 +375,8 @@ public class Scheduler extends ServerPattern {
 				newState = State.RESPONDING_TO_MESSAGE;
 				break;
 			default:
-				System.out.println(String.format("Error in transitionState: Unhandled Event %s in State %s.", 
-						   startState.toString(), 
-						   occuredEvent.toString()));
+				System.out.println(String.format("Error in transitionState: Unhandled Event %s in State %s.",
+						startState.toString(), occuredEvent.toString()));
 				System.exit(1);
 			}
 		case RESPONDING_TO_MESSAGE:
@@ -402,9 +391,8 @@ public class Scheduler extends ServerPattern {
 				currentState = State.WAITING;
 				break;
 			default:
-				System.out.println(String.format("Error in transitionState: Unhandled Event %s in State %s.", 
-						   startState.toString(), 
-						   occuredEvent.toString()));
+				System.out.println(String.format("Error in transitionState: Unhandled Event %s in State %s.",
+						startState.toString(), occuredEvent.toString()));
 				System.exit(1);
 			}
 		case START:
@@ -413,14 +401,13 @@ public class Scheduler extends ServerPattern {
 		case END:
 			break;
 		default:
-			System.out.println(String.format("Error in transitionState: Unhandled Event %s in State %s.", 
-					   startState.toString(), 
-					   occuredEvent.toString()));
+			System.out.println(String.format("Error in transitionState: Unhandled Event %s in State %s.",
+					startState.toString(), occuredEvent.toString()));
 			System.exit(1);
 		}
-		
+
 		currentState = newState;
-		return(newState);
+		return (newState);
 	}
 
 	private void runEntryAction(State entryState) {
@@ -436,8 +423,7 @@ public class Scheduler extends ServerPattern {
 		case END:
 			break;
 		default:
-			System.out.println(String.format("Error in runEntryAction: Unknown State %s.",
-					   entryState.toString()));
+			System.out.println(String.format("Error in runEntryAction: Unknown State %s.", entryState.toString()));
 			System.exit(1);
 		}
 	}
@@ -455,8 +441,7 @@ public class Scheduler extends ServerPattern {
 		case END:
 			break;
 		default:
-			System.out.println(String.format("Error in runEntryAction: Unknown State %s.",
-					   entryState.toString()));
+			System.out.println(String.format("Error in runEntryAction: Unknown State %s.", entryState.toString()));
 			System.exit(1);
 		}
 	}
@@ -474,8 +459,7 @@ public class Scheduler extends ServerPattern {
 		case END:
 			break;
 		default:
-			System.out.println(String.format("Error in runExitAction: Unknown State %s.",
-					   exitState.toString()));
+			System.out.println(String.format("Error in runExitAction: Unknown State %s.", exitState.toString()));
 			System.exit(1);
 		}
 	}
@@ -493,8 +477,7 @@ public class Scheduler extends ServerPattern {
 		case END:
 			break;
 		default:
-			System.out.println(String.format("Error in enableStateActivity: Unknown State %s.",
-					   currState.toString()));
+			System.out.println(String.format("Error in enableStateActivity: Unknown State %s.", currState.toString()));
 			System.exit(1);
 		}
 	}
@@ -512,8 +495,7 @@ public class Scheduler extends ServerPattern {
 		case END:
 			break;
 		default:
-			System.out.println(String.format("Error in disableStateActivity: Unknown State %s.",
-					   currState.toString()));
+			System.out.println(String.format("Error in disableStateActivity: Unknown State %s.", currState.toString()));
 			System.exit(1);
 		}
 	}
