@@ -191,8 +191,8 @@ public class Scheduler {
 	 * @param recievedData
 	 */
 	protected void extractFloorRequestedNumberAndGenerateResponseMessageAndActions(DatagramPacket recievedPacket) {
-		System.out.println("Elevator was requested at: " + recievedPacket.getData()[1] + " in the direction "
-				+ recievedPacket.getData()[2] + " with destination " + recievedPacket.getData()[3] + "\n");
+//		System.out.println("Elevator was requested at: " + recievedPacket.getData()[1] + " in the direction "
+//				+ recievedPacket.getData()[2] + " with destination " + recievedPacket.getData()[3] + "\n");
 		byte[] destinationFloor = { UtilityInformation.SEND_DESTINATION_TO_ELEVATOR_MODE, recievedPacket.getData()[3],
 				UtilityInformation.END_OF_MESSAGE };
 		sendMessage(destinationFloor, destinationFloor.length, recievedPacket.getAddress(),
@@ -283,6 +283,7 @@ public class Scheduler {
 	protected void closeElevatorDoors(DatagramPacket packet) {
 		byte[] closeDoor = { UtilityInformation.ELEVATOR_DOOR_MODE, UtilityInformation.DOOR_CLOSE,
 				UtilityInformation.END_OF_MESSAGE };
+		System.out.println("Closing elevator doors... \n");
 		sendMessage(closeDoor, closeDoor.length, packet.getAddress(), UtilityInformation.ELEVATOR_PORT_NUM);
 	}
 
@@ -294,6 +295,7 @@ public class Scheduler {
 	protected void openElevatorDoors(DatagramPacket packet) {
 		byte[] openDoor = { UtilityInformation.ELEVATOR_DOOR_MODE, UtilityInformation.DOOR_OPEN,
 				UtilityInformation.END_OF_MESSAGE };
+		System.out.println("Opening elevator doors... \n");
 		sendMessage(openDoor, openDoor.length, packet.getAddress(), UtilityInformation.ELEVATOR_PORT_NUM);
 	}
 
