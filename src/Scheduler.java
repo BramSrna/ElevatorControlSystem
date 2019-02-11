@@ -303,7 +303,8 @@ public class Scheduler extends ServerPattern {
 	 * @param recievedData
 	 */
 	private void extractElevatorButtonFloorAndGenerateResponseMessageAndActions(DatagramPacket recievedPacket) {
-		System.out.println("Following floor button was hit in the elevator: " + recievedPacket.getData()[1] + "\n");
+		System.out.println("(SHOULD NOT HAPPEN YET) Following floor button was hit in the elevator: "
+				+ recievedPacket.getData()[1] + "\n");
 		algor.floorButtonPressed(recievedPacket);
 
 	}
