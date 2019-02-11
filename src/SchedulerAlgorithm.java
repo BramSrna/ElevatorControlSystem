@@ -13,6 +13,7 @@ public class SchedulerAlgorithm {
 	private ArrayList<Byte> elevatorDestinations; // Destinations
 	private ArrayList<ArrayList<Byte>> elevatorRequests; // Source, Destination
 	private byte currentFloor;
+	private boolean stopElevator = true;
 
 	/**
 	 * Called when someone on the Floor has requested the elevator.
@@ -39,49 +40,24 @@ public class SchedulerAlgorithm {
 		System.out.println("Elevator has reached floor: " + currentFloor);
 		if (elevatorDestinations.contains(currentFloor)) {
 			System.out.println("Current floor is a destination.");
-			// Stop the elevator and open the doors
+			stopElevator = true;
+
 		}
 		for (ArrayList<Byte> request : elevatorRequests) {
 			if (request.get(0) == currentFloor) {
 				System.out.println("Current floor is a request source.");
-				// Stop the elevator and open the doors
 				addDestination(request.get(1));
 				removeRequest(request);
-
+				stopElevator = true;
 			}
 		}
+		stopElevator = false;
 		System.out.println();
 		removeFloorFromDestinations(currentFloor);
-		moveElevator();
 	}
 
-	private void moveElevator() {
-		UtilityInformation.ElevatorDirection direction = null; // TODO I need the elevator direction
-		if (direction.equals(UtilityInformation.ElevatorDirection.STATIONARY) && somewhereToGo()) {
-			// Close elevator doors
-			if (elevatorShouldGoUp()) {
-				// Send elevator up
-			} else {
-				// Send elevator down
-			}
-		} else if (direction.equals(UtilityInformation.ElevatorDirection.UP) && somewhereToGo()) {
-			// Close elevator doors
-			if (floorsToGoToAbove()) {
-				// Send elevator up
-			} else {
-				// Send elevator down
-			}
-		} else if (direction.equals(UtilityInformation.ElevatorDirection.DOWN) && somewhereToGo()) {
-			// Close elevator doors
-			if (floorsToGoToBelow()) {
-				// Send elevator down
-			} else {
-				// Send elevator up
-			}
-		} else {
-			// Stop elevator
-			// Open elevator doors
-		}
+	public void floorButtonPressed(DatagramPacket packet) {
+		elevatorDestinations.add(packet.getData()[1]);
 	}
 
 	/**
@@ -135,7 +111,7 @@ public class SchedulerAlgorithm {
 	 * 
 	 * @return True if the elevator should go up, false otherwise
 	 */
-	private boolean elevatorShouldGoUp() {
+	public boolean elevatorShouldGoUp() {
 		int difference;
 		int currentClosestDistance = Integer.MAX_VALUE;
 		int closestFloor = 0;
@@ -165,7 +141,7 @@ public class SchedulerAlgorithm {
 	 * 
 	 * @return True if we need to go up, false otherwise
 	 */
-	private boolean floorsToGoToAbove() {
+	public boolean floorsToGoToAbove() {
 		for (byte tempFloor : elevatorDestinations) {
 			if (tempFloor > currentFloor) {
 				return true;
@@ -184,7 +160,7 @@ public class SchedulerAlgorithm {
 	 * 
 	 * @return True if we need to go down, false otherwise
 	 */
-	private boolean floorsToGoToBelow() {
+	public boolean floorsToGoToBelow() {
 		for (byte tempFloor : elevatorDestinations) {
 			if (tempFloor < currentFloor) {
 				return true;
@@ -203,10 +179,26 @@ public class SchedulerAlgorithm {
 	 * 
 	 * @return True if has somewhere to go, False otherwise
 	 */
-	private boolean somewhereToGo() {
+	public boolean somewhereToGo() {
 		if (elevatorDestinations.isEmpty() && elevatorRequests.isEmpty()) {
 			return false;
 		}
 		return true;
+	}
+
+	public ArrayList<Byte> getDestinations() {
+		return elevatorDestinations;
+	}
+
+	public ArrayList<ArrayList<Byte>> getRequests() {
+		return elevatorRequests;
+	}
+
+	public byte getCurrentFloor() {
+		return currentFloor;
+	}
+
+	public boolean getStopElevator() {
+		return stopElevator;
 	}
 }
