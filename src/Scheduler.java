@@ -187,7 +187,13 @@ public class Scheduler extends ServerPattern {
 				UtilityInformation.END_OF_MESSAGE };
 		sendMessage(destinationFloor, destinationFloor.length, recievedPacket.getAddress(),
 				UtilityInformation.ELEVATOR_PORT_NUM);
-		algor.elevatorRequestMade(recievedPacket);
+		UtilityInformation.ElevatorDirection upOrDown = null;
+		if (recievedPacket.getData()[2] == 0) {
+			upOrDown = UtilityInformation.ElevatorDirection.DOWN;
+		} else {
+			upOrDown = UtilityInformation.ElevatorDirection.UP;
+		}
+		algor.elevatorRequestMade(recievedPacket.getData()[1], recievedPacket.getData()[3], upOrDown);
 	}
 
 	/**
@@ -305,7 +311,7 @@ public class Scheduler extends ServerPattern {
 	private void extractElevatorButtonFloorAndGenerateResponseMessageAndActions(DatagramPacket recievedPacket) {
 		System.out.println("(SHOULD NOT HAPPEN YET) Following floor button was hit in the elevator: "
 				+ recievedPacket.getData()[1] + "\n");
-		algor.floorButtonPressed(recievedPacket);
+		algor.floorButtonPressed(recievedPacket.getData()[1]);
 
 	}
 
@@ -316,7 +322,7 @@ public class Scheduler extends ServerPattern {
 	 */
 	private void extractFloorReachedNumberAndGenerateResponseMessageAndActions(DatagramPacket recievedPacket) {
 
-		algor.elevatorHasReachedFloor(recievedPacket);
+		algor.elevatorHasReachedFloor(recievedPacket.getData()[1]);
 		if (algor.getStopElevator()) {
 			stopElevator(recievedPacket);
 			openElevatorDoors(recievedPacket);

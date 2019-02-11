@@ -1,4 +1,3 @@
-import java.net.DatagramPacket;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -20,12 +19,12 @@ public class SchedulerAlgorithm {
 	 * 
 	 * @param packet
 	 */
-	public void elevatorRequestMade(DatagramPacket packet) {
-		System.out.println("Elevator was requested at: " + packet.getData()[1] + " in the direction "
-				+ packet.getData()[2] + " with destination " + packet.getData()[3]);
+	public void elevatorRequestMade(Byte source, Byte destination, UtilityInformation.ElevatorDirection upOrDown) {
+		System.out.println("Elevator was requested at: " + source + " in the direction " + upOrDown
+				+ " with destination " + destination);
 		ArrayList<Byte> request = new ArrayList<Byte>();
-		request.add(packet.getData()[1]);
-		request.add(packet.getData()[3]);
+		request.add(source);
+		request.add(destination);
 		addElevatorRequest(request);
 
 	}
@@ -35,8 +34,7 @@ public class SchedulerAlgorithm {
 	 * 
 	 * @param packet
 	 */
-	public void elevatorHasReachedFloor(DatagramPacket packet) {
-		currentFloor = packet.getData()[1];
+	public void elevatorHasReachedFloor(Byte currentFloor) {
 		System.out.println("Elevator has reached floor: " + currentFloor);
 		if (elevatorDestinations.contains(currentFloor)) {
 			System.out.println("Current floor is a destination.");
@@ -57,8 +55,8 @@ public class SchedulerAlgorithm {
 	}
 
 	// TODO NOT USED YET
-	public void floorButtonPressed(DatagramPacket packet) {
-		elevatorDestinations.add(packet.getData()[1]);
+	public void floorButtonPressed(Byte pressedButton) {
+		elevatorDestinations.add(pressedButton);
 	}
 
 	/**
