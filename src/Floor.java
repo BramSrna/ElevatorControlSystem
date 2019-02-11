@@ -1,6 +1,6 @@
 import java.util.ArrayList;
 
-public class Floor {
+public class Floor implements Runnable {
 	private FloorSubsystem controller; // The FloorSubsystem that this object belongs to
 
 	private int floorNum; // The number of this floor
@@ -15,6 +15,10 @@ public class Floor {
 	// Information for the buttons the floor
 	private UtilityInformation.ButtonState upButton;
 	private UtilityInformation.ButtonState downButton;
+	
+	private ArrayList<Integer[]> serviceRequests;
+	
+	private long startTime;
 
 	/**
 	 * Floor
@@ -30,6 +34,8 @@ public class Floor {
 	 * @return None
 	 */
 	public Floor(FloorSubsystem controller, int floorNum, int numElevatorShafts) {
+	    serviceRequests = new ArrayList<Integer[]>();
+	    
 		elevatorLocation = new ArrayList<Integer>();
 		arrivalLamp = new ArrayList<UtilityInformation.LampState>();
 		arrivalLampDir = new ArrayList<UtilityInformation.ElevatorDirection>();
@@ -70,12 +76,15 @@ public class Floor {
 		} else if (direction == UtilityInformation.ElevatorDirection.DOWN) {
 			downButton = UtilityInformation.ButtonState.PRESSED;
 		}
+		
+		Integer[] request = new Integer[5];
+		request[0] = timeOfReq;
+		request[1] = this.getFloorNumber();
+		request[2] = direction.ordinal();
+		request[3] = endFloor;
+		request[4] = -1;
 
-		// Tell the controller to send the request
-		controller.addElevatorRequest(timeOfReq, 
-									  this.floorNum, 
-									  direction, 
-									  endFloor);
+		serviceRequests.add(request);
 	}
 	
 	/**
@@ -325,4 +334,34 @@ public class Floor {
         return(toReturn);
 	    
 	}
+	
+	public synchronized void sendRequest() {
+	    while ((serviceRequests.size() == 0) ||
+	            (System.currentTimeMillis() - startTime < serviceRequests.get(0)[0])) {
+	    }
+	    
+	    Integer[] request = serviceRequests.get(0);
+	    
+	    byte[] signal = new byte[4];
+	    
+	    signal[0] = (byte)(int)request[1];
+	    signal[1] = (byte)(int)request[2];
+	    signal[2] = (byte)(int)request[3];
+	    signal[3] = (byte)(int)request[4];
+	    
+	    controller.sendElevatorRequest(request[1], 
+                        	           request[3], 
+                        	           UtilityInformation.ElevatorDirection.values()[request[2]]);
+	    
+	    serviceRequests.remove(0);
+	}
+
+    @Override
+    public void run() {
+        startTime = System.currentTimeMillis();
+        
+        while (true) {
+            this.sendRequest();
+        }
+    }
 }
