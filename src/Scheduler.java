@@ -8,14 +8,23 @@ public class Scheduler extends ServerPattern {
 
 	// State machine
 	enum State {
-		WAITING, READING_MESSAGE, RESPONDING_TO_MESSAGE
+		START, 
+		WAITING, 
+		READING_MESSAGE, 
+		RESPONDING_TO_MESSAGE, 
+		END
 	}
 
 	// External and internal events
 	enum Event {
-		MESSAGE_RECIEVED, CONFIG_MESSAGE, BUTTON_PUSHED_IN_ELEVATOR, FLOOR_SENSOR_ACTIVATED, FLOOR_REQUESTED,
-		MOVE_ELEVATOR, TEARDOWN, CONFIRM_CONFIG
-
+		MESSAGE_RECIEVED, 
+		CONFIG_MESSAGE, 
+		BUTTON_PUSHED_IN_ELEVATOR, 
+		FLOOR_SENSOR_ACTIVATED, 
+		FLOOR_REQUESTED,
+		MOVE_ELEVATOR, 
+		TEARDOWN, 
+		CONFIRM_CONFIG
 	}
 
 	private DatagramSocket sendSocket = null;
@@ -33,7 +42,7 @@ public class Scheduler extends ServerPattern {
 		algor = new SchedulerAlgorithm();
 
 		elevatorDirection = UtilityInformation.ElevatorDirection.STATIONARY;
-		currentState = State.WAITING;
+		currentState = State.START;
 
 		try {
 			sendSocket = new DatagramSocket();
@@ -333,35 +342,180 @@ public class Scheduler extends ServerPattern {
 
 	private void transitionState(State startState, Event occuredEvent) {
 		disableStateActivity(startState);
-
 		runExitAction(startState);
-
-		State newState = null;
-
+		
+		State newState = changeState(startState, occuredEvent);	
 		runTransitionAction(startState, newState, occuredEvent);
+		
 		runEntryAction(newState);
-
 		enableStateActivity(newState);
+	}
+	
+	private State changeState(State startState, Event occuredEvent) {
+		State newState = null;
+		
+		switch (startState) {
+		case WAITING:
+			switch (occuredEvent) {
+			case MESSAGE_RECIEVED:
+				newState = State.READING_MESSAGE;
+				break;
+			default:
+				System.out.println(String.format("Error in transitionState: Unhandled Event %s in State %s.", 
+						   startState.toString(), 
+						   occuredEvent.toString()));
+				System.exit(1);
+				
+			}
+		case READING_MESSAGE:
+			switch (occuredEvent) {
+			case CONFIG_MESSAGE:
+				newState = State.RESPONDING_TO_MESSAGE;
+				break;
+			case BUTTON_PUSHED_IN_ELEVATOR:
+				newState = State.RESPONDING_TO_MESSAGE;
+				break;
+			case FLOOR_REQUESTED:
+				newState = State.RESPONDING_TO_MESSAGE;
+				break;
+			case TEARDOWN:
+				newState = State.END;
+				break;
+			case CONFIRM_CONFIG:
+				newState = State.RESPONDING_TO_MESSAGE;
+				break;
+			default:
+				System.out.println(String.format("Error in transitionState: Unhandled Event %s in State %s.", 
+						   startState.toString(), 
+						   occuredEvent.toString()));
+				System.exit(1);
+			}
+		case RESPONDING_TO_MESSAGE:
+			switch (occuredEvent) {
+			case MOVE_ELEVATOR:
+				currentState = State.WAITING;
+				break;
+			case CONFIG_MESSAGE:
+				currentState = State.WAITING;
+				break;
+			case CONFIRM_CONFIG:
+				currentState = State.WAITING;
+				break;
+			default:
+				System.out.println(String.format("Error in transitionState: Unhandled Event %s in State %s.", 
+						   startState.toString(), 
+						   occuredEvent.toString()));
+				System.exit(1);
+			}
+		case START:
+			newState = State.WAITING;
+			break;
+		case END:
+			break;
+		default:
+			System.out.println(String.format("Error in transitionState: Unhandled Event %s in State %s.", 
+					   startState.toString(), 
+					   occuredEvent.toString()));
+			System.exit(1);
+		}
+		
+		currentState = newState;
+		return(newState);
 	}
 
 	private void runEntryAction(State entryState) {
-
+		switch (entryState) {
+		case WAITING:
+			break;
+		case READING_MESSAGE:
+			break;
+		case RESPONDING_TO_MESSAGE:
+			break;
+		case START:
+			break;
+		case END:
+			break;
+		default:
+			System.out.println(String.format("Error in runEntryAction: Unknown State %s.",
+					   entryState.toString()));
+			System.exit(1);
+		}
 	}
 
 	private void runTransitionAction(State exitState, State entryState, Event occuredEvent) {
-
+		switch (entryState) {
+		case WAITING:
+			break;
+		case READING_MESSAGE:
+			break;
+		case RESPONDING_TO_MESSAGE:
+			break;
+		case START:
+			break;
+		case END:
+			break;
+		default:
+			System.out.println(String.format("Error in runEntryAction: Unknown State %s.",
+					   entryState.toString()));
+			System.exit(1);
+		}
 	}
 
 	private void runExitAction(State exitState) {
-
+		switch (exitState) {
+		case WAITING:
+			break;
+		case READING_MESSAGE:
+			break;
+		case RESPONDING_TO_MESSAGE:
+			break;
+		case START:
+			break;
+		case END:
+			break;
+		default:
+			System.out.println(String.format("Error in runExitAction: Unknown State %s.",
+					   exitState.toString()));
+			System.exit(1);
+		}
 	}
 
 	private void enableStateActivity(State currState) {
-
+		switch (currState) {
+		case WAITING:
+			break;
+		case READING_MESSAGE:
+			break;
+		case RESPONDING_TO_MESSAGE:
+			break;
+		case START:
+			break;
+		case END:
+			break;
+		default:
+			System.out.println(String.format("Error in enableStateActivity: Unknown State %s.",
+					   currState.toString()));
+			System.exit(1);
+		}
 	}
 
 	private void disableStateActivity(State currState) {
-
+		switch (currState) {
+		case WAITING:
+			break;
+		case READING_MESSAGE:
+			break;
+		case RESPONDING_TO_MESSAGE:
+			break;
+		case START:
+			break;
+		case END:
+			break;
+		default:
+			System.out.println(String.format("Error in disableStateActivity: Unknown State %s.",
+					   currState.toString()));
+			System.exit(1);
+		}
 	}
 
 	/**
