@@ -17,7 +17,9 @@ public class SchedulerAlgorithm {
 	/**
 	 * Called when someone on the Floor has requested the elevator.
 	 * 
-	 * @param packet
+	 * @param source
+	 * @param destination
+	 * @param upOrDown
 	 */
 	public void elevatorRequestMade(Byte source, Byte destination, UtilityInformation.ElevatorDirection upOrDown) {
 		System.out.println("Elevator was requested at: " + source + " in the direction " + upOrDown
@@ -32,7 +34,7 @@ public class SchedulerAlgorithm {
 	/**
 	 * Called when the sensor informs the scheduler where the elevator is.
 	 * 
-	 * @param packet
+	 * @param Byte currentFloor
 	 */
 	public void elevatorHasReachedFloor(Byte currentFloor) {
 		System.out.println("Elevator has reached floor: " + currentFloor);
