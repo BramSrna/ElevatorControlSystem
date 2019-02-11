@@ -56,6 +56,7 @@ public class SchedulerAlgorithm {
 		removeFloorFromDestinations(currentFloor);
 	}
 
+	// TODO NOT USED YET
 	public void floorButtonPressed(DatagramPacket packet) {
 		elevatorDestinations.add(packet.getData()[1]);
 	}
