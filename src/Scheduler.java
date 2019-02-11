@@ -206,7 +206,7 @@ public class Scheduler extends ServerPattern {
 		 */
 		if (elevatorDirection.equals(UtilityInformation.ElevatorDirection.STATIONARY) && algor.somewhereToGo()) {
 			closeElevatorDoors(packet);
-			if (elevatorShouldGoUp()) {
+			if (algor.elevatorShouldGoUp()) {
 				sendElevatorUp(packet);
 			} else {
 				sendElevatorDown(packet);
