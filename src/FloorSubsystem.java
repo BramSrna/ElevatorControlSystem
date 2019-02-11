@@ -560,7 +560,7 @@ public class FloorSubsystem extends ServerPattern{
 	 */
 	public void runSubsystem() {
 	    while (true) {
-	        byte data[] = this.getNextRequest();
+	        byte data[] = this.getNextRequest().getData();
 
 	        // Get the floor number and elevator number
 	        byte floorNum = data[1];
@@ -697,10 +697,4 @@ public class FloorSubsystem extends ServerPattern{
 		}
 
 	}
-
-    @Override
-    public void handleRequest() {
-        // TODO Auto-generated method stub
-        
-    }
 }
