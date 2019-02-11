@@ -12,7 +12,14 @@ public class SchedulerAlgorithm {
 	private ArrayList<Byte> elevatorDestinations; // Destinations
 	private ArrayList<ArrayList<Byte>> elevatorRequests; // Source, Destination
 	private byte currentFloor;
-	private boolean stopElevator = true;
+	private boolean stopElevator;
+	
+	public SchedulerAlgorithm() {
+		elevatorRequests = new ArrayList<ArrayList<Byte>>();
+		elevatorDestinations = new ArrayList<Byte>();
+		currentFloor = 0;
+		stopElevator = true;
+	}
 
 	/**
 	 * Called when someone on the Floor has requested the elevator.
@@ -43,14 +50,16 @@ public class SchedulerAlgorithm {
 			stopElevator = true;
 
 		}
+		ArrayList<Byte> reqToRemove = null;
 		for (ArrayList<Byte> request : elevatorRequests) {
 			if (request.get(0) == currentFloor) {
 				System.out.println("Current floor is a request source.");
 				addDestination(request.get(1));
-				removeRequest(request);
+				reqToRemove = request;
 				stopElevator = true;
 			}
 		}
+		removeRequest(reqToRemove);
 		stopElevator = false;
 		System.out.println();
 		removeFloorFromDestinations(currentFloor);
