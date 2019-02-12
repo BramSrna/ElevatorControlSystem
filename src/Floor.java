@@ -336,8 +336,7 @@ public class Floor implements Runnable {
 	}
 	
 	public synchronized void sendRequest() {
-	    while ((serviceRequests.size() == 0) ||
-	            (System.currentTimeMillis() - startTime < serviceRequests.get(0)[0])) {
+	    while (System.currentTimeMillis() - startTime < serviceRequests.get(0)[0]) {
 	    }
 	    
 	    Integer[] request = serviceRequests.get(0);
@@ -360,7 +359,7 @@ public class Floor implements Runnable {
     public void run() {
         startTime = System.currentTimeMillis();
         
-        while (true) {
+        while (serviceRequests.size() > 0) {
             this.sendRequest();
         }
     }

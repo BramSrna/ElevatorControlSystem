@@ -34,7 +34,7 @@ public class Elevator {
 	private int schedulerPort = 420;
 	
 	// The elevator car number
-	private int elevatorNumber = 1;
+	private int elevatorNumber = 0;
 	
 	// The current floor the elevator is on
 	private int currentFloor = 0;
@@ -348,7 +348,7 @@ public class Elevator {
 			Thread.currentThread().interrupt();
 		}
 		currentFloor++;
-		byte[] data = { UtilityInformation.FLOOR_SENSOR_MODE , (byte) currentFloor, -1 };
+		byte[] data = { UtilityInformation.FLOOR_SENSOR_MODE , (byte) currentFloor, (byte) elevatorNumber, -1 };
 		currentState = State.ARRIVE_AT_FLOOR;
 		System.out.println("Elevator arrives on floor");
 		this.sendData(data, schedulerIP, schedulerPort);
@@ -365,7 +365,7 @@ public class Elevator {
 			Thread.currentThread().interrupt();
 		}
 		currentFloor--;
-		byte[] data = { UtilityInformation.FLOOR_SENSOR_MODE, (byte) currentFloor, -1 };
+		byte[] data = { UtilityInformation.FLOOR_SENSOR_MODE, (byte) currentFloor, (byte) elevatorNumber, -1 };
 		System.out.println("Elevator arrives on floor");
 		this.sendData(data, schedulerIP, schedulerPort);
 	}
