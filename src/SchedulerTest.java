@@ -141,10 +141,10 @@ class SchedulerTest {
 		thread2.start();
 		thread.sleep(1000);
 		thread2.sleep(1000);
-		byte[] buf = new byte[] { 1, -1 };
+		byte[] buf = new byte[] { 1, 2, 3, -1 };
 		DatagramPacket packet = new DatagramPacket(buf, buf.length, InetAddress.getLocalHost(),
 				UtilityInformation.ELEVATOR_PORT_NUM);
-		scheduler.stopElevator(packet, (byte) 0);
+		scheduler.stopElevator(packet);
 
 	}
 
@@ -165,10 +165,10 @@ class SchedulerTest {
 		thread2.start();
 		thread.sleep(1000);
 		thread2.sleep(1000);
-		byte[] buf = new byte[] { 1, -1 };
+		byte[] buf = new byte[] { 1, 2, 3, -1 };
 		DatagramPacket packet = new DatagramPacket(buf, buf.length, InetAddress.getLocalHost(),
 				UtilityInformation.ELEVATOR_PORT_NUM);
-		scheduler.sendElevatorUp(packet, (byte) 0);
+		scheduler.sendElevatorUp(packet);
 
 	}
 
@@ -189,10 +189,10 @@ class SchedulerTest {
 		thread2.start();
 		thread.sleep(1000);
 		thread2.sleep(1000);
-		byte[] buf = new byte[] { 1, -1 };
+		byte[] buf = new byte[] { 1, 2, 3, -1 };
 		DatagramPacket packet = new DatagramPacket(buf, buf.length, InetAddress.getLocalHost(),
 				UtilityInformation.ELEVATOR_PORT_NUM);
-		scheduler.sendElevatorDown(packet, (byte) 0);
+		scheduler.sendElevatorDown(packet);
 
 	}
 
