@@ -144,7 +144,7 @@ class SchedulerTest {
 		byte[] buf = new byte[] { 1, -1 };
 		DatagramPacket packet = new DatagramPacket(buf, buf.length, InetAddress.getLocalHost(),
 				UtilityInformation.ELEVATOR_PORT_NUM);
-		scheduler.stopElevator(packet, 0);
+		scheduler.stopElevator(packet, (byte) 0);
 
 	}
 
@@ -168,7 +168,7 @@ class SchedulerTest {
 		byte[] buf = new byte[] { 1, -1 };
 		DatagramPacket packet = new DatagramPacket(buf, buf.length, InetAddress.getLocalHost(),
 				UtilityInformation.ELEVATOR_PORT_NUM);
-		scheduler.sendElevatorUp(packet, 0);
+		scheduler.sendElevatorUp(packet, (byte) 0);
 
 	}
 
@@ -192,7 +192,7 @@ class SchedulerTest {
 		byte[] buf = new byte[] { 1, -1 };
 		DatagramPacket packet = new DatagramPacket(buf, buf.length, InetAddress.getLocalHost(),
 				UtilityInformation.ELEVATOR_PORT_NUM);
-		scheduler.sendElevatorDown(packet, 0);
+		scheduler.sendElevatorDown(packet, (byte) 0);
 
 	}
 

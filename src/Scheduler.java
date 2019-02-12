@@ -10,24 +10,13 @@ public class Scheduler extends ServerPattern {
 
 	// State machine
 	enum State {
-		START, 
-		WAITING, 
-		READING_MESSAGE, 
-		RESPONDING_TO_MESSAGE, 
-		END
+		START, WAITING, READING_MESSAGE, RESPONDING_TO_MESSAGE, END
 	}
 
 	// External and internal events
 	enum Event {
-		MESSAGE_RECIEVED, 
-		CONFIG_MESSAGE, 
-		BUTTON_PUSHED_IN_ELEVATOR, 
-		FLOOR_SENSOR_ACTIVATED, 
-		FLOOR_REQUESTED,
-		MOVE_ELEVATOR, 
-		TEARDOWN, 
-		CONFIRM_CONFIG,
-		ELEVATOR_STOPPED
+		MESSAGE_RECIEVED, CONFIG_MESSAGE, BUTTON_PUSHED_IN_ELEVATOR, FLOOR_SENSOR_ACTIVATED, FLOOR_REQUESTED,
+		MOVE_ELEVATOR, TEARDOWN, CONFIRM_CONFIG, ELEVATOR_STOPPED
 	}
 
 	private DatagramSocket sendSocket = null;
@@ -38,7 +27,7 @@ public class Scheduler extends ServerPattern {
 	private final int MODE_BYTE_IND = 0;
 
 	private SchedulerAlgorithm algor;
-	
+
 	private int numElevators;
 	private int numFloors;
 
@@ -78,41 +67,41 @@ public class Scheduler extends ServerPattern {
 		switch (currentState) {
 		case READING_MESSAGE:
 			if (event.equals(Event.CONFIG_MESSAGE)) {
-			    currentState = State.RESPONDING_TO_MESSAGE;
-			    
+				currentState = State.RESPONDING_TO_MESSAGE;
+
 				algor.setNumberOfElevators(packet.getData()[1]);
-				sendConfigPacketToElevator(packet);				
+				sendConfigPacketToElevator(packet);
 				eventOccured(Event.CONFIG_MESSAGE, packet);
 			} else if (event.equals(Event.BUTTON_PUSHED_IN_ELEVATOR)) {
-			    currentState = State.RESPONDING_TO_MESSAGE;
-			    
-				extractElevatorButtonFloorAndGenerateResponseMessageAndActions(packet);				
+				currentState = State.RESPONDING_TO_MESSAGE;
+
+				extractElevatorButtonFloorAndGenerateResponseMessageAndActions(packet);
 				moveToFloor(packet);
 			} else if (event.equals(Event.FLOOR_SENSOR_ACTIVATED)) {
-	            currentState = State.RESPONDING_TO_MESSAGE;
-	            
+				currentState = State.RESPONDING_TO_MESSAGE;
+
 				extractFloorReachedNumberAndGenerateResponseMessageAndActions(packet);
 			} else if (event.equals(Event.FLOOR_REQUESTED)) {
-			    currentState = State.RESPONDING_TO_MESSAGE;
-			    
-				extractFloorRequestedNumberAndGenerateResponseMessageAndActions(packet);				
+				currentState = State.RESPONDING_TO_MESSAGE;
+
+				extractFloorRequestedNumberAndGenerateResponseMessageAndActions(packet);
 				moveToFloor(packet);
 			} else if (event.equals(Event.TEARDOWN)) {
-			    currentState = State.END;
-			    
+				currentState = State.END;
+
 				sendTearDownMessage(packet);
 			} else if (event.equals(Event.CONFIRM_CONFIG)) {
-			    currentState = State.RESPONDING_TO_MESSAGE;
-			    
-				sendConfigConfirmMessage(packet);				
+				currentState = State.RESPONDING_TO_MESSAGE;
+
+				sendConfigConfirmMessage(packet);
 				eventOccured(Event.CONFIRM_CONFIG, packet);
 			} else if (event.equals(Event.ELEVATOR_STOPPED)) {
-			    currentState = State.RESPONDING_TO_MESSAGE;
-			    
-			    elevatorStopped(packet);
-			    moveToFloor(packet);
+				currentState = State.RESPONDING_TO_MESSAGE;
+
+				elevatorStopped(packet);
+				moveToFloor(packet);
 			}
-			
+
 			currentState = State.WAITING;
 
 			break;
@@ -129,9 +118,9 @@ public class Scheduler extends ServerPattern {
 			}
 			break;
 		case START:
-		    currentState = State.WAITING;
-		    eventOccured(event, packet);
-		    break;
+			currentState = State.WAITING;
+			eventOccured(event, packet);
+			break;
 		default:
 			System.out.println("Should never come here!\n");
 			System.exit(1);
@@ -163,9 +152,9 @@ public class Scheduler extends ServerPattern {
 		socketTearDown();
 		System.exit(1);
 	}
-	
+
 	private void elevatorStopped(DatagramPacket packet) {
-	    algor.elevatorHasReachedFloor(packet.getData()[1], packet.getData()[2]);        
+		algor.elevatorHasReachedFloor(packet.getData()[1], packet.getData()[2]);
 	}
 
 	/**
@@ -175,18 +164,18 @@ public class Scheduler extends ServerPattern {
 	 */
 	protected void sendConfigPacketToElevator(DatagramPacket configPacket) {
 		System.out.println("Sending config file to Elevator...\n");
-		
+
 		this.numElevators = configPacket.getData()[1];
 		this.numFloors = configPacket.getData()[2];
-		
+
 		while (elevatorDirection.size() > numElevators) {
-            elevatorDirection.remove(elevatorDirection.size() - 1);
-        }
-        
-        while (elevatorDirection.size() < numElevators) {
-            elevatorDirection.add(UtilityInformation.ElevatorDirection.STATIONARY);
-        }
-		
+			elevatorDirection.remove(elevatorDirection.size() - 1);
+		}
+
+		while (elevatorDirection.size() < numElevators) {
+			elevatorDirection.add(UtilityInformation.ElevatorDirection.STATIONARY);
+		}
+
 		sendMessage(configPacket.getData(), configPacket.getData().length, configPacket.getAddress(),
 				UtilityInformation.ELEVATOR_PORT_NUM);
 	}
@@ -212,7 +201,7 @@ public class Scheduler extends ServerPattern {
 		} else if (mode == UtilityInformation.CONFIG_CONFIRM) { // 8
 			eventOccured(Event.CONFIRM_CONFIG, recievedPacket);
 		} else if (mode == UtilityInformation.ELEVATOR_STOPPED_MODE) { // 8
-            eventOccured(Event.ELEVATOR_STOPPED, recievedPacket);
+			eventOccured(Event.ELEVATOR_STOPPED, recievedPacket);
 		} else {
 			System.out.println(String.format("Error in readMessage: Undefined mode: %d", mode));
 		}
@@ -253,30 +242,31 @@ public class Scheduler extends ServerPattern {
 		 * algor.getCurrentFloor()) { indToRemove = i; } }
 		 * floorsToVisit.remove(indToRemove); }
 		 */
-	    
-	    for (int elevatorNum = 0; elevatorNum < numElevators; elevatorNum++) {
-	        if (algor.somewhereToGo(elevatorNum)) {
-	            closeElevatorDoors(packet);
-	            
-	            if (algor.whatDirectionShouldTravel(elevatorNum).equals(UtilityInformation.ElevatorDirection.DOWN)) {
-	                sendElevatorDown(packet, elevatorNum);
-	            } else if (algor.whatDirectionShouldTravel(elevatorNum).equals(UtilityInformation.ElevatorDirection.UP)) {
-	                sendElevatorUp(packet, elevatorNum);
-	            } else {
-	                if (packet.getData()[0] != UtilityInformation.ELEVATOR_STOPPED_MODE) {
-    	                stopElevator(packet, elevatorNum);
-    	                openElevatorDoors(packet);
-	                }
-	            }
-	        } else {
-	            if (packet.getData()[0] != UtilityInformation.ELEVATOR_STOPPED_MODE) {
-	                stopElevator(packet, elevatorNum);
-	                openElevatorDoors(packet);
-	            }
-	        }
-	    }
-	    
-	    eventOccured(Event.MOVE_ELEVATOR, packet);
+
+		for (byte elevatorNum = 0; elevatorNum < numElevators; elevatorNum++) {
+			if (algor.somewhereToGo(elevatorNum)) {
+				closeElevatorDoors(packet);
+
+				if (algor.whatDirectionShouldTravel(elevatorNum).equals(UtilityInformation.ElevatorDirection.DOWN)) {
+					sendElevatorDown(packet, elevatorNum);
+				} else if (algor.whatDirectionShouldTravel(elevatorNum)
+						.equals(UtilityInformation.ElevatorDirection.UP)) {
+					sendElevatorUp(packet, elevatorNum);
+				} else {
+					if (packet.getData()[0] != UtilityInformation.ELEVATOR_STOPPED_MODE) {
+						stopElevator(packet, elevatorNum);
+						openElevatorDoors(packet);
+					}
+				}
+			} else {
+				if (packet.getData()[0] != UtilityInformation.ELEVATOR_STOPPED_MODE) {
+					stopElevator(packet, elevatorNum);
+					openElevatorDoors(packet);
+				}
+			}
+		}
+
+		eventOccured(Event.MOVE_ELEVATOR, packet);
 	}
 
 	/**
@@ -284,9 +274,9 @@ public class Scheduler extends ServerPattern {
 	 * 
 	 * @param packet
 	 */
-	protected void stopElevator(DatagramPacket packet, int elevatorNum) {
+	protected void stopElevator(DatagramPacket packet, byte elevatorNum) {
 		byte[] stopElevator = { UtilityInformation.ELEVATOR_DIRECTION_MODE, algor.getCurrentFloor(elevatorNum),
-				UtilityInformation.ELEVATOR_STAY, UtilityInformation.END_OF_MESSAGE };
+				UtilityInformation.ELEVATOR_STAY, elevatorNum, UtilityInformation.END_OF_MESSAGE };
 		sendMessage(stopElevator, stopElevator.length, packet.getAddress(), UtilityInformation.ELEVATOR_PORT_NUM);
 		sendMessage(stopElevator, stopElevator.length, packet.getAddress(), UtilityInformation.FLOOR_PORT_NUM);
 		elevatorDirection.set(elevatorNum, UtilityInformation.ElevatorDirection.STATIONARY);
@@ -297,9 +287,9 @@ public class Scheduler extends ServerPattern {
 	 * 
 	 * @param packet
 	 */
-	protected void sendElevatorUp(DatagramPacket packet, int elevatorNum) {
+	protected void sendElevatorUp(DatagramPacket packet, byte elevatorNum) {
 		byte[] goUp = { UtilityInformation.ELEVATOR_DIRECTION_MODE, algor.getCurrentFloor(elevatorNum),
-				UtilityInformation.ELEVATOR_UP, UtilityInformation.END_OF_MESSAGE };
+				UtilityInformation.ELEVATOR_UP, elevatorNum, UtilityInformation.END_OF_MESSAGE };
 		System.out.println("Sending elevator up... \n");
 		sendMessage(goUp, goUp.length, packet.getAddress(), UtilityInformation.ELEVATOR_PORT_NUM);
 		sendMessage(goUp, goUp.length, packet.getAddress(), UtilityInformation.FLOOR_PORT_NUM);
@@ -311,9 +301,9 @@ public class Scheduler extends ServerPattern {
 	 * 
 	 * @param packet
 	 */
-	protected void sendElevatorDown(DatagramPacket packet, int elevatorNum) {
+	protected void sendElevatorDown(DatagramPacket packet, byte elevatorNum) {
 		byte[] goDown = { UtilityInformation.ELEVATOR_DIRECTION_MODE, algor.getCurrentFloor(elevatorNum),
-				UtilityInformation.ELEVATOR_DOWN, UtilityInformation.END_OF_MESSAGE };
+				UtilityInformation.ELEVATOR_DOWN, elevatorNum, UtilityInformation.END_OF_MESSAGE };
 		System.out.println("Sending elevator down... \n");
 		sendMessage(goDown, goDown.length, packet.getAddress(), UtilityInformation.ELEVATOR_PORT_NUM);
 		sendMessage(goDown, goDown.length, packet.getAddress(), UtilityInformation.FLOOR_PORT_NUM);
@@ -326,7 +316,8 @@ public class Scheduler extends ServerPattern {
 	 * @param packet
 	 */
 	protected void closeElevatorDoors(DatagramPacket packet) {
-		byte[] closeDoor = { UtilityInformation.ELEVATOR_DOOR_MODE, UtilityInformation.DOOR_CLOSE,
+		byte elevatorNum = packet.getData()[2];
+		byte[] closeDoor = { UtilityInformation.ELEVATOR_DOOR_MODE, UtilityInformation.DOOR_CLOSE, elevatorNum,
 				UtilityInformation.END_OF_MESSAGE };
 		sendMessage(closeDoor, closeDoor.length, packet.getAddress(), UtilityInformation.ELEVATOR_PORT_NUM);
 	}
@@ -337,7 +328,8 @@ public class Scheduler extends ServerPattern {
 	 * @param packet
 	 */
 	protected void openElevatorDoors(DatagramPacket packet) {
-		byte[] openDoor = { UtilityInformation.ELEVATOR_DOOR_MODE, UtilityInformation.DOOR_OPEN,
+		byte elevatorNum = packet.getData()[2];
+		byte[] openDoor = { UtilityInformation.ELEVATOR_DOOR_MODE, UtilityInformation.DOOR_OPEN, elevatorNum,
 				UtilityInformation.END_OF_MESSAGE };
 		sendMessage(openDoor, openDoor.length, packet.getAddress(), UtilityInformation.ELEVATOR_PORT_NUM);
 	}
@@ -381,15 +373,15 @@ public class Scheduler extends ServerPattern {
 	 */
 	private void sendMessage(byte[] responseData, int packetLength, InetAddress destAddress, int destPortNum) {
 		sendPacket = new DatagramPacket(responseData, packetLength, destAddress, destPortNum);
-		
-        // Print out info about the message being sent
-        System.out.println("Scheduler: Sending packet:");
-        System.out.println("To host: " + sendPacket.getAddress());
-        System.out.println("Destination host port: " + sendPacket.getPort());
-        int len = sendPacket.getLength();
-        System.out.println("Length: " + len);
-        System.out.print("Containing (as bytes): ");
-        System.out.println(Arrays.toString(sendPacket.getData()));
+
+		// Print out info about the message being sent
+		System.out.println("Scheduler: Sending packet:");
+		System.out.println("To host: " + sendPacket.getAddress());
+		System.out.println("Destination host port: " + sendPacket.getPort());
+		int len = sendPacket.getLength();
+		System.out.println("Length: " + len);
+		System.out.print("Containing (as bytes): ");
+		System.out.println(Arrays.toString(sendPacket.getData()));
 
 		try {
 			System.out.println("Scheduler is sending data...");
@@ -400,7 +392,7 @@ public class Scheduler extends ServerPattern {
 			System.exit(1);
 		}
 
-        System.out.println("Scheduler: Packet sent.\n");
+		System.out.println("Scheduler: Packet sent.\n");
 	}
 
 	public void runSheduler() {
@@ -409,9 +401,9 @@ public class Scheduler extends ServerPattern {
 			eventOccured(Event.MESSAGE_RECIEVED, nextReq);
 		}
 	}
-	
-   public static void main(String[] args) {
-        Scheduler scheduler = new Scheduler();
-        scheduler.runSheduler();
-    }
+
+	public static void main(String[] args) {
+		Scheduler scheduler = new Scheduler();
+		scheduler.runSheduler();
+	}
 }
