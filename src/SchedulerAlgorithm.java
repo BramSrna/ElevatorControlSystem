@@ -38,12 +38,16 @@ public class SchedulerAlgorithm {
 	 * @param Byte currentFloor
 	 */
 	public void elevatorHasReachedFloor(Byte floorNum, Byte elevatorNum) {		
-		System.out.println("Elevator " + elevatorNum + " has reached floor: " + currentFloor);
+		System.out.println("Elevator " + elevatorNum + " has reached floor: " + floorNum);
 		
 		if (elevatorDestinations.get(elevatorNum).contains(floorNum)) {
 			System.out.println("Current floor is a destination.");
 			stopElevator.set(elevatorNum, true);
+		} else {
+		    stopElevator.set(elevatorNum, false);
 		}
+		
+		currentFloor.set(elevatorNum, floorNum);
 		
 		System.out.println();
 		
@@ -63,7 +67,7 @@ public class SchedulerAlgorithm {
 	private void removeFloorFromDestinations(byte currentFloor, byte currentElevator) {
 	    if (elevatorDestinations.get(currentElevator).contains(currentFloor)) {
 	        int indToRemove = elevatorDestinations.get(currentElevator).indexOf(currentFloor);
-	        elevatorDestinations.remove(indToRemove);
+	        elevatorDestinations.get(currentElevator).remove(indToRemove);
             System.out.println(currentFloor + " was removed from the destinations list");
             System.out.println("New destination list: " + elevatorDestinations.toString() + "\n");
 	    }
@@ -75,8 +79,6 @@ public class SchedulerAlgorithm {
 	 * @param request
 	 */
 	private boolean addElevatorRequest(byte startFloor, byte endFloor) {
-	   
-	    
 	    for (ArrayList<Byte> destinations : elevatorDestinations) {
 	        if (destinations.contains(startFloor)) {
 	            if (destinations.contains(endFloor)) {

@@ -243,21 +243,7 @@ public class Scheduler extends ServerPattern {
 		 */
 	    
 	    for (int elevatorNum = 0; elevatorNum < numElevators; elevatorNum++) {
-	        if (elevatorDirection.get(elevatorNum).equals(UtilityInformation.ElevatorDirection.STATIONARY) && algor.somewhereToGo(elevatorNum)) {
-	            closeElevatorDoors(packet);
-	            if (algor.elevatorShouldGoUp(elevatorNum)) {
-	                sendElevatorUp(packet, elevatorNum);
-	            } else {
-	                sendElevatorDown(packet, elevatorNum);
-	            }
-	        } else if (elevatorDirection.get(elevatorNum).equals(UtilityInformation.ElevatorDirection.UP) && algor.somewhereToGo(elevatorNum)) {
-	            closeElevatorDoors(packet);
-	            if (algor.floorsToGoToAbove(elevatorNum)) {
-	                sendElevatorUp(packet, elevatorNum);
-	            } else {
-	                sendElevatorDown(packet, elevatorNum);
-	            }
-	        } else if (elevatorDirection.get(elevatorNum).equals(UtilityInformation.ElevatorDirection.DOWN) && algor.somewhereToGo(elevatorNum)) {
+	        if (algor.somewhereToGo(elevatorNum)) {
 	            closeElevatorDoors(packet);
 	            if (algor.floorsToGoToBelow(elevatorNum)) {
 	                sendElevatorDown(packet, elevatorNum);
