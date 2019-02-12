@@ -374,7 +374,9 @@ public class Elevator {
 	 * Method to make the elevator stop moving.
 	 */
 	public void Stop() {
-		System.out.println("The elevator has stopped moving");
+        byte[] data = { UtilityInformation.ELEVATOR_STOPPED_MODE, (byte) currentFloor, (byte) elevatorNumber, -1 };
+        System.out.println("The elevator has stopped moving");
+        this.sendData(data, schedulerIP, schedulerPort);
 	}
 
 	/*

@@ -24,6 +24,7 @@ public class UtilityInformation {
 	public final static byte SEND_DESTINATION_TO_ELEVATOR_MODE = 6;
 	public final static byte TEARDOWN_MODE = 7;
 	public final static byte CONFIG_CONFIRM = 8;
+	public final static byte ELEVATOR_STOPPED_MODE = 9;
 
 	// Messages
 	public final static byte ELEVATOR_STAY = 0;

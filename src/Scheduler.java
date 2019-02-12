@@ -26,7 +26,8 @@ public class Scheduler extends ServerPattern {
 		FLOOR_REQUESTED,
 		MOVE_ELEVATOR, 
 		TEARDOWN, 
-		CONFIRM_CONFIG
+		CONFIRM_CONFIG,
+		ELEVATOR_STOPPED
 	}
 
 	private DatagramSocket sendSocket = null;
@@ -105,6 +106,11 @@ public class Scheduler extends ServerPattern {
 			    
 				sendConfigConfirmMessage(packet);				
 				eventOccured(Event.CONFIRM_CONFIG, packet);
+			} else if (event.equals(Event.ELEVATOR_STOPPED)) {
+			    currentState = State.RESPONDING_TO_MESSAGE;
+			    
+			    elevatorStopped(packet);
+			    moveToFloor(packet);
 			}
 			
 			currentState = State.WAITING;
@@ -157,6 +163,10 @@ public class Scheduler extends ServerPattern {
 		socketTearDown();
 		System.exit(1);
 	}
+	
+	private void elevatorStopped(DatagramPacket packet) {
+	    algor.elevatorHasReachedFloor(packet.getData()[1], packet.getData()[2]);        
+	}
 
 	/**
 	 * Send the initial floor schematics to the elevator for setup
@@ -201,6 +211,8 @@ public class Scheduler extends ServerPattern {
 			eventOccured(Event.TEARDOWN, recievedPacket);
 		} else if (mode == UtilityInformation.CONFIG_CONFIRM) { // 8
 			eventOccured(Event.CONFIRM_CONFIG, recievedPacket);
+		} else if (mode == UtilityInformation.ELEVATOR_STOPPED_MODE) { // 8
+            eventOccured(Event.ELEVATOR_STOPPED, recievedPacket);
 		} else {
 			System.out.println(String.format("Error in readMessage: Undefined mode: %d", mode));
 		}
@@ -245,16 +257,25 @@ public class Scheduler extends ServerPattern {
 	    for (int elevatorNum = 0; elevatorNum < numElevators; elevatorNum++) {
 	        if (algor.somewhereToGo(elevatorNum)) {
 	            closeElevatorDoors(packet);
-	            if (algor.floorsToGoToBelow(elevatorNum)) {
+	            
+	            if (algor.whatDirectionShouldTravel(elevatorNum).equals(UtilityInformation.ElevatorDirection.DOWN)) {
 	                sendElevatorDown(packet, elevatorNum);
-	            } else {
+	            } else if (algor.whatDirectionShouldTravel(elevatorNum).equals(UtilityInformation.ElevatorDirection.UP)) {
 	                sendElevatorUp(packet, elevatorNum);
+	            } else {
+	                if (packet.getData()[0] != UtilityInformation.ELEVATOR_STOPPED_MODE) {
+    	                stopElevator(packet, elevatorNum);
+    	                openElevatorDoors(packet);
+	                }
 	            }
 	        } else {
-	            stopElevator(packet, elevatorNum);
-	            openElevatorDoors(packet);
+	            if (packet.getData()[0] != UtilityInformation.ELEVATOR_STOPPED_MODE) {
+	                stopElevator(packet, elevatorNum);
+	                openElevatorDoors(packet);
+	            }
 	        }
 	    }
+	    
 	    eventOccured(Event.MOVE_ELEVATOR, packet);
 	}
 

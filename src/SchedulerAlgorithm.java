@@ -53,24 +53,24 @@ public class SchedulerAlgorithm {
 		
 		removeFloorFromDestinations(floorNum, elevatorNum);
 	}
+	
+   /**
+     * Remove a floor from the destinations list.
+     * 
+     * @param currentFloor
+     */
+    private void removeFloorFromDestinations(byte currentFloor, byte currentElevator) {
+        if (elevatorDestinations.get(currentElevator).contains(currentFloor)) {
+            int indToRemove = elevatorDestinations.get(currentElevator).indexOf(currentFloor);
+            elevatorDestinations.get(currentElevator).remove(indToRemove);
+            System.out.println(currentFloor + " was removed from the destinations list");
+            System.out.println("New destination list: " + elevatorDestinations.toString() + "\n");
+        }
+    }
 
 	// TODO NOT USED YET
 	public void floorButtonPressed(Byte pressedButton, int elevatorNum) {
 		elevatorDestinations.get(elevatorNum).add(pressedButton);
-	}
-
-	/**
-	 * Remove a floor from the destinations list.
-	 * 
-	 * @param currentFloor
-	 */
-	private void removeFloorFromDestinations(byte currentFloor, byte currentElevator) {
-	    if (elevatorDestinations.get(currentElevator).contains(currentFloor)) {
-	        int indToRemove = elevatorDestinations.get(currentElevator).indexOf(currentFloor);
-	        elevatorDestinations.get(currentElevator).remove(indToRemove);
-            System.out.println(currentFloor + " was removed from the destinations list");
-            System.out.println("New destination list: " + elevatorDestinations.toString() + "\n");
-	    }
 	}
 
 	/**
@@ -116,23 +116,11 @@ public class SchedulerAlgorithm {
 	}
 
 	/**
-	 * Add a destination to the list
-	 * 
-	 * @param destination
-	 */
-	private void addDestination(byte destination, int elevatorNum) {
-		// Send message to elevator so they can light up lamp
-		elevatorDestinations.get(elevatorNum).add(destination);
-		System.out.println(destination + "was added to the destination list");
-		System.out.println("New destination list: " + elevatorDestinations.toString() + "\n");
-	}
-
-	/**
 	 * Determine if the elevator should go up
 	 * 
 	 * @return True if the elevator should go up, false otherwise
 	 */
-	public boolean elevatorShouldGoUp(int elevatorNum) {
+	public UtilityInformation.ElevatorDirection whatDirectionShouldTravel(int elevatorNum) {
 		int difference;
 		int currentClosestDistance = Integer.MAX_VALUE;
 		int closestFloor = 0;
@@ -144,10 +132,14 @@ public class SchedulerAlgorithm {
 				closestFloor = destination;
 			}
 		}
+		
 		if (closestFloor > currentFloor.get(elevatorNum)) {
-			return true;
+		    return(UtilityInformation.ElevatorDirection.UP);
+		} else if (closestFloor < currentFloor.get(elevatorNum)) {
+		    return(UtilityInformation.ElevatorDirection.DOWN);
+		} else {
+		    return(UtilityInformation.ElevatorDirection.STATIONARY);
 		}
-		return false;
 	}
 
 	/**
@@ -187,8 +179,7 @@ public class SchedulerAlgorithm {
 		return(!elevatorDestinations.get(elevatorNum).isEmpty());
 	}
 
-	public void setNumberOfElevators(byte numElevators) {
-	        
+	public void setNumberOfElevators(byte numElevators) {	        
 	    while (elevatorDestinations.size() > numElevators) {
 	        elevatorDestinations.remove(elevatorDestinations.size() - 1);
             currentFloor.remove(currentFloor.size() - 1);
