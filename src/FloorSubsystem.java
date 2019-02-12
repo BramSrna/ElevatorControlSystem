@@ -10,7 +10,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class FloorSubsystem extends ServerPattern{
+public class FloorSubsystem extends ServerPattern {
 	// Sockets and packets used for UDP
 	private DatagramPacket sendPacket, receivePacket;
 	private DatagramSocket sendSocket;

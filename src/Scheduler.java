@@ -45,7 +45,7 @@ public class Scheduler extends ServerPattern {
 	public Scheduler() {
 		super(UtilityInformation.SCHEDULER_PORT_NUM, "Scheduler");
 
-		algor = new SchedulerAlgorithm(0);
+		algor = new SchedulerAlgorithm((byte) 0);
 
 		elevatorDirection = new ArrayList<UtilityInformation.ElevatorDirection>();
 		currentState = State.START;
@@ -254,7 +254,7 @@ public class Scheduler extends ServerPattern {
 		 * floorsToVisit.remove(indToRemove); }
 		 */
 	    
-	    for (int elevatorNum = 0; elevatorNum < numElevators; elevatorNum++) {
+	    for (byte elevatorNum = 0; elevatorNum < numElevators; elevatorNum++) {
 	        if (algor.somewhereToGo(elevatorNum)) {
 	            closeElevatorDoors(packet);
 	            
@@ -284,7 +284,7 @@ public class Scheduler extends ServerPattern {
 	 * 
 	 * @param packet
 	 */
-	protected void stopElevator(DatagramPacket packet, int elevatorNum) {
+	protected void stopElevator(DatagramPacket packet, byte elevatorNum) {
 		byte[] stopElevator = { UtilityInformation.ELEVATOR_DIRECTION_MODE, algor.getCurrentFloor(elevatorNum),
 				UtilityInformation.ELEVATOR_STAY, UtilityInformation.END_OF_MESSAGE };
 		sendMessage(stopElevator, stopElevator.length, packet.getAddress(), UtilityInformation.ELEVATOR_PORT_NUM);
@@ -297,7 +297,7 @@ public class Scheduler extends ServerPattern {
 	 * 
 	 * @param packet
 	 */
-	protected void sendElevatorUp(DatagramPacket packet, int elevatorNum) {
+	protected void sendElevatorUp(DatagramPacket packet, byte elevatorNum) {
 		byte[] goUp = { UtilityInformation.ELEVATOR_DIRECTION_MODE, algor.getCurrentFloor(elevatorNum),
 				UtilityInformation.ELEVATOR_UP, UtilityInformation.END_OF_MESSAGE };
 		System.out.println("Sending elevator up... \n");
@@ -311,7 +311,7 @@ public class Scheduler extends ServerPattern {
 	 * 
 	 * @param packet
 	 */
-	protected void sendElevatorDown(DatagramPacket packet, int elevatorNum) {
+	protected void sendElevatorDown(DatagramPacket packet, byte elevatorNum) {
 		byte[] goDown = { UtilityInformation.ELEVATOR_DIRECTION_MODE, algor.getCurrentFloor(elevatorNum),
 				UtilityInformation.ELEVATOR_DOWN, UtilityInformation.END_OF_MESSAGE };
 		System.out.println("Sending elevator down... \n");

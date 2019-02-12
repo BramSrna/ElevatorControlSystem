@@ -1,15 +1,12 @@
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class SchedulerAlgorithm {
 
 	private ArrayList<ArrayList<Byte>> elevatorDestinations; // Elevator, Destinations
 	private ArrayList<Byte> currentFloor;
 	private ArrayList<Boolean> stopElevator;
-	
-	private int currNumElevators;
 
-	public SchedulerAlgorithm(int numElevators) {
+	public SchedulerAlgorithm(byte numElevators) {
 		elevatorDestinations = new ArrayList<ArrayList<Byte>>();
 		currentFloor = new ArrayList<Byte>();
 		stopElevator = new ArrayList<Boolean>();
@@ -69,7 +66,7 @@ public class SchedulerAlgorithm {
     }
 
 	// TODO NOT USED YET
-	public void floorButtonPressed(Byte pressedButton, int elevatorNum) {
+	public void floorButtonPressed(Byte pressedButton, byte elevatorNum) {
 		elevatorDestinations.get(elevatorNum).add(pressedButton);
 	}
 
@@ -120,7 +117,7 @@ public class SchedulerAlgorithm {
 	 * 
 	 * @return True if the elevator should go up, false otherwise
 	 */
-	public UtilityInformation.ElevatorDirection whatDirectionShouldTravel(int elevatorNum) {
+	public UtilityInformation.ElevatorDirection whatDirectionShouldTravel(byte elevatorNum) {
 		int difference;
 		int currentClosestDistance = Integer.MAX_VALUE;
 		int closestFloor = 0;
@@ -147,7 +144,7 @@ public class SchedulerAlgorithm {
 	 * 
 	 * @return True if we need to go up, false otherwise
 	 */
-	public boolean floorsToGoToAbove(int elevatorNum) {
+	public boolean floorsToGoToAbove(byte elevatorNum) {
 		for (byte tempFloor : elevatorDestinations.get(elevatorNum)) {
 			if (tempFloor > currentFloor.get(elevatorNum)) {
 				return true;
@@ -161,7 +158,7 @@ public class SchedulerAlgorithm {
 	 * 
 	 * @return True if we need to go down, false otherwise
 	 */
-	public boolean floorsToGoToBelow(int elevatorNum) {
+	public boolean floorsToGoToBelow(byte elevatorNum) {
 		for (byte tempFloor : elevatorDestinations.get(elevatorNum)) {
 			if (tempFloor < currentFloor.get(elevatorNum)) {
 				return true;
@@ -175,7 +172,7 @@ public class SchedulerAlgorithm {
 	 * 
 	 * @return True if has somewhere to go, False otherwise
 	 */
-	public boolean somewhereToGo(int elevatorNum) {
+	public boolean somewhereToGo(byte elevatorNum) {
 		return(!elevatorDestinations.get(elevatorNum).isEmpty());
 	}
 
@@ -197,15 +194,15 @@ public class SchedulerAlgorithm {
 		return elevatorDestinations;
 	}
 
-	public ArrayList<Byte> getCurrentElevatorDestinations(int elevatorNum) {
+	public ArrayList<Byte> getCurrentElevatorDestinations(byte elevatorNum) {
 		return elevatorDestinations.get(elevatorNum);
 	}
 
-	public byte getCurrentFloor(int elevatorNum) {
+	public byte getCurrentFloor(byte elevatorNum) {
 		return currentFloor.get(elevatorNum);
 	}
 
-	public boolean getStopElevator(int elevatorNum) {
+	public boolean getStopElevator(byte elevatorNum) {
 		return stopElevator.get(elevatorNum);
 	}
 }
