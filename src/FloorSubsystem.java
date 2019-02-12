@@ -1,3 +1,4 @@
+import java.awt.*;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -10,7 +11,9 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class FloorSubsystem extends ServerPattern {
+import javax.swing.*;
+
+public class FloorSubsystem extends ServerPattern{
 	// Sockets and packets used for UDP
 	private DatagramPacket sendPacket, receivePacket;
 	private DatagramSocket sendSocket;
@@ -692,9 +695,90 @@ public class FloorSubsystem extends ServerPattern {
 				// Exit the program
 				floorController.teardown();
 				floorController = null;
+
 				System.exit(1);
 			}
 		}
 
 	}
 }
+
+class GUI implements Runnable {
+	private JTextArea outputArea;
+	
+	
+	public GUI() {
+		JFrame mainFrame = new JFrame("Floor Debug Window");
+		mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	
+		Container contentPane = mainFrame.getContentPane();
+		contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.Y_AXIS));
+		
+		JPanel debugPanel = new JPanel();
+		debugPanel.setLayout(new GridLayout(1, 1));
+		
+		outputArea = new JTextArea();
+		outputArea.setEditable(false);
+		JScrollPane scrollPane = new JScrollPane(outputArea); // May need to be a field
+		scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+		
+		debugPanel.add(scrollPane);
+		
+		contentPane.add(debugPanel);
+		
+		mainFrame.setSize(800, 600);
+		mainFrame.setResizable(false);
+		mainFrame.pack();
+		mainFrame.setVisible(true);
+	}
+
+	@Override
+	public void run() {
+		// TODO Auto-generated method stub
+		
+	}
+}
+
+				System.exit(1);
+			}
+		}
+
+	}
+}
+
+class GUI implements Runnable {
+	private JTextArea outputArea;
+	
+	
+	public GUI() {
+		JFrame mainFrame = new JFrame("Floor Debug Window");
+		mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	
+		Container contentPane = mainFrame.getContentPane();
+		contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.Y_AXIS));
+		
+		JPanel debugPanel = new JPanel();
+		debugPanel.setLayout(new GridLayout(1, 1));
+		
+		outputArea = new JTextArea();
+		outputArea.setEditable(false);
+		JScrollPane scrollPane = new JScrollPane(outputArea); // May need to be a field
+		scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+		
+		debugPanel.add(scrollPane);
+		
+		contentPane.add(debugPanel);
+		
+		mainFrame.setSize(800, 600);
+		mainFrame.setResizable(false);
+		mainFrame.pack();
+		mainFrame.setVisible(true);
+	}
+
+	@Override
+	public void run() {
+		// TODO Auto-generated method stub
+		
+	}
+}
+
