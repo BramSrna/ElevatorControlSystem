@@ -282,7 +282,7 @@ public class ElevatorSubsystem  {
 		}
 		if (str.equals("stop")) {
 			allElevators.get(currentElevatorToWork).Stop();
-			byte[] returnMessage = { UtilityInformation.FLOOR_SENSOR_MODE,
+			byte[] returnMessage = { UtilityInformation.ELEVATOR_STOPPED_MODE,
 					(byte) allElevators.get(currentElevatorToWork).currentFloor,
 					(byte) allElevators.get(currentElevatorToWork).elevatorNumber, -1 };
 			this.sendData(returnMessage, schedulerIP, schedulerPort);
