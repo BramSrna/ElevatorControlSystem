@@ -227,24 +227,18 @@ public class SchedulerAlgorithm {
 	 * @return True if the elevator should go up, false otherwise
 	 */
 	public UtilityInformation.ElevatorDirection whatDirectionShouldTravel(byte elevatorNum) {
-		int difference;
-		int currentClosestDistance = Integer.MAX_VALUE;
-		int closestFloor = 0;
-
-		for (byte destination : elevatorStops.get(elevatorNum)) {
-			difference = Math.abs(currentFloor.get(elevatorNum) - destination);
-			if (difference < currentClosestDistance) {
-				currentClosestDistance = difference;
-				closestFloor = destination;
+		if (elevatorStops.get(elevatorNum).size() == 0) {
+			int nextFloor = elevatorStops.get(elevatorNum).get(0);
+			
+			if (nextFloor > currentFloor.get(elevatorNum)) {
+			    return(UtilityInformation.ElevatorDirection.UP);
+			} else if (nextFloor < currentFloor.get(elevatorNum)) {
+			    return(UtilityInformation.ElevatorDirection.DOWN);
+			} else {
+			    return(UtilityInformation.ElevatorDirection.STATIONARY);
 			}
-		}
-		
-		if (closestFloor > currentFloor.get(elevatorNum)) {
-		    return(UtilityInformation.ElevatorDirection.UP);
-		} else if (closestFloor < currentFloor.get(elevatorNum)) {
-		    return(UtilityInformation.ElevatorDirection.DOWN);
 		} else {
-		    return(UtilityInformation.ElevatorDirection.STATIONARY);
+			return(UtilityInformation.ElevatorDirection.STATIONARY);
 		}
 	}
 
