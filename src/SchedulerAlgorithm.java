@@ -75,41 +75,134 @@ public class SchedulerAlgorithm {
 	 * 
 	 * @param request
 	 */
-	private boolean addElevatorRequest(byte startFloor, byte endFloor) {
-	    for (ArrayList<Byte> destinations : elevatorDestinations) {
-	        if (destinations.contains(startFloor)) {
-	            if (destinations.contains(endFloor)) {
-	                System.out.println("New request list: " + destinations.toString() + "\n");
-	                return(true);
-	            } else {
-	                destinations.add(endFloor);
-	                System.out.println("New request list: " + destinations.toString() + "\n");
-	                return(true);
-	            }
-	            
-	        }
-	    }
-	    
-	    int closestElevator = 0;
+	private void addElevatorRequest(byte startFloor, byte endFloor) {	    
+	    ArrayList<Integer> closestElevator = new ArrayList<Integer>();
 	    int closestDiff = -1;
+	    int chosenElevator = -1;
+	    int currDiff;
 	    
+	    // Add destination to closest elevator
 	    for (int i = 0; i < currentFloor.size(); i++) {
-	        if (closestDiff == -1) {
-	            closestElevator = i;
-	            closestDiff = Math.abs(currentFloor.get(i) - startFloor);
-	        } else if (Math.abs(currentFloor.get(i) - startFloor) < closestDiff) {
-	            closestElevator = i;
-	            closestDiff = Math.abs(currentFloor.get(i) - startFloor);
+	        currDiff = Math.abs(currentFloor.get(i) - startFloor);
+	        if ((closestDiff == -1) || 
+	            (currDiff <= closestDiff)) { // same as below
+	            closestElevator.add(i);
+	            closestDiff = currDiff;
 	        }
 	    }
 	    
-	    elevatorDestinations.get(closestElevator).add(startFloor);
-	    elevatorDestinations.get(closestElevator).add(endFloor);
+	    // Break ties by prioritizing elevators above the start floor
+	    if (closestElevator.size() > 1) {
+	        ArrayList<Integer> indicesToRemove = new ArrayList<Integer>();
+	        
+	        for (int i = 0; i < closestElevator.size(); i++) {
+	            if (currentFloor.get(closestElevator.get(i)) < startFloor) {
+	                indicesToRemove.add(i);
+	            }
+	        }
+	        
+	        if (indicesToRemove.size() < closestElevator.size()) {
+	            for (int index : indicesToRemove) {
+	                closestElevator.remove(index);
+	            }
+	        }
+	        
+	        // Break ties by prioritizing shortest queues
+	        int shortestQueue = -1;
+	        if (closestElevator.size() > 1) {
+	            for (int i = 0; i < closestElevator.size(); i++) {
+	                if ((shortestQueue == -1) || 
+	                    (elevatorDestinations.get(closestElevator.get(i)).size() < shortestQueue)) {
+	                    chosenElevator = closestElevator.get(i);
+	                }
+	            }
+	        } else {
+	            chosenElevator = closestElevator.get(0);
+	        }
+	    } else {
+	        chosenElevator = closestElevator.get(0);
+	    }
 	    
-	    System.out.println("New request list: " + elevatorDestinations.get(closestElevator) + "\n");
+	    int currFloor = currentFloor.get(chosenElevator);
+	    int startInd = -1;
+	    int closestInd = -1;
+	    closestDiff = Integer.MAX_VALUE;
+	    ArrayList<Byte> currDests = elevatorDestinations.get(chosenElevator);
 	    
-        return(true);
+	    if (currDests.size() == 0) {
+	        currDests.add(startFloor);
+	        currDests.add(endFloor);
+	    } else {
+    	    if (!(currDests.contains(startFloor))) {
+    	        int maxInd = currDests.size();
+    	        
+    	        if (currDests.contains(endFloor)) {
+    	            maxInd = currDests.indexOf(endFloor);
+    	        }
+    	        
+    	        if ((currFloor < startFloor) && (startFloor < currDests.get(0))) {
+    	            startInd = 0;
+    	        } else {    	        
+        	        for(int i = 0; i < maxInd; i++) {
+        	            if (i != maxInd - 1) {
+            	            if (((currDests.get(i) < startFloor) && (currDests.get(i + 1) > startFloor)) ||
+            	                ((currDests.get(i) > startFloor) && (currDests.get(i + 1) < startFloor))) {
+            	                startInd = i + 1;
+            	            }
+        	            }
+        	            
+        	            currDiff = Math.abs(currDests.get(i) - startFloor);
+        	            if (currDiff < closestDiff) {
+        	                closestDiff = currDiff;
+        	                closestInd = i + 1;
+        	            }
+        	            
+        	        }
+        	        
+        	        if (startInd == -1) {
+        	            startInd = closestInd;
+        	        }
+        	    }
+    	        
+    	        currDests.add(startInd, startFloor);
+    	    } else {
+    	        startInd = currDests.indexOf(startFloor);
+    	    }
+    	    
+    	    closestInd = -1;
+            closestDiff = Integer.MAX_VALUE;
+            int endInd = -1;
+            
+            if (!(currDests.contains(endFloor))) {
+                for(int i = startInd; i < currDests.size(); i++) {
+                    if (i != currDests.size() - 1) {
+                        if (((currDests.get(i) < endFloor) && (currDests.get(i + 1) > endFloor)) ||
+                            ((currDests.get(i) > endFloor) && (currDests.get(i + 1) < endFloor))) {
+                            endInd = i + 1;
+                        }
+                    }
+                    
+                    currDiff = Math.abs(currDests.get(i) - endFloor);
+                    if (currDiff < closestDiff) {
+                        closestDiff = currDiff;
+                        closestInd = i;
+                    }
+                    
+                }
+                
+                if (endInd == -1) {
+                    endInd = closestInd;
+                }
+                
+                if (endInd != 0) {
+                    endInd += 1;
+                }
+                
+                currDests.add(endInd, endFloor);
+            }
+	    }
 	    
+	    System.out.println("New request list: " + elevatorDestinations.get(chosenElevator) + "\n");	    
 	}
 
 	/**

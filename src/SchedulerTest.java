@@ -144,7 +144,7 @@ class SchedulerTest {
 		byte[] buf = new byte[] { 1, 2, 3, -1 };
 		DatagramPacket packet = new DatagramPacket(buf, buf.length, InetAddress.getLocalHost(),
 				UtilityInformation.ELEVATOR_PORT_NUM);
-		scheduler.stopElevator(packet);
+		scheduler.stopElevator(packet, (byte) 0);
 
 	}
 

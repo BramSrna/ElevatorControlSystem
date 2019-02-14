@@ -254,13 +254,13 @@ public class Scheduler extends ServerPattern {
 					sendElevatorUp(packet);
 				} else {
 					if (packet.getData()[0] != UtilityInformation.ELEVATOR_STOPPED_MODE) {
-						stopElevator(packet);
+						stopElevator(packet, elevatorNum);
 						openElevatorDoors(packet);
 					}
 				}
 			} else {
 				if (packet.getData()[0] != UtilityInformation.ELEVATOR_STOPPED_MODE) {
-					stopElevator(packet);
+					stopElevator(packet, elevatorNum);
 					openElevatorDoors(packet);
 				}
 			}
@@ -274,8 +274,7 @@ public class Scheduler extends ServerPattern {
 	 * 
 	 * @param packet
 	 */
-	protected void stopElevator(DatagramPacket packet) {
-		byte elevatorNum = packet.getData()[2];
+	protected void stopElevator(DatagramPacket packet, byte elevatorNum) {
 		byte[] stopElevator = { UtilityInformation.ELEVATOR_DIRECTION_MODE, algor.getCurrentFloor(elevatorNum),
 				UtilityInformation.ELEVATOR_STAY, elevatorNum, UtilityInformation.END_OF_MESSAGE };
 		sendMessage(stopElevator, stopElevator.length, packet.getAddress(), UtilityInformation.ELEVATOR_PORT_NUM);
@@ -358,9 +357,11 @@ public class Scheduler extends ServerPattern {
 	 */
 	private void extractFloorReachedNumberAndGenerateResponseMessageAndActions(DatagramPacket recievedPacket) {
 		// TODO Make sure the elevator number matches position in ArrayList in algor
-		algor.elevatorHasReachedFloor(recievedPacket.getData()[1], recievedPacket.getData()[2]);
-		if (algor.getStopElevator(recievedPacket.getData()[2])) {
-			stopElevator(recievedPacket);
+	    byte floorNum = recievedPacket.getData()[1];
+	    byte elevatorNum = recievedPacket.getData()[2];
+		algor.elevatorHasReachedFloor(floorNum, elevatorNum);
+		if (algor.getStopElevator(elevatorNum)) {
+			stopElevator(recievedPacket, elevatorNum);
 			openElevatorDoors(recievedPacket);
 		}
 		moveToFloor(recievedPacket);
