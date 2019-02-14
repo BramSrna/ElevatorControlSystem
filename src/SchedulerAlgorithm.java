@@ -2,14 +2,16 @@ import java.util.ArrayList;
 
 public class SchedulerAlgorithm {
 
-	private ArrayList<ArrayList<Byte>> elevatorDestinations; // Elevator, Destinations
+	private ArrayList<ArrayList<Byte>> elevatorStops; // Elevator, Destinations
 	private ArrayList<Byte> currentFloor;
 	private ArrayList<Boolean> stopElevator;
+	private ArrayList<ArrayList<Byte>> elevatorDestinations;
 
 	public SchedulerAlgorithm(byte numElevators) {
-		elevatorDestinations = new ArrayList<ArrayList<Byte>>();
+		elevatorStops = new ArrayList<ArrayList<Byte>>();
 		currentFloor = new ArrayList<Byte>();
 		stopElevator = new ArrayList<Boolean>();
+		elevatorDestinations = new ArrayList<ArrayList<Byte>>();
 		
 		setNumberOfElevators((byte) numElevators);
 	}
@@ -37,7 +39,7 @@ public class SchedulerAlgorithm {
 	public void elevatorHasReachedFloor(Byte floorNum, Byte elevatorNum) {		
 		System.out.println("Elevator " + elevatorNum + " has reached floor: " + floorNum);
 		
-		if (elevatorDestinations.get(elevatorNum).contains(floorNum)) {
+		if (elevatorStops.get(elevatorNum).contains(floorNum)) {
 			System.out.println("Current floor is a destination.");
 			stopElevator.set(elevatorNum, true);
 		} else {
@@ -57,11 +59,21 @@ public class SchedulerAlgorithm {
      * @param currentFloor
      */
     private void removeFloorFromDestinations(byte currentFloor, byte currentElevator) {
-        if (elevatorDestinations.get(currentElevator).contains(currentFloor)) {
-            int indToRemove = elevatorDestinations.get(currentElevator).indexOf(currentFloor);
-            elevatorDestinations.get(currentElevator).remove(indToRemove);
+        if (elevatorStops.get(currentElevator).contains(currentFloor)) {
+            int indToRemove = elevatorStops.get(currentElevator).indexOf(currentFloor);
+            if (indToRemove != -1) {
+            	elevatorStops.get(currentElevator).remove(indToRemove);
+            }            
+            
+            indToRemove = elevatorDestinations.get(currentElevator).indexOf(currentFloor);
+            
+            if (indToRemove != -1)
+            {
+            	elevatorDestinations.get(currentElevator).remove(indToRemove);
+            }
+            
             System.out.println(currentFloor + " was removed from the destinations list");
-            System.out.println("New destination list: " + elevatorDestinations.toString() + "\n");
+            System.out.println("New destination list: " + elevatorStops.toString() + "\n");
         }
     }
 
@@ -112,7 +124,7 @@ public class SchedulerAlgorithm {
 	        if (closestElevator.size() > 1) {
 	            for (int i = 0; i < closestElevator.size(); i++) {
 	                if ((shortestQueue == -1) || 
-	                    (elevatorDestinations.get(closestElevator.get(i)).size() < shortestQueue)) {
+	                    (elevatorStops.get(closestElevator.get(i)).size() < shortestQueue)) {
 	                    chosenElevator = closestElevator.get(i);
 	                }
 	            }
@@ -127,7 +139,11 @@ public class SchedulerAlgorithm {
 	    int startInd = -1;
 	    int closestInd = -1;
 	    closestDiff = Integer.MAX_VALUE;
-	    ArrayList<Byte> currDests = elevatorDestinations.get(chosenElevator);
+	    ArrayList<Byte> currDests = elevatorStops.get(chosenElevator);
+	    
+	    if (!elevatorDestinations.get(chosenElevator).contains(endFloor)) {
+	    	elevatorDestinations.get(chosenElevator).add(endFloor);
+	    }
 	    
 	    if (currDests.size() == 0) {
 	        currDests.add(startFloor);
@@ -202,7 +218,7 @@ public class SchedulerAlgorithm {
             }
 	    }
 	    
-	    System.out.println("New request list: " + elevatorDestinations.get(chosenElevator) + "\n");	    
+	    System.out.println("New request list: " + elevatorStops.get(chosenElevator) + "\n");	    
 	}
 
 	/**
@@ -215,7 +231,7 @@ public class SchedulerAlgorithm {
 		int currentClosestDistance = Integer.MAX_VALUE;
 		int closestFloor = 0;
 
-		for (byte destination : elevatorDestinations.get(elevatorNum)) {
+		for (byte destination : elevatorStops.get(elevatorNum)) {
 			difference = Math.abs(currentFloor.get(elevatorNum) - destination);
 			if (difference < currentClosestDistance) {
 				currentClosestDistance = difference;
@@ -238,7 +254,7 @@ public class SchedulerAlgorithm {
 	 * @return True if we need to go up, false otherwise
 	 */
 	public boolean floorsToGoToAbove(byte elevatorNum) {
-		for (byte tempFloor : elevatorDestinations.get(elevatorNum)) {
+		for (byte tempFloor : elevatorStops.get(elevatorNum)) {
 			if (tempFloor > currentFloor.get(elevatorNum)) {
 				return true;
 			}
@@ -252,7 +268,7 @@ public class SchedulerAlgorithm {
 	 * @return True if we need to go down, false otherwise
 	 */
 	public boolean floorsToGoToBelow(byte elevatorNum) {
-		for (byte tempFloor : elevatorDestinations.get(elevatorNum)) {
+		for (byte tempFloor : elevatorStops.get(elevatorNum)) {
 			if (tempFloor < currentFloor.get(elevatorNum)) {
 				return true;
 			}
@@ -266,29 +282,31 @@ public class SchedulerAlgorithm {
 	 * @return True if has somewhere to go, False otherwise
 	 */
 	public boolean somewhereToGo(byte elevatorNum) {
-		return(!elevatorDestinations.get(elevatorNum).isEmpty());
+		return(!elevatorStops.get(elevatorNum).isEmpty());
 	}
 
 	public void setNumberOfElevators(byte numElevators) {	        
-	    while (elevatorDestinations.size() > numElevators) {
-	        elevatorDestinations.remove(elevatorDestinations.size() - 1);
+	    while (elevatorStops.size() > numElevators) {
+	        elevatorStops.remove(elevatorStops.size() - 1);
             currentFloor.remove(currentFloor.size() - 1);
-            stopElevator.remove(stopElevator.size() - 1); 
+            stopElevator.remove(stopElevator.size() - 1);
+            elevatorDestinations.remove(elevatorDestinations.size() - 1);
 	    }
 	    
-	    while (elevatorDestinations.size() < numElevators) {
-	        elevatorDestinations.add(new ArrayList<Byte>());
+	    while (elevatorStops.size() < numElevators) {
+	        elevatorStops.add(new ArrayList<Byte>());
             currentFloor.add((byte) 0);
             stopElevator.add(true); 
+            elevatorDestinations.add(new ArrayList<Byte>());
 	    }
 	}
 
-	public ArrayList<ArrayList<Byte>> getDestinations() {
-		return elevatorDestinations;
+	public ArrayList<Byte> getDestinations(byte elevatorNum) {
+		return elevatorDestinations.get(elevatorNum);
 	}
 
-	public ArrayList<Byte> getCurrentElevatorDestinations(byte elevatorNum) {
-		return elevatorDestinations.get(elevatorNum);
+	public ArrayList<Byte> getCurrentelevatorStops(byte elevatorNum) {
+		return elevatorStops.get(elevatorNum);
 	}
 
 	public byte getCurrentFloor(byte elevatorNum) {
