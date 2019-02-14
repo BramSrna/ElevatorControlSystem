@@ -41,7 +41,7 @@ public class FloorSubsystem extends ServerPattern{
 	private static final int MAX_NUM_FLOORS = 1000;
 
 	private static final int MIN_NUM_ELEVATORS = 1;
-	private static final int MAX_NUM_ELEVATORS = 1;
+	private static final int MAX_NUM_ELEVATORS = 2;
 
 	// List of service requests parsed from the input file
 	// Sorted in order of time that requests are made
@@ -570,7 +570,7 @@ public class FloorSubsystem extends ServerPattern{
 	        
 	        // Request currently does not contain the elevator number,
 	        // so hardcode the value to 1 for now.
-	        int elevatorNum = 1; 
+	        int elevatorNum = data[3]; 
 	        
 	        // Get the direction of the elevator
 	        UtilityInformation.ElevatorDirection dir = UtilityInformation.ElevatorDirection.values()[data[2]];

@@ -302,6 +302,7 @@ public class ElevatorSubsystem  {
 		// getting destination from scheduler for each input
 		if (str.equals("destination")) {
 			destinationFloor = data[1];
+			currentElevatorToWork = data[2];
 			allElevators.get(currentElevatorToWork).allButtons[destinationFloor] = Elevator.lampState.ON;
 		}
 

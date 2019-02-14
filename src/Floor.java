@@ -108,16 +108,16 @@ public class Floor implements Runnable {
     	if ((floorNum == this.getFloorNumber()) && 
     		(direction == UtilityInformation.ElevatorDirection.STATIONARY)) {
     		// Turn off up/down buttons if the elevator is stopping at this floor
-			arrivalLamp.set(elevatorShaftNum - 1, UtilityInformation.LampState.ON);
+			arrivalLamp.set(elevatorShaftNum, UtilityInformation.LampState.ON);
 			downButton = UtilityInformation.ButtonState.UNPRESSED;
 			upButton = UtilityInformation.ButtonState.UNPRESSED;
     	} else {
-    		arrivalLamp.set(elevatorShaftNum - 1, UtilityInformation.LampState.OFF);
+    		arrivalLamp.set(elevatorShaftNum, UtilityInformation.LampState.OFF);
     	}
     	
     	// Update the elevator location and direction
-    	elevatorLocation.set(elevatorShaftNum - 1, floorNum);
-    	arrivalLampDir.set(elevatorShaftNum - 1, direction);
+    	elevatorLocation.set(elevatorShaftNum, floorNum);
+    	arrivalLampDir.set(elevatorShaftNum, direction);
     }
 
 	/**

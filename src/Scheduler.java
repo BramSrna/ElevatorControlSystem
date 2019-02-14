@@ -86,9 +86,8 @@ public class Scheduler extends ServerPattern {
 
 				extractFloorRequestedNumberAndGenerateResponseMessageAndActions(packet);
 				
-				currentState = State.READING_MESSAGE;
-				
 				for (byte elevatorNum = 0; elevatorNum < numElevators; elevatorNum++) {
+					currentState = State.READING_MESSAGE;
 					if (algor.getStopElevator(elevatorNum)) {
 						byte[] newData = {UtilityInformation.FLOOR_SENSOR_MODE,
 										  algor.getCurrentFloor(elevatorNum),
@@ -246,7 +245,7 @@ public class Scheduler extends ServerPattern {
 		ArrayList<Byte> elevatorDestinations = algor.getDestinations(elevatorNum);
 		if (elevatorDestinations.size() > 0) {
 			byte[] destinationFloor = { UtilityInformation.SEND_DESTINATION_TO_ELEVATOR_MODE, elevatorDestinations.get(0),
-					UtilityInformation.END_OF_MESSAGE };
+					elevatorNum, UtilityInformation.END_OF_MESSAGE };
 			for (int a = 0; a < 10000; a++) {
 				// Delay
 			}
