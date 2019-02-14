@@ -23,12 +23,12 @@ public class SchedulerAlgorithm {
 	 * @param destination
 	 * @param upOrDown
 	 */
-	public void elevatorRequestMade(Byte source, Byte destination, UtilityInformation.ElevatorDirection upOrDown) {
+	public byte elevatorRequestMade(Byte source, Byte destination, UtilityInformation.ElevatorDirection upOrDown) {
 		System.out.println("Elevator was requested at: " + source + " in the direction " + upOrDown
 				+ " with destination " + destination);
 		
-		addElevatorRequest(source, destination);
-
+		byte elevatorNum = addElevatorRequest(source, destination);
+		return(elevatorNum);
 	}
 
 	/**
@@ -87,7 +87,7 @@ public class SchedulerAlgorithm {
 	 * 
 	 * @param request
 	 */
-	private void addElevatorRequest(byte startFloor, byte endFloor) {	    
+	private byte addElevatorRequest(byte startFloor, byte endFloor) {	    
 	    ArrayList<Integer> closestElevator = new ArrayList<Integer>();
 	    int closestDiff = -1;
 	    int chosenElevator = -1;
@@ -219,6 +219,8 @@ public class SchedulerAlgorithm {
 	    }
 	    
 	    System.out.println("New request list: " + elevatorStops.get(chosenElevator) + "\n");	    
+	    
+	    return((byte) chosenElevator);
 	}
 
 	/**
@@ -227,7 +229,7 @@ public class SchedulerAlgorithm {
 	 * @return True if the elevator should go up, false otherwise
 	 */
 	public UtilityInformation.ElevatorDirection whatDirectionShouldTravel(byte elevatorNum) {
-		if (elevatorStops.get(elevatorNum).size() == 0) {
+		if (elevatorStops.get(elevatorNum).size() != 0) {
 			int nextFloor = elevatorStops.get(elevatorNum).get(0);
 			
 			if (nextFloor > currentFloor.get(elevatorNum)) {

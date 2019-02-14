@@ -3,3 +3,9 @@
 /SignalReceiver.class
 /SchedulerAlgorithm.class
 /GUI.class
+/Elevator_Subsystem$Event.class
+/Elevator_Subsystem$State.class
+/Elevator_Subsystem.class
+/ElevatorSubsystem$Event.class
+/ElevatorSubsystem$State.class
+/ElevatorSubsystem.class

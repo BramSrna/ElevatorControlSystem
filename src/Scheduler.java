@@ -85,7 +85,21 @@ public class Scheduler extends ServerPattern {
 				currentState = State.RESPONDING_TO_MESSAGE;
 
 				extractFloorRequestedNumberAndGenerateResponseMessageAndActions(packet);
-				moveToFloor(packet);
+				
+				currentState = State.READING_MESSAGE;
+				
+				for (byte elevatorNum = 0; elevatorNum < numElevators; elevatorNum++) {
+					if (algor.getStopElevator(elevatorNum)) {
+						byte[] newData = {UtilityInformation.FLOOR_SENSOR_MODE,
+										  algor.getCurrentFloor(elevatorNum),
+										  elevatorNum, 
+										  -1};
+						packet.setData(newData);
+						eventOccured(Event.FLOOR_SENSOR_ACTIVATED, packet);
+					}
+				}
+				
+				currentState = State.RESPONDING_TO_MESSAGE;
 			} else if (event.equals(Event.TEARDOWN)) {
 				currentState = State.END;
 
@@ -225,7 +239,20 @@ public class Scheduler extends ServerPattern {
 		} else {
 			upOrDown = UtilityInformation.ElevatorDirection.UP;
 		}
-		algor.elevatorRequestMade(recievedPacket.getData()[1], recievedPacket.getData()[3], upOrDown);
+		
+		byte elevatorNum = algor.elevatorRequestMade(recievedPacket.getData()[1], recievedPacket.getData()[3], upOrDown);
+		
+		// Update elevator destinations
+		ArrayList<Byte> elevatorDestinations = algor.getDestinations(elevatorNum);
+		if (elevatorDestinations.size() > 0) {
+			byte[] destinationFloor = { UtilityInformation.SEND_DESTINATION_TO_ELEVATOR_MODE, elevatorDestinations.get(0),
+					UtilityInformation.END_OF_MESSAGE };
+			for (int a = 0; a < 10000; a++) {
+				// Delay
+			}
+			sendMessage(destinationFloor, destinationFloor.length, recievedPacket.getAddress(),
+					UtilityInformation.ELEVATOR_PORT_NUM);
+		}
 	}
 
 	/**
@@ -243,18 +270,7 @@ public class Scheduler extends ServerPattern {
 		 * floorsToVisit.remove(indToRemove); }
 		 */
 		byte elevatorNum = packet.getData()[2];
-
-		// Update elevator destinations
-		ArrayList<Byte> elevatorDestinations = algor.getDestinations(elevatorNum);
-		for (Byte floor : elevatorDestinations) {
-			byte[] destinationFloor = { UtilityInformation.SEND_DESTINATION_TO_ELEVATOR_MODE, floor,
-					UtilityInformation.END_OF_MESSAGE };
-			for (int a = 0; a < 10000; a++) {
-				// Delay
-			}
-			sendMessage(destinationFloor, destinationFloor.length, packet.getAddress(),
-					UtilityInformation.ELEVATOR_PORT_NUM);
-		}
+		
 		if (algor.somewhereToGo(elevatorNum)) {
 			closeElevatorDoors(packet);
 

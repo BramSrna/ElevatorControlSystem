@@ -13,7 +13,7 @@ public class ElevatorSubsystemTests {
 	    @BeforeEach
 	    void setUp() throws Exception {
 	        host = new TestHost(1);
-	        elevator = new Elevator();
+	        elevator = new Elevator(0);
 	    }
 	    
 	    @AfterEach
@@ -22,10 +22,10 @@ public class ElevatorSubsystemTests {
 	        host = null;
 
 			// Clean up elevator
-	        elevator.sendPacket = null;
-			elevator.receivePacket = null;
-			elevator.sendSocket.close();
-			elevator.receiveSocket.close();
+//	        elevator.sendPacket = null;
+//			elevator.receivePacket = null;
+//			elevator.sendSocket.close();
+//			elevator.receiveSocket.close();
 	        elevator = null;
 	    }
 	    
@@ -48,10 +48,10 @@ public class ElevatorSubsystemTests {
         t.start();
         
         //Send the data to the host
-        elevator.sendData(new byte[] { 0x20, 0x20, 0x20 },
-        				  InetAddress.getLocalHost(),
-        				  UtilityInformation.SCHEDULER_PORT_NUM
-        				  );
+//        elevator.sendData(new byte[] { 0x20, 0x20, 0x20 },
+//        				  InetAddress.getLocalHost(),
+//        				  UtilityInformation.SCHEDULER_PORT_NUM
+//        				  );
         
         /*TODO*/
         //Receive a packet and decode it to see if it holds the same data
