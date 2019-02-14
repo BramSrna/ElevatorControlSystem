@@ -282,14 +282,14 @@ public class SchedulerAlgorithm {
 	}
 
 	public void setNumberOfElevators(byte numElevators) {	        
-	    while (elevatorStops.size() > numElevators) {
+	    while (stopElevator.size() > numElevators) {
 	        elevatorStops.remove(elevatorStops.size() - 1);
             currentFloor.remove(currentFloor.size() - 1);
             stopElevator.remove(stopElevator.size() - 1);
             elevatorDestinations.remove(elevatorDestinations.size() - 1);
 	    }
 	    
-	    while (elevatorStops.size() < numElevators) {
+	    while (stopElevator.size() < numElevators) {
 	        elevatorStops.add(new ArrayList<Byte>());
             currentFloor.add((byte) 0);
             stopElevator.add(true); 
@@ -311,5 +311,9 @@ public class SchedulerAlgorithm {
 
 	public boolean getStopElevator(byte elevatorNum) {
 		return stopElevator.get(elevatorNum);
+	}
+	
+	public void setStopElevator(byte elevatorNum, boolean newVal) {
+		stopElevator.set(elevatorNum, newVal);
 	}
 }

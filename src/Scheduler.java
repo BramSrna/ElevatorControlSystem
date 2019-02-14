@@ -304,6 +304,7 @@ public class Scheduler extends ServerPattern {
 		sendMessage(stopElevator, stopElevator.length, packet.getAddress(), UtilityInformation.ELEVATOR_PORT_NUM);
 		sendMessage(stopElevator, stopElevator.length, packet.getAddress(), UtilityInformation.FLOOR_PORT_NUM);
 		elevatorDirection.set(elevatorNum, UtilityInformation.ElevatorDirection.STATIONARY);
+		algor.setStopElevator(elevatorNum, true);
 	}
 
 	/**
