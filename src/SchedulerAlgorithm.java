@@ -218,7 +218,7 @@ public class SchedulerAlgorithm {
             }
 	    }
 	    
-	    System.out.println("New request list: " + elevatorStops.get(chosenElevator) + "\n");	    
+	    System.out.println("New request list: " + elevatorStops + "\n");	    
 	    
 	    return((byte) chosenElevator);
 	}
@@ -290,10 +290,18 @@ public class SchedulerAlgorithm {
 	    }
 	    
 	    while (stopElevator.size() < numElevators) {
-	        elevatorStops.add(new ArrayList<Byte>());
             currentFloor.add((byte) 0);
             stopElevator.add(true); 
-            elevatorDestinations.add(new ArrayList<Byte>());
+            
+	    	ArrayList<Byte> temp = new ArrayList<Byte>();
+	    	temp.add((byte) 0);
+	    	
+	        elevatorStops.add(temp);
+	        
+	        temp = new ArrayList<Byte>();
+	    	temp.add((byte) 0);
+
+            elevatorDestinations.add(temp);
 	    }
 	}
 
@@ -315,5 +323,12 @@ public class SchedulerAlgorithm {
 	
 	public void setStopElevator(byte elevatorNum, boolean newVal) {
 		stopElevator.set(elevatorNum, newVal);
+	}
+	
+	public void printAllInfo() {
+		System.out.println(elevatorStops); // Elevator, Destinations
+		System.out.println(currentFloor);
+		System.out.println(stopElevator);
+		System.out.println(elevatorDestinations);
 	}
 }

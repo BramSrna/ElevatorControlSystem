@@ -82,6 +82,8 @@ public class Scheduler extends ServerPattern {
 
 				extractFloorReachedNumberAndGenerateResponseMessageAndActions(packet);
 			} else if (event.equals(Event.FLOOR_REQUESTED)) {
+				System.out.println("START CURR STATE:");
+				algor.printAllInfo();
 				currentState = State.RESPONDING_TO_MESSAGE;
 
 				extractFloorRequestedNumberAndGenerateResponseMessageAndActions(packet);
@@ -97,6 +99,8 @@ public class Scheduler extends ServerPattern {
 						eventOccured(Event.FLOOR_SENSOR_ACTIVATED, packet);
 					}
 				}
+				System.out.println("END CURR STATE:");
+				algor.printAllInfo();
 				
 				currentState = State.RESPONDING_TO_MESSAGE;
 			} else if (event.equals(Event.TEARDOWN)) {
@@ -167,7 +171,7 @@ public class Scheduler extends ServerPattern {
 	}
 
 	private void elevatorStopped(DatagramPacket packet) {
-		algor.elevatorHasReachedFloor(packet.getData()[1], packet.getData()[2]);
+		//algor.elevatorHasReachedFloor(packet.getData()[1], packet.getData()[2]);
 	}
 
 	/**
