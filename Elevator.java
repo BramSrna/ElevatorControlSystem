@@ -7,7 +7,7 @@ package groupProject;
  * @ student# 101037927
  * @ version 1
  * 
- * The elevator subsystem consists of the buttons and lamps inside of the elevator used to select floors and indicate the
+ * The elevator class consists of the buttons and lamps inside of the elevator used to select floors and indicate the
  * floors selected, and to indicate the location of the elevator itself. The elevator subsystem is also used to operate the
  * motor and to open and close the doors. Each elevator has its own elevator subsystem. 
  * 
@@ -39,6 +39,9 @@ public class Elevator extends Thread{
 	// The lamps indicate the floor(s) which will be visited by the elevator
 	lampState[] allButtons;
 	
+	/*
+	 * General Constructor for Elevator Class
+	 */
 	public Elevator(int number) {
 		elevatorNumber = number;
 	}
@@ -47,6 +50,9 @@ public class Elevator extends Thread{
 	public int getCurrentFloor() {return this.currentFloor;}
 	public doorState getDoorState() {return this.door;}
 	
+	/*
+	 * Method to print out each elevators data.
+	 */
 	public void display() {
 		// Simply display 
 		System.out.println("Elevator Number: " + this.getElevatorNumber());
@@ -131,8 +137,7 @@ public class Elevator extends Thread{
 	
 	public synchronized void run() {
 		for (;;) {
-			//always wait for a message from the scheduler
-			//this.display();
+			// The elevator thread run method
 		}
 	}
 	
