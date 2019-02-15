@@ -8,8 +8,6 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.*;
 
-import groupProject.Elevator.lampState;
-
 /*
  * SYSC 3303 Elevator Group Project
  * Elevator_Subsystem.java
@@ -33,14 +31,18 @@ import groupProject.Elevator.lampState;
  * 
  */
 public class Elevator_Subsystem  {
+	// ArrayList containing all the elevators being used by an instance of the system.
 	ArrayList<Elevator> allElevators = new ArrayList<>();
+	
 	// The number of elevators and floors, initialized to 0
 	// These are set during the initial config
 	private int numberOfElevators = 0;
 	private int numberOfFloors = 0;
+	
 	// The destination floor
 	private int destinationFloor;
 
+	// The current elevator number being accesed
 	private static byte currentElevatorToWork = 0;
 
 	// Datagram Packets and Sockets for sending and receiving data
@@ -65,6 +67,7 @@ public class Elevator_Subsystem  {
 	// Start off stationary
 	static State currentState = State.ANALYZING_MESSAGE;
 
+	// General Constructor for Elevator Subsystem class.
 	public Elevator_Subsystem() {
 		try {
 			schedulerIP = InetAddress.getLocalHost();
@@ -185,7 +188,7 @@ public class Elevator_Subsystem  {
 	}
 
 	/*
-	 * Separately analyzing the different events that occur in the system
+	 * Separately analyzing the different events that occur in the elevator subsystem.
 	 * 
 	 * @param event the event that occurred
 	 * 
@@ -249,14 +252,14 @@ public class Elevator_Subsystem  {
 			numberOfElevators = data[1];
 			numberOfFloors = data[2];
 
-			// create new elevators
+			// Based on the config message, set up the elevators and their lights.
 			for (int i = 0; i < numberOfElevators; i++) {
 				Elevator hold = new Elevator(i);
-				hold.allButtons = new lampState[numberOfFloors];
+				hold.allButtons = new Elevator.lampState[numberOfFloors];
 				for (int k = 0; k < numberOfFloors; k++) {
-					hold.allButtons[k] = lampState.OFF; // currently making everything OFF
+					hold.allButtons[k] = Elevator.lampState.OFF; // currently making everything OFF
 				}
-				// add to elevator subsystem arraylist of elevators
+				// add to elevator subsystem ArrayList of elevators
 				allElevators.add(hold);
 			}
 			// allButtons = new lampState[numberOfFloors];
@@ -286,7 +289,8 @@ public class Elevator_Subsystem  {
 		}
 		if (str.equals("stop")) {
 			allElevators.get(currentElevatorToWork).Stop();
-			byte[] returnMessage = { UtilityInformation.FLOOR_SENSOR_MODE,
+			allElevators.get(currentElevatorToWork).allButtons[destinationFloor] = Elevator.lampState.OFF;
+			byte[] returnMessage = { UtilityInformation.ELEVATOR_STOPPED_MODE,
 					(byte) allElevators.get(currentElevatorToWork).currentFloor,
 					(byte) allElevators.get(currentElevatorToWork).elevatorNumber, -1 };
 			this.sendData(returnMessage, schedulerIP, schedulerPort);
@@ -306,7 +310,8 @@ public class Elevator_Subsystem  {
 		// getting destination from scheduler for each input
 		if (str.equals("destination")) {
 			destinationFloor = data[1];
-			allElevators.get(currentElevatorToWork).allButtons[destinationFloor] = lampState.ON;
+			currentElevatorToWork = data[2];
+			allElevators.get(currentElevatorToWork).allButtons[destinationFloor] = Elevator.lampState.ON;
 		}
 
 	}
@@ -354,7 +359,10 @@ public class Elevator_Subsystem  {
 		return "invalid"; // anything else is an invalid request.
 	}
 
-	public static void main() {
+	/*
+	 * Main method for starting the elevator. 
+	 */
+	public static void main(String[] args) {
 		Elevator_Subsystem elvSub = new Elevator_Subsystem();
 		// receive the config message
 		elvSub.receiveData();
