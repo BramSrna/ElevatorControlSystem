@@ -264,6 +264,8 @@ public class Scheduler extends ServerPattern {
 	private void moveToFloor(DatagramPacket packet) {
 		byte elevatorNum = packet.getData()[2];
 
+		// TODO Note: This will be changed from iteration to iteration for optimization
+		// purposes
 		if (algor.somewhereToGo(elevatorNum)) {
 			closeElevatorDoors(packet);
 
@@ -291,6 +293,7 @@ public class Scheduler extends ServerPattern {
 	 * Send stop elevator message
 	 * 
 	 * @param packet
+	 * @param elevatorNum
 	 */
 	protected void stopElevator(DatagramPacket packet, byte elevatorNum) {
 		byte[] stopElevator = { UtilityInformation.ELEVATOR_DIRECTION_MODE, algor.getCurrentFloor(elevatorNum),
@@ -360,7 +363,7 @@ public class Scheduler extends ServerPattern {
 	 * as nobody can press a button while in the elevator in real-time at the
 	 * moment.
 	 * 
-	 * @param recievedData
+	 * @param recievedPacket
 	 */
 	private void extractElevatorButtonFloorAndGenerateResponseMessageAndActions(DatagramPacket recievedPacket) {
 		System.out.println("(SHOULD NOT HAPPEN YET) Following floor button was hit in the elevator: "
@@ -372,17 +375,20 @@ public class Scheduler extends ServerPattern {
 	/**
 	 * For when the Floor sends message to Scheduler saying it has arrived.
 	 * 
-	 * @param recievedData
+	 * @param recievedPacket
 	 */
 	private void extractFloorReachedNumberAndGenerateResponseMessageAndActions(DatagramPacket recievedPacket) {
-		// TODO Make sure the elevator number matches position in ArrayList in algor
 		byte floorNum = recievedPacket.getData()[1];
 		byte elevatorNum = recievedPacket.getData()[2];
 		algor.elevatorHasReachedFloor(floorNum, elevatorNum);
+
+		// Stop elevator if necessary
 		if (algor.getStopElevator(elevatorNum)) {
 			stopElevator(recievedPacket, elevatorNum);
 			openElevatorDoors(recievedPacket);
 		}
+
+		// Continue moving elevator
 		moveToFloor(recievedPacket);
 	}
 
