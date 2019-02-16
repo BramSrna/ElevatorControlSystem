@@ -1,3 +1,5 @@
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -254,5 +256,115 @@ class SchedulerTest {
 		
 		scheduler.closeElevatorDoors(packet);
 	}
+	
+	/**
+	 * Test to make sure the algorithm will add requests as expected.
+	 */
+    @Test
+    void testAddRequestToSchedulerAlgorithm() {
+        SchedulerAlgorithm algor = new SchedulerAlgorithm((byte) 0);
+        
+        algor.setNumberOfElevators((byte) 4);
+        
+        System.out.println(String.format("Making request: %d to %d", 0, 7));
+        algor.elevatorRequestMade((byte) 0, (byte) 7, UtilityInformation.ElevatorDirection.UP);
+        algor.printAllInfo();
+        
+        System.out.println(String.format("Making request: %d to %d", 0, 10));
+        algor.elevatorRequestMade((byte) 0, (byte) 10, UtilityInformation.ElevatorDirection.UP);
+        algor.printAllInfo();
+        
+        System.out.println(String.format("Making request: %d to %d", 1, 3));
+        algor.elevatorRequestMade((byte) 1, (byte) 3, UtilityInformation.ElevatorDirection.UP);
+        algor.printAllInfo();
+        
+        System.out.println(String.format("Making request: %d to %d", 0, 4));
+        algor.elevatorRequestMade((byte) 0, (byte) 4, UtilityInformation.ElevatorDirection.UP);
+        algor.printAllInfo();
+        
+        System.out.println(String.format("Making request: %d to %d", 9, 1));
+        algor.elevatorRequestMade((byte) 9, (byte) 1, UtilityInformation.ElevatorDirection.DOWN);
+        algor.printAllInfo();
+        
+        System.out.println(String.format("Making request: %d to %d", 0, 4));
+        algor.elevatorRequestMade((byte) 0, (byte) 4, UtilityInformation.ElevatorDirection.UP);
+        algor.printAllInfo();
+        
+        System.out.println(String.format("Making request: %d to %d", 7, 10));
+        algor.elevatorRequestMade((byte) 7, (byte) 10, UtilityInformation.ElevatorDirection.UP);
+        algor.printAllInfo();
+        
+        System.out.println(String.format("Making request: %d to %d", 3, 3));
+        algor.elevatorRequestMade((byte) 3, (byte) 3, UtilityInformation.ElevatorDirection.DOWN);
+        algor.printAllInfo();
+        
+        System.out.println(String.format("Making request: %d to %d", 9, 1));
+        algor.elevatorRequestMade((byte) 9, (byte) 1, UtilityInformation.ElevatorDirection.DOWN);
+        algor.printAllInfo();
+        
+        System.out.println(String.format("Making request: %d to %d", 0, 9));
+        algor.elevatorRequestMade((byte) 0, (byte) 9, UtilityInformation.ElevatorDirection.UP);
+        algor.printAllInfo();
+        
+        System.out.println(String.format("Making request: %d to %d", 7, 1));
+        algor.elevatorRequestMade((byte) 7, (byte) 1, UtilityInformation.ElevatorDirection.DOWN);
+        algor.printAllInfo();
+    }
+    
+    /**
+     * Test to make sure that the arrival at floors is handled properly
+     */
+    @Test
+    void testElevatorArriveAtFloor() {
+        SchedulerAlgorithm algor = new SchedulerAlgorithm((byte) 0);
+       
+        byte numElevators = 4;
+        
+        algor.setNumberOfElevators((byte) numElevators);
+        
+        System.out.println(String.format("Making request: %d to %d", 0, 7));
+        algor.elevatorRequestMade((byte) 0, (byte) 7, UtilityInformation.ElevatorDirection.UP);
+        
+        System.out.println(String.format("Making request: %d to %d", 0, 10));
+        algor.elevatorRequestMade((byte) 0, (byte) 10, UtilityInformation.ElevatorDirection.UP);
+        
+        System.out.println(String.format("Making request: %d to %d", 1, 3));
+        algor.elevatorRequestMade((byte) 1, (byte) 3, UtilityInformation.ElevatorDirection.UP);
+        
+        System.out.println(String.format("Making request: %d to %d", 0, 4));
+        algor.elevatorRequestMade((byte) 0, (byte) 4, UtilityInformation.ElevatorDirection.UP);
+        
+        System.out.println(String.format("Making request: %d to %d", 9, 1));
+        algor.elevatorRequestMade((byte) 9, (byte) 1, UtilityInformation.ElevatorDirection.DOWN);
+        
+        algor.printAllInfo();
+        
+        for (byte elevatorNum = 0; elevatorNum < numElevators; elevatorNum++) {
+            algor.elevatorHasReachedFloor((byte) 0, (byte) elevatorNum); 
+        }
+        
+        algor.printAllInfo(); 
+    }
+    
+    /**
+     * Test to make sure that the algorithm will send elevators in the correct direction.
+     */
+    @Test
+    void testWhatDirectionShouldTravel() {
+        byte numElevators = 1;
+        
+        SchedulerAlgorithm algor = new SchedulerAlgorithm((byte) numElevators);
+        
+        System.out.println(String.format("Making request: %d to %d", 2, 7));
+        algor.elevatorRequestMade((byte) 2, (byte) 7, UtilityInformation.ElevatorDirection.UP);
+        
+        algor.elevatorHasReachedFloor((byte) 0, (byte) 0);   
+        
+        algor.elevatorHasReachedFloor((byte) 3, (byte) 0);        
+        assertEquals(algor.whatDirectionShouldTravel((byte) 0), UtilityInformation.ElevatorDirection.DOWN);
+        
+        algor.elevatorHasReachedFloor((byte) 1, (byte) 0);        
+        assertEquals(algor.whatDirectionShouldTravel((byte) 0), UtilityInformation.ElevatorDirection.UP);
+    }
 
 }
