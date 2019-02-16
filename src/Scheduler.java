@@ -23,13 +23,10 @@ public class Scheduler extends ServerPattern {
 	private DatagramPacket sendPacket;
 	private ArrayList<UtilityInformation.ElevatorDirection> elevatorDirection;
 	private State currentState;
-
-	private final int MODE_BYTE_IND = 0;
-
-	private SchedulerAlgorithm algor;
-
 	private byte numElevators;
 	private byte numFloors;
+
+	private SchedulerAlgorithm algor;
 
 	public Scheduler() {
 		super(UtilityInformation.SCHEDULER_PORT_NUM, "Scheduler");
@@ -37,6 +34,7 @@ public class Scheduler extends ServerPattern {
 		algor = new SchedulerAlgorithm((byte) 0);
 
 		elevatorDirection = new ArrayList<UtilityInformation.ElevatorDirection>();
+
 		currentState = State.START;
 
 		try {
@@ -48,13 +46,13 @@ public class Scheduler extends ServerPattern {
 	}
 
 	/**
-	 * Close send and recieve sockets.
+	 * Close send and reciever sockets
 	 */
 	protected void socketTearDown() {
 		if (sendSocket != null) {
 			sendSocket.close();
 		}
-		
+
 		super.teardown();
 	}
 
@@ -70,39 +68,35 @@ public class Scheduler extends ServerPattern {
 		case READING_MESSAGE:
 			if (event.equals(Event.CONFIG_MESSAGE)) {
 				currentState = State.RESPONDING_TO_MESSAGE;
-				
 				sendConfigPacketToElevator(packet);
 				eventOccured(Event.CONFIG_MESSAGE, packet);
 			} else if (event.equals(Event.BUTTON_PUSHED_IN_ELEVATOR)) {
 				currentState = State.RESPONDING_TO_MESSAGE;
-
 				extractElevatorButtonFloorAndGenerateResponseMessageAndActions(packet);
 				moveToFloor(packet);
 			} else if (event.equals(Event.FLOOR_SENSOR_ACTIVATED)) {
 				currentState = State.RESPONDING_TO_MESSAGE;
-
 				extractFloorReachedNumberAndGenerateResponseMessageAndActions(packet);
 			} else if (event.equals(Event.FLOOR_REQUESTED)) {
 				System.out.println("START CURR STATE:");
 				algor.printAllInfo();
 				currentState = State.RESPONDING_TO_MESSAGE;
-
 				extractFloorRequestedNumberAndGenerateResponseMessageAndActions(packet);
-				
+
+				// If the elevator should stop, change the packet data to the information
+				// required and trigger the floor sensor event
 				for (byte elevatorNum = 0; elevatorNum < numElevators; elevatorNum++) {
 					currentState = State.READING_MESSAGE;
 					if (algor.getStopElevator(elevatorNum)) {
-						byte[] newData = {UtilityInformation.FLOOR_SENSOR_MODE,
-										  algor.getCurrentFloor(elevatorNum),
-										  elevatorNum, 
-										  -1};
+						byte[] newData = { UtilityInformation.FLOOR_SENSOR_MODE, algor.getCurrentFloor(elevatorNum),
+								elevatorNum, -1 };
 						packet.setData(newData);
 						eventOccured(Event.FLOOR_SENSOR_ACTIVATED, packet);
 					}
 				}
 				System.out.println("END CURR STATE:");
 				algor.printAllInfo();
-				
+
 				currentState = State.RESPONDING_TO_MESSAGE;
 			} else if (event.equals(Event.TEARDOWN)) {
 				currentState = State.END;
@@ -115,13 +109,8 @@ public class Scheduler extends ServerPattern {
 				eventOccured(Event.CONFIRM_CONFIG, packet);
 			} else if (event.equals(Event.ELEVATOR_STOPPED)) {
 				currentState = State.RESPONDING_TO_MESSAGE;
-
-				elevatorStopped(packet);
-				// TODO moveToFloor(packet);
 			}
-
 			currentState = State.WAITING;
-
 			break;
 		case WAITING:
 			if (event.equals(Event.MESSAGE_RECIEVED)) {
@@ -148,7 +137,7 @@ public class Scheduler extends ServerPattern {
 	}
 
 	/**
-	 * Send the confirm config message to the Floor.
+	 * Send the confimration from the config message to the Floor
 	 * 
 	 * @param packet
 	 */
@@ -171,44 +160,45 @@ public class Scheduler extends ServerPattern {
 		System.exit(0);
 	}
 
-	private void elevatorStopped(DatagramPacket packet) {
-		//algor.elevatorHasReachedFloor(packet.getData()[1], packet.getData()[2]);
-	}
-
 	/**
-	 * Send the initial floor schematics to the elevator for setup
+	 * Setup elevator and floor schematics and also send this information to the
+	 * Elevator
 	 * 
 	 * @param configPacket
 	 */
 	protected void sendConfigPacketToElevator(DatagramPacket configPacket) {
 		System.out.println("Sending config file to Elevator...\n");
-
 		setNumElevators(configPacket.getData()[1]);
 		setNumFloors(configPacket.getData()[2]);
-		
 		sendMessage(configPacket.getData(), configPacket.getData().length, configPacket.getAddress(),
 				UtilityInformation.ELEVATOR_PORT_NUM);
 	}
-	
+
+	/**
+	 * Set the number of elevators and all the lists that need to be initialized
+	 * with the correct number of elevators
+	 * 
+	 * @param newNumElevators
+	 */
 	public void setNumElevators(byte newNumElevators) {
-	    this.numElevators = newNumElevators;
-	    
-        while (elevatorDirection.size() > numElevators) {
-            elevatorDirection.remove(elevatorDirection.size() - 1);
-        }
-
-        while (elevatorDirection.size() < numElevators) {
-            elevatorDirection.add(UtilityInformation.ElevatorDirection.STATIONARY);
-        }
-        
-        algor.setNumberOfElevators(numElevators);
-	        
+		this.numElevators = newNumElevators;
+		while (elevatorDirection.size() > numElevators) {
+			elevatorDirection.remove(elevatorDirection.size() - 1);
+		}
+		while (elevatorDirection.size() < numElevators) {
+			elevatorDirection.add(UtilityInformation.ElevatorDirection.STATIONARY);
+		}
+		algor.setNumberOfElevators(numElevators);
 	}
-	
-    public void setNumFloors(byte newNumFloors) {
-        this.numFloors = newNumFloors;
-    }
 
+	/**
+	 * Set the number of floors in the system
+	 * 
+	 * @param newNumFloors
+	 */
+	public void setNumFloors(byte newNumFloors) {
+		this.numFloors = newNumFloors;
+	}
 
 	/**
 	 * Read the message recieved and call the appropriate event
@@ -216,7 +206,7 @@ public class Scheduler extends ServerPattern {
 	 * @param recievedPacket
 	 */
 	private void readMessage(DatagramPacket recievedPacket) {
-		byte mode = recievedPacket.getData()[MODE_BYTE_IND];
+		byte mode = recievedPacket.getData()[UtilityInformation.MODE_BYTE_IND];
 
 		if (mode == UtilityInformation.CONFIG_MODE) { // 0
 			eventOccured(Event.CONFIG_MESSAGE, recievedPacket);
@@ -255,14 +245,15 @@ public class Scheduler extends ServerPattern {
 		} else {
 			upOrDown = UtilityInformation.ElevatorDirection.UP;
 		}
-		
-		byte elevatorNum = algor.elevatorRequestMade(recievedPacket.getData()[1], recievedPacket.getData()[3], upOrDown);
-		
+
+		byte elevatorNum = algor.elevatorRequestMade(recievedPacket.getData()[1], recievedPacket.getData()[3],
+				upOrDown);
+
 		// Update elevator destinations
 		ArrayList<Byte> elevatorDestinations = algor.getDestinations(elevatorNum);
 		if (elevatorDestinations.size() > 0) {
-			byte[] destinationFloor = { UtilityInformation.SEND_DESTINATION_TO_ELEVATOR_MODE, elevatorDestinations.get(0),
-					elevatorNum, UtilityInformation.END_OF_MESSAGE };
+			byte[] destinationFloor = { UtilityInformation.SEND_DESTINATION_TO_ELEVATOR_MODE,
+					elevatorDestinations.get(0), elevatorNum, UtilityInformation.END_OF_MESSAGE };
 			for (int a = 0; a < 10000; a++) {
 				// Delay
 			}
@@ -286,7 +277,7 @@ public class Scheduler extends ServerPattern {
 		 * floorsToVisit.remove(indToRemove); }
 		 */
 		byte elevatorNum = packet.getData()[2];
-		
+
 		if (algor.somewhereToGo(elevatorNum)) {
 			closeElevatorDoors(packet);
 

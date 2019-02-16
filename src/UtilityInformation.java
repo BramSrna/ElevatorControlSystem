@@ -14,6 +14,8 @@ public class UtilityInformation {
 		STATIONARY, UP, DOWN
 	}
 
+	public final static int MODE_BYTE_IND = 0;
+
 	// Modes
 	public final static byte CONFIG_MODE = 0;
 	public final static byte FLOOR_SENSOR_MODE = 1;
@@ -38,15 +40,15 @@ public class UtilityInformation {
 	public final static int SCHEDULER_PORT_NUM = 420;
 	public final static int ELEVATOR_PORT_NUM = 69;
 	public final static int FLOOR_PORT_NUM = 666;
-	
+
 	// Information to configure times for important actions (in milliseconds)
 	public final static int OPEN_DOOR_TIME = 1500;
 	public final static int CLOSE_DOOR_TIME = 1500;
 	public final static int TIME_UP_ONE_FLOOR = 5000;
 	public final static int TIME_DOWN_ONE_FLOOR = 5000;
-	
-    // Valid ranges for the number of
-    // floors and number of elevators
+
+	// Valid ranges for the number of
+	// floors and number of elevators
 	public final static int MIN_NUM_FLOORS = 1;
 	public final static int MAX_NUM_FLOORS = 1000;
 
