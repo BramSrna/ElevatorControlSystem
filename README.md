@@ -67,7 +67,7 @@ Running the project:
 	- The Scheduler will send instructions to the Elevator system and FloorSubsystem containing movement requests, button and lamp states, door operations, and other important information.
 	- Once the final request is complete, the user can then exit the program, causing a teardown signal to be sent through the system, exiting all running files.
 
-Breakdown of responsibilities for Iteration #1:
+Breakdown of responsibilities for Iteration #2:
   
   Group 1: 
 
