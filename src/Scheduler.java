@@ -28,8 +28,8 @@ public class Scheduler extends ServerPattern {
 
 	private SchedulerAlgorithm algor;
 
-	private int numElevators;
-	private int numFloors;
+	private byte numElevators;
+	private byte numFloors;
 
 	public Scheduler() {
 		super(UtilityInformation.SCHEDULER_PORT_NUM, "Scheduler");
@@ -54,6 +54,8 @@ public class Scheduler extends ServerPattern {
 		if (sendSocket != null) {
 			sendSocket.close();
 		}
+		
+		super.teardown();
 	}
 
 	/**
@@ -68,8 +70,7 @@ public class Scheduler extends ServerPattern {
 		case READING_MESSAGE:
 			if (event.equals(Event.CONFIG_MESSAGE)) {
 				currentState = State.RESPONDING_TO_MESSAGE;
-
-				algor.setNumberOfElevators(packet.getData()[1]);
+				
 				sendConfigPacketToElevator(packet);
 				eventOccured(Event.CONFIG_MESSAGE, packet);
 			} else if (event.equals(Event.BUTTON_PUSHED_IN_ELEVATOR)) {
@@ -182,20 +183,32 @@ public class Scheduler extends ServerPattern {
 	protected void sendConfigPacketToElevator(DatagramPacket configPacket) {
 		System.out.println("Sending config file to Elevator...\n");
 
-		this.numElevators = configPacket.getData()[1];
-		this.numFloors = configPacket.getData()[2];
-
-		while (elevatorDirection.size() > numElevators) {
-			elevatorDirection.remove(elevatorDirection.size() - 1);
-		}
-
-		while (elevatorDirection.size() < numElevators) {
-			elevatorDirection.add(UtilityInformation.ElevatorDirection.STATIONARY);
-		}
-
+		setNumElevators(configPacket.getData()[1]);
+		setNumFloors(configPacket.getData()[2]);
+		
 		sendMessage(configPacket.getData(), configPacket.getData().length, configPacket.getAddress(),
 				UtilityInformation.ELEVATOR_PORT_NUM);
 	}
+	
+	public void setNumElevators(byte newNumElevators) {
+	    this.numElevators = newNumElevators;
+	    
+        while (elevatorDirection.size() > numElevators) {
+            elevatorDirection.remove(elevatorDirection.size() - 1);
+        }
+
+        while (elevatorDirection.size() < numElevators) {
+            elevatorDirection.add(UtilityInformation.ElevatorDirection.STATIONARY);
+        }
+        
+        algor.setNumberOfElevators(numElevators);
+	        
+	}
+	
+    public void setNumFloors(byte newNumFloors) {
+        this.numFloors = newNumFloors;
+    }
+
 
 	/**
 	 * Read the message recieved and call the appropriate event

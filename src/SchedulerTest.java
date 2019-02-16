@@ -9,8 +9,8 @@ import org.junit.jupiter.api.Test;
 class SchedulerTest {
 
 	private Scheduler scheduler;
-	private TestHost host;
-	private TestHost host2;
+	private TestHost elevatorHost;
+	private TestHost floorHost;
 
 	/**
 	 * Initialize scheduler
@@ -20,6 +20,17 @@ class SchedulerTest {
 	@BeforeEach
 	void setUp() throws Exception {
 		scheduler = new Scheduler();
+		
+		elevatorHost = new TestHost(0, 
+                UtilityInformation.ELEVATOR_PORT_NUM, 
+                UtilityInformation.SCHEDULER_PORT_NUM);
+		
+		floorHost = new TestHost(0, 
+                UtilityInformation.FLOOR_PORT_NUM, 
+                UtilityInformation.SCHEDULER_PORT_NUM);
+		
+		elevatorHost.disableResponse();
+		floorHost.disableResponse();
 	}
 
 	/**
@@ -28,15 +39,14 @@ class SchedulerTest {
 	 * @throws Exception
 	 */
 	@AfterEach
-	void tearDown() throws Exception {
+	void tearDown() throws Exception {	        
 		scheduler.socketTearDown();
+		elevatorHost.teardown();
+		floorHost.teardown();
+		
 		scheduler = null;
-		host.teardown();
-		host = null;
-		if (host2 != null) {
-			host2.teardown();
-			host2 = null;
-		}
+		elevatorHost = null;
+		floorHost = null;
 	}
 
 	/**
@@ -48,13 +58,13 @@ class SchedulerTest {
 	@SuppressWarnings("static-access")
 	@Test
 	void testOpenElevatorDoors() throws UnknownHostException, InterruptedException {
-		host = new TestHost(1, 
-            		        UtilityInformation.ELEVATOR_PORT_NUM, 
-            		        UtilityInformation.SCHEDULER_PORT_NUM);
-		Thread thread = new Thread(host);
+		elevatorHost.setExpectedNumMessages(1);
+		
+		Thread thread = new Thread(elevatorHost);
 		thread.start();
 		thread.sleep(2000);
-		byte[] buf = new byte[] { 1, -1 };
+		
+		byte[] buf = new byte[] { 1, 1, 1, -1 };
 		DatagramPacket packet = new DatagramPacket(buf, buf.length, InetAddress.getLocalHost(),
 				UtilityInformation.ELEVATOR_PORT_NUM);
 
@@ -71,15 +81,17 @@ class SchedulerTest {
 	@SuppressWarnings("static-access")
 	@Test
 	void testConfigConfirmMessage() throws UnknownHostException, InterruptedException {
-		host = new TestHost(1, 
-            		        UtilityInformation.FLOOR_PORT_NUM, 
-                            UtilityInformation.SCHEDULER_PORT_NUM);
-		Thread thread = new Thread(host);
+	    floorHost.setExpectedNumMessages(1);
+	    
+		Thread thread = new Thread(floorHost);
 		thread.start();
 		thread.sleep(2000);
+		
 		byte[] buf = new byte[] { 1, -1 };
 		DatagramPacket packet = new DatagramPacket(buf, buf.length, InetAddress.getLocalHost(),
 				UtilityInformation.FLOOR_PORT_NUM);
+		
+
 
 		scheduler.sendConfigConfirmMessage(packet);
 
@@ -94,13 +106,13 @@ class SchedulerTest {
 	@SuppressWarnings("static-access")
 	@Test
 	void testSendConfigPacketToElevator() throws UnknownHostException, InterruptedException {
-		host = new TestHost(1, 
-            		        UtilityInformation.ELEVATOR_PORT_NUM, 
-                            UtilityInformation.SCHEDULER_PORT_NUM);
-		Thread thread = new Thread(host);
+	    elevatorHost.setExpectedNumMessages(1);
+		
+		Thread thread = new Thread(elevatorHost);
 		thread.start();
 		thread.sleep(2000);
-		byte[] buf = new byte[] { 1, -1 };
+		
+		byte[] buf = new byte[] { 1, 1, 11, -1 };
 		DatagramPacket packet = new DatagramPacket(buf, buf.length, InetAddress.getLocalHost(),
 				UtilityInformation.ELEVATOR_PORT_NUM);
 
@@ -118,12 +130,14 @@ class SchedulerTest {
 	@Test
 	void testExtractFloorRequestedNumberAndGenerateResponseMessageAndActions()
 			throws UnknownHostException, InterruptedException {
-		host = new TestHost(1, 
-            		        UtilityInformation.ELEVATOR_PORT_NUM, 
-                            UtilityInformation.SCHEDULER_PORT_NUM);
-		Thread thread = new Thread(host);
+	    elevatorHost.setExpectedNumMessages(1);
+	    
+		Thread thread = new Thread(elevatorHost);
 		thread.start();
 		thread.sleep(2000);
+		
+		scheduler.setNumElevators((byte) 1); 
+		
 		byte[] buf = new byte[] { 1, 2, 3, 4, -1 };
 		DatagramPacket packet = new DatagramPacket(buf, buf.length, InetAddress.getLocalHost(),
 				UtilityInformation.ELEVATOR_PORT_NUM);
@@ -141,21 +155,22 @@ class SchedulerTest {
 	@SuppressWarnings("static-access")
 	@Test
 	void testStopElevator() throws UnknownHostException, InterruptedException {
-		host = new TestHost(1, 
-            		        UtilityInformation.ELEVATOR_PORT_NUM, 
-                            UtilityInformation.SCHEDULER_PORT_NUM);
-		Thread thread = new Thread(host);
-		host2 = new TestHost(1, 
-            		         UtilityInformation.FLOOR_PORT_NUM, 
-                             UtilityInformation.SCHEDULER_PORT_NUM);
-		Thread thread2 = new Thread(host2);
+	    elevatorHost.setExpectedNumMessages(1);
+	    floorHost.setExpectedNumMessages(1);
+	    
+		Thread thread = new Thread(elevatorHost);		
+		Thread thread2 = new Thread(floorHost);
 		thread.start();
 		thread2.start();
 		thread.sleep(1000);
 		thread2.sleep(1000);
+		
+		scheduler.setNumElevators((byte) 1); 
+		
 		byte[] buf = new byte[] { 1, 2, 3, -1 };
 		DatagramPacket packet = new DatagramPacket(buf, buf.length, InetAddress.getLocalHost(),
 				UtilityInformation.ELEVATOR_PORT_NUM);
+
 		scheduler.stopElevator(packet, (byte) 0);
 
 	}
@@ -169,21 +184,22 @@ class SchedulerTest {
 	@SuppressWarnings("static-access")
 	@Test
 	void testSendElevatorUp() throws UnknownHostException, InterruptedException {
-		host = new TestHost(1, 
-            		        UtilityInformation.ELEVATOR_PORT_NUM, 
-                            UtilityInformation.SCHEDULER_PORT_NUM);
-		Thread thread = new Thread(host);
-		host2 = new TestHost(1, 
-            		         UtilityInformation.FLOOR_PORT_NUM, 
-                             UtilityInformation.SCHEDULER_PORT_NUM);
-		Thread thread2 = new Thread(host2);
+	    elevatorHost.setExpectedNumMessages(1);
+	    floorHost.setExpectedNumMessages(1);
+	    
+		Thread thread = new Thread(elevatorHost);		
+		Thread thread2 = new Thread(floorHost);
 		thread.start();
 		thread2.start();
 		thread.sleep(1000);
 		thread2.sleep(1000);
+		
+		scheduler.setNumElevators((byte) 4); 
+		
 		byte[] buf = new byte[] { 1, 2, 3, -1 };
 		DatagramPacket packet = new DatagramPacket(buf, buf.length, InetAddress.getLocalHost(),
 				UtilityInformation.ELEVATOR_PORT_NUM);
+		
 		scheduler.sendElevatorUp(packet);
 
 	}
@@ -197,21 +213,22 @@ class SchedulerTest {
 	@SuppressWarnings("static-access")
 	@Test
 	void testSendElevatorDown() throws UnknownHostException, InterruptedException {
-		host = new TestHost(1, 
-            		        UtilityInformation.ELEVATOR_PORT_NUM, 
-                            UtilityInformation.SCHEDULER_PORT_NUM);
-		Thread thread = new Thread(host);
-		host2 = new TestHost(1, 
-            		         UtilityInformation.FLOOR_PORT_NUM, 
-                             UtilityInformation.SCHEDULER_PORT_NUM);
-		Thread thread2 = new Thread(host2);
+	    elevatorHost.setExpectedNumMessages(1);
+	    floorHost.setExpectedNumMessages(1);
+	    
+		Thread thread = new Thread(elevatorHost);		
+		Thread thread2 = new Thread(floorHost);
 		thread.start();
 		thread2.start();
 		thread.sleep(1000);
 		thread2.sleep(1000);
+		
+		scheduler.setNumElevators((byte) 4); 
+		
 		byte[] buf = new byte[] { 1, 2, 3, -1 };
 		DatagramPacket packet = new DatagramPacket(buf, buf.length, InetAddress.getLocalHost(),
 				UtilityInformation.ELEVATOR_PORT_NUM);
+		
 		scheduler.sendElevatorDown(packet);
 
 	}
@@ -225,17 +242,17 @@ class SchedulerTest {
 	@SuppressWarnings("static-access")
 	@Test
 	void testCloseElevatorDoors() throws UnknownHostException, InterruptedException {
-		host = new TestHost(1, 
-            		        UtilityInformation.ELEVATOR_PORT_NUM, 
-                            UtilityInformation.SCHEDULER_PORT_NUM);
-		Thread thread = new Thread(host);
+	    elevatorHost.setExpectedNumMessages(1);
+	    
+		Thread thread = new Thread(elevatorHost);
 		thread.start();
 		thread.sleep(2000);
-		byte[] buf = new byte[] { 1, -1 };
+		
+		byte[] buf = new byte[] { 1, 1, 1, -1 };
 		DatagramPacket packet = new DatagramPacket(buf, buf.length, InetAddress.getLocalHost(),
 				UtilityInformation.ELEVATOR_PORT_NUM);
+		
 		scheduler.closeElevatorDoors(packet);
-
 	}
 
 }

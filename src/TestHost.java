@@ -17,10 +17,11 @@ public class TestHost implements Runnable {
 
 	// The DatagramSockets and DatagramPackets used for UDP
 	private DatagramSocket sendSocket, receiveSocket;
-	private DatagramPacket sendPacket, receivePacket;
 
 	// Expected number of messages to receive
 	private int expectedNumMessages;
+	
+	private boolean response;
 
 	/**
 	 * TestHost
@@ -63,6 +64,8 @@ public class TestHost implements Runnable {
 		}
 
 		this.expectedNumMessages = expectedNumMessages;
+		
+		response = true;
 
 	}
 
@@ -77,9 +80,6 @@ public class TestHost implements Runnable {
 	 * @return None
 	 */
 	public void teardown() {
-		sendPacket = null;
-		receivePacket = null;
-
 		// Close the socket
 		sendSocket.close();
 		receiveSocket.close();
@@ -101,7 +101,7 @@ public class TestHost implements Runnable {
 	public void sendPacket(byte[] msg, InetAddress address, int portNum) {
 		// Create the DatagramPacket to send
 		// Send the created response to the given port number
-		sendPacket = new DatagramPacket(msg, msg.length, address, portNum);
+		DatagramPacket sendPacket = new DatagramPacket(msg, msg.length, address, portNum);
 
 		// Print out information about the packet being sent
 		System.out.println("Test: Sending packet:");
@@ -134,10 +134,10 @@ public class TestHost implements Runnable {
 	 * 
 	 * @return void
 	 */
-	public void receivePacket(int expectedLen) {
+	public DatagramPacket receivePacket(int expectedLen) {
 		// Initialize the DatagramPacket used to receive requests
 		byte data[] = new byte[expectedLen];
-		receivePacket = new DatagramPacket(data, data.length);
+		DatagramPacket receivePacket = new DatagramPacket(data, data.length);
 
 		System.out.println("Test: Waiting for Packet.\n");
 
@@ -160,6 +160,8 @@ public class TestHost implements Runnable {
 		System.out.println("Test: Length: " + len);
 		System.out.print("Test: Containing (as bytes): ");
 		System.out.println(Arrays.toString(data) + "\n");
+		
+		return(receivePacket);
 	}
 
 	/**
@@ -203,6 +205,14 @@ public class TestHost implements Runnable {
 	public void setExpectedNumMessages(int expectedNum) {
 		expectedNumMessages = expectedNum;
 	}
+	
+	public void disableResponse() {
+	    response = false;
+	}
+	
+   public void enableResponse() {
+        response = true;
+    }
 
 	/**
 	 * run
@@ -221,11 +231,15 @@ public class TestHost implements Runnable {
 	@Override
 	public void run() {
 		int expectedLen = 100;
+		
+		DatagramPacket temp;
 
 		// Receive and echo the expected number of messages
 		for (int i = 0; i < expectedNumMessages; i++) {
-			receivePacket(expectedLen);
-			sendPacket(receivePacket.getData(), receivePacket.getAddress(), DEST_PORT);
+			temp = receivePacket(expectedLen);
+			if (response) {
+			    sendPacket(temp.getData(), temp.getAddress(), DEST_PORT);
+			}
 		}
 
 	}
