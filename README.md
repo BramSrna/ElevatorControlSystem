@@ -5,10 +5,12 @@ controller (the Scheduler), a simulator for the elevator cars (which includes, t
 and a simulator for the floors (which includes, buttons, lights).
 
 Files involved in the system:
-    Elevator.java
-        Used to simulate the Elevator system. Contains complete control the the elevator.
+	Elevator.java
+		Class ised to simulate an elevator. Simulates the lights, buttons, door, and movement.
+    ElevatorSubsystem.java
+        Class used to control the Elevator objects in the simulation. Communicates with the Scheduler to control the movement of the elevators as well as other elevator behaviour, sich as opening the door.
     ElevatorSubsystemTests.java
-        Contains JUnit test cases for the Elevator calss
+        Contains JUnit test cases for the ElevatorSubsystem calss
     Floor.java
         Class used to simulate a floor. Simulates the lights and buttons.
     FloorSubsystem.java
@@ -17,8 +19,12 @@ Files involved in the system:
         Contains JUnit test cases for the FloorSubsystem class.
     Scheduler.java
         Simulates the Scheduler for the system. Controls both the FloorSubsystem and the Elevator classes. In charge of telling the classes what to do. This includes moving the elevator, turning on and off ligths, etc.
-    SchedulerTest.java
+    SchedulerAlgorithm.java
+		Controls the logic for taking requests and divvying the requests to the proper Elevator to minimize wait time.
+	SchedulerTest.java
         Contains JUnit test cases for the Scheduelr class.
+	ServerPattern.java
+		An abstract class that runs a Thread used to constantly receive data and add the received packets to a shared buffer. Implementation classes then wait on this shared buffer to get messages.
     TestHost.java
         Helper class used in JUnit test cases by acting as an EchoServer.
     UserInterface.java
@@ -42,7 +48,7 @@ To test the program using JUnit test cases:
 	3. Repeat for the other JUnit test files
     
 To test the program using a file: 
-	1. Run Elevator.java, Scheduler.java, and FloorSubsystem.java concurrently.
+	1. Run ElevatorSubsystem.java, Scheduler.java, and FloorSubsystem.java concurrently.
 	      To run them, right-click the java file and select Run As > Java Application.
 	2. Repeat this for all three java files.
 	      Note: The order of the run files is unimportant. On some systems, it takes Eclipse a while to finish starting a file, in which case, errors will occur when the other files are run. If this happens, wait a few moments and then run the next file.
@@ -63,12 +69,12 @@ Breakdown of responsibilities for Iteration #1:
   
   Group 1: 
 
-    Samy Ibrahim (101037927): Elevator.java, elevatorSubsystem.java, testHost.java, UtilityInformation.java, Elevator UML Class diagram, and State diagram
+    Samy Ibrahim (101037927): Elevator.java, elevatorSubsystem.java, testHost.java, UtilityInformation.java, Elevator UML Class diagram, Sequence diagram and State diagram
     
-    Tri Nhan (101023872) : Floor.java, FloorSubsystem.java, FloorSubsystemTests.java, TestHost.java, UserInterface.java, UtilityInformation.java, Floor UML diagram
+    Tri Nhan (101023872) : Floor.java, FloorSubsystem.java, FloorSubsystemTests.java, TestHost.java, UserInterface.java, UtilityInformation.java, ServerPattern.java, GUI, Floor UML diagram
 
-    Abraham Srna (100997482) : Floor.java, FloorSubsystem.java, FloorSubsystemTests.java, TestHost.java, UserInterface.java, UtilityInformation.java, Floor UML diagram
+    Abraham Srna (100997482) : Floor.java, FloorSubsystem.java, FloorSubsystemTests.java, TestHost.java, UserInterface.java, UtilityInformation.java, ServerPattern.java, Floor UML diagram
 
-    Haseeb Khan(101009713) : Scheduler.java, SchedulerTest.java, TestHost.java, UtilityInformation.java, Scheduler UML diagram, Scheduler State diagram
+    Haseeb Khan(101009713) : Scheduler.java, SchedulerTest.java, TestHost.java, UtilityInformation.java, ServerPattern.java, Scheduler UML diagram, Scheduler State diagram
     
     Hashim Hussen (100996269) : Elevator.java, elevatorSubsystemTest.java, testHost.java, Elevator UML and State
