@@ -262,14 +262,6 @@ public class Scheduler extends ServerPattern {
 	 * @param packet
 	 */
 	private void moveToFloor(DatagramPacket packet) {
-		// TODO Do we still need?
-		/*
-		 * if (floorsToVisit.contains(algor.getCurrentFloor())) { int indToRemove = 0;
-		 * // Remove the current floor from the list for (int i = 0; i <
-		 * floorsToVisit.size(); i++) { if (floorsToVisit.get(i) ==
-		 * algor.getCurrentFloor()) { indToRemove = i; } }
-		 * floorsToVisit.remove(indToRemove); }
-		 */
 		byte elevatorNum = packet.getData()[2];
 
 		if (algor.somewhereToGo(elevatorNum)) {
