@@ -67,9 +67,8 @@ Running the project:
 	- The Scheduler will send instructions to the Elevator system and FloorSubsystem containing movement requests, button and lamp states, door operations, and other important information.
 	- Once the final request is complete, the user can then exit the program, causing a teardown signal to be sent through the system, exiting all running files.
 
-Breakdown of responsibilities for Iteration #2:
   
-  Group 1: 
+  Iteration 1: 
 
     Samy Ibrahim (101037927): Elevator.java, ElevatorSubsystem.java, TestHost.java, UtilityInformation.java, Elevator UML Class diagram, Sequence diagram and State diagram
     
@@ -80,3 +79,15 @@ Breakdown of responsibilities for Iteration #2:
     Haseeb Khan(101009713) : Scheduler.java, SchedulerTest.java, TestHost.java, UtilityInformation.java, ServerPattern.java, Scheduler UML diagram, Scheduler State diagram
     
     Hashim Hussen (100996269) : Elevator.java, ElevatorSubsystemTest.java, ElevatorTests.java testHost.java, Elevator UML and State
+
+  Iteration 2: 
+
+    Samy Ibrahim (101037927): 
+    
+    Tri Nhan (101023872) : 
+
+    Abraham Srna (100997482) : 
+
+    Haseeb Khan(101009713) : 
+    
+    Hashim Hussen (100996269) : 
