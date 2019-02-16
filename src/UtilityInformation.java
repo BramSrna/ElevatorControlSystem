@@ -51,5 +51,5 @@ public class UtilityInformation {
 	public final static int MAX_NUM_FLOORS = 1000;
 
 	public final static int MIN_NUM_ELEVATORS = 1;
-	public final static int MAX_NUM_ELEVATORS = 2;
+	public final static int MAX_NUM_ELEVATORS = 4;
 }

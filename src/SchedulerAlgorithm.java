@@ -115,9 +115,11 @@ public class SchedulerAlgorithm {
 	        
 	        if (indicesToRemove.size() < closestElevator.size()) {
 	            for (int index : indicesToRemove) {
-	                closestElevator.remove(index);
+	                closestElevator.set(index, null);
 	            }
 	        }
+	        
+	        while(closestElevator.remove(null)) {};
 	        
 	        // Break ties by prioritizing shortest queues
 	        int shortestQueue = -1;
@@ -137,7 +139,7 @@ public class SchedulerAlgorithm {
 	    
 	    int currFloor = currentFloor.get(chosenElevator);
 	    int startInd = -1;
-	    int closestInd = -1;
+	    int closestInd = 0;
 	    closestDiff = Integer.MAX_VALUE;
 	    ArrayList<Byte> currDests = elevatorStops.get(chosenElevator);
 	    
@@ -156,13 +158,14 @@ public class SchedulerAlgorithm {
     	            maxInd = currDests.indexOf(endFloor);
     	        }
     	        
-    	        if ((currFloor < startFloor) && (startFloor < currDests.get(0))) {
+    	        if (((currFloor < startFloor) && (startFloor < currDests.get(0))) ||
+    	            ((currFloor > startFloor) && (startFloor > currDests.get(0)))) {
     	            startInd = 0;
     	        } else {    	        
         	        for(int i = 0; i < maxInd; i++) {
         	            if (i != maxInd - 1) {
-            	            if (((currDests.get(i) < startFloor) && (currDests.get(i + 1) > startFloor)) ||
-            	                ((currDests.get(i) > startFloor) && (currDests.get(i + 1) < startFloor))) {
+            	            if (((currDests.get(i) < startFloor) && (startFloor < currDests.get(i + 1))) ||
+            	                ((currDests.get(i) > startFloor) && (startFloor > currDests.get(i + 1)))) {
             	                startInd = i + 1;
             	            }
         	            }
