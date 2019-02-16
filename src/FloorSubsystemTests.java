@@ -266,40 +266,6 @@ class FloorSubsystemTests {
     }
     
     /**
-     * testFloorRangeCheck
-     * 
-     * Test that the range of valid floors works properly.
-     * 
-     * @param   None
-     * 
-     * @return  void
-     */
-    @Test
-    void testFloorRangeCheck() {
-    	int[] toCheck = FloorSubsystem.getValidFloorValueRange();
-    	
-    	assertEquals(toCheck[0], 1, "Minimum floor configuration should be 1");
-    	assertEquals(toCheck[1], 1000, "Maximum floor configuration should be 1000");
-    }
-    
-    /**
-     * testElevatorRangeCheck
-     * 
-     * Test that the range of valid elevator amounts works properly.
-     * 
-     * @param   None
-     * 
-     * @return  void
-     */
-    @Test
-    void testElevatorRangeCheck() {
-    	int[] toCheck = FloorSubsystem.getValidElevatorValueRange();
-    	
-    	assertEquals(toCheck[0], 1, "Minimum # of elevators configuration should be 1");
-    	assertEquals(toCheck[1], 2, "Maximum # of elevators configuration should be 2");
-    }
-    
-    /**
      * testSetNumElevators
      * 
      * Test that the number of elevators can be set

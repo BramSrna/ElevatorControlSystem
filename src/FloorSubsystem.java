@@ -35,14 +35,6 @@ public class FloorSubsystem extends ServerPattern{
 
 	private final int TEARDOWN_SIZE = 10;
 
-	// Valid ranges for the number of
-	// floors and number of elevators
-	private static final int MIN_NUM_FLOORS = 1;
-	private static final int MAX_NUM_FLOORS = 1000;
-
-	private static final int MIN_NUM_ELEVATORS = 1;
-	private static final int MAX_NUM_ELEVATORS = 2;
-
 	// List of service requests parsed from the input file
 	// Sorted in order of time that requests are made
 	private ArrayList<Integer[]> serviceRequests;
@@ -113,7 +105,8 @@ public class FloorSubsystem extends ServerPattern{
 	 * @return void
 	 */
 	public void setNumFloors(int newNumFloors) {
-		if ((newNumFloors < MIN_NUM_FLOORS) || (newNumFloors > MAX_NUM_FLOORS)) {
+		if ((newNumFloors < UtilityInformation.MIN_NUM_FLOORS) || 
+		    (newNumFloors > UtilityInformation.MAX_NUM_FLOORS)) {
 			System.out.println("Error: Floor value is outside of valid range.");
 			this.teardown();
 			System.exit(1);
@@ -168,7 +161,8 @@ public class FloorSubsystem extends ServerPattern{
 	 * @return void
 	 */
 	public void setNumElevators(int newNumElevators) {
-		if ((newNumElevators < MIN_NUM_ELEVATORS) || (newNumElevators > MAX_NUM_ELEVATORS)) {
+		if ((newNumElevators < UtilityInformation.MIN_NUM_ELEVATORS) || 
+		    (newNumElevators > UtilityInformation.MAX_NUM_ELEVATORS)) {
 			System.out.println("Error: Elevator value is outside of valid range.");
 			super.teardown();
 			this.teardown();
@@ -336,56 +330,6 @@ public class FloorSubsystem extends ServerPattern{
 		}
 
 		System.out.println("Finished parsing test file.");
-	}
-
-	/**
-	 * getValidFloorValueRange
-	 * 
-	 * Static method
-	 * 
-	 * Returns the range of valid number of floor values. Returns the range as an
-	 * array of 2 values. 
-	 * 
-	 * Format: 
-	 *     Byte 0 - Minimum value 
-	 *     Byte 1 - Maximum value
-	 * 
-	 * @param  None
-	 * 
-	 * @return int[] First byte is minimum value Second byte is maximum value
-	 */
-	public static int[] getValidFloorValueRange() {
-		int validRange[] = new int[2];
-
-		validRange[0] = MIN_NUM_FLOORS;
-		validRange[1] = MAX_NUM_FLOORS;
-
-		return (validRange);
-	}
-
-	/**
-	 * getValidElevatorValueRange
-	 * 
-	 * Static method
-	 * 
-	 * Returns the range of valid number of elevator values. Returns the range as an
-	 * array of 2 values. 
-	 * 
-	 * Format: 
-	 *     Byte 0 - Minimum value 
-	 *     Byte 1 - Maximum value
-	 *     
-	 * @param  None
-	 * 
-	 * @return int[] First byte is minimum value Second byte is maximum value
-	 */
-	public static int[] getValidElevatorValueRange() {
-		int validRange[] = new int[2];
-
-		validRange[0] = MIN_NUM_ELEVATORS;
-		validRange[1] = MAX_NUM_ELEVATORS;
-
-		return (validRange);
 	}
 
 	/**

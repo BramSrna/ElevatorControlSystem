@@ -44,4 +44,12 @@ public class UtilityInformation {
 	public final static int CLOSE_DOOR_TIME = 1500;
 	public final static int TIME_UP_ONE_FLOOR = 5000;
 	public final static int TIME_DOWN_ONE_FLOOR = 5000;
+	
+    // Valid ranges for the number of
+    // floors and number of elevators
+	public final static int MIN_NUM_FLOORS = 1;
+	public final static int MAX_NUM_FLOORS = 1000;
+
+	public final static int MIN_NUM_ELEVATORS = 1;
+	public final static int MAX_NUM_ELEVATORS = 2;
 }

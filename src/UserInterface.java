@@ -40,22 +40,14 @@ public class UserInterface {
 	 * 
 	 * @return	None
 	 */
-	public UserInterface() {
-		int validRange[];
+	public UserInterface() {		
+		// Get valid range for the number of floors		
+		minFloorVal = UtilityInformation.MIN_NUM_FLOORS;
+		maxFloorVal = UtilityInformation.MAX_NUM_FLOORS;
 		
-		// Get valid range for the number of floors
-		validRange = FloorSubsystem.getValidFloorValueRange();
-		
-		minFloorVal = validRange[0];
-		maxFloorVal = validRange[1];
-		
-		// Get valid range for the number of elevators
-		validRange = FloorSubsystem.getValidElevatorValueRange();
-		
-		minElevatorVal = validRange[0];
-		maxElevatorVal = validRange[1];
-		
-		validRange = null;
+		// Get valid range for the number of elevators		
+		minElevatorVal = UtilityInformation.MIN_NUM_ELEVATORS;
+		maxElevatorVal = UtilityInformation.MAX_NUM_ELEVATORS;
 		
 		// Initialize the Scanner
 		input = new Scanner(System.in);
