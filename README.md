@@ -10,7 +10,9 @@ Files involved in the system:
     ElevatorSubsystem.java
         Class used to control the Elevator objects in the simulation. Communicates with the Scheduler to control the movement of the elevators as well as other elevator behaviour, sich as opening the door.
     ElevatorSubsystemTests.java
-        Contains JUnit test cases for the ElevatorSubsystem calss
+        Contains JUnit test cases for the ElevatorSubsystem class.
+	ElevatorTests.java
+		Contains JUnit test cases for the Elevator class.
     Floor.java
         Class used to simulate a floor. Simulates the lights and buttons.
     FloorSubsystem.java
@@ -43,7 +45,7 @@ Setup instructions:
 
 To test the program using JUnit test cases:
   Each system contains corresponding JUnit test cases. To run the JUnit test, perform the following:
-	1. Select the Junit test file to run in Eclipse. The JUnit test files are: ElevatorSubsystemTests.java, FloorSubsystemTests.java, and SchedulerTest.java.
+	1. Select the Junit test file to run in Eclipse. The JUnit test files are: ElevatorSubsystemTests.java + ElevatorTests.java, FloorSubsystemTests.java, and SchedulerTest.java.
 	2. Press the "Run" button at the top of the Eclipse interface.
 	3. Repeat for the other JUnit test files
     
@@ -69,7 +71,7 @@ Breakdown of responsibilities for Iteration #1:
   
   Group 1: 
 
-    Samy Ibrahim (101037927): Elevator.java, elevatorSubsystem.java, testHost.java, UtilityInformation.java, Elevator UML Class diagram, Sequence diagram and State diagram
+    Samy Ibrahim (101037927): Elevator.java, ElevatorSubsystem.java, TestHost.java, UtilityInformation.java, Elevator UML Class diagram, Sequence diagram and State diagram
     
     Tri Nhan (101023872) : Floor.java, FloorSubsystem.java, FloorSubsystemTests.java, TestHost.java, UserInterface.java, UtilityInformation.java, ServerPattern.java, GUI, Floor UML diagram
 
@@ -77,4 +79,4 @@ Breakdown of responsibilities for Iteration #1:
 
     Haseeb Khan(101009713) : Scheduler.java, SchedulerTest.java, TestHost.java, UtilityInformation.java, ServerPattern.java, Scheduler UML diagram, Scheduler State diagram
     
-    Hashim Hussen (100996269) : Elevator.java, elevatorSubsystemTest.java, testHost.java, Elevator UML and State
+    Hashim Hussen (100996269) : Elevator.java, ElevatorSubsystemTest.java, ElevatorTests.java testHost.java, Elevator UML and State
