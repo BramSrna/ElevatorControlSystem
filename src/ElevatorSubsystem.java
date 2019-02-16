@@ -319,18 +319,27 @@ public class ElevatorSubsystem  {
 		} else if (data[0] == UtilityInformation.ELEVATOR_BUTTON_HIT_MODE) {// send the number of floor clicked
 			return "button clicked";
 		} else if (data[0] == UtilityInformation.ELEVATOR_DIRECTION_MODE) {
-			byte moveDirection = data[2];
-			if (moveDirection == 0) {
-				return "stay";
-			} // stop
-			if (moveDirection == 1) {
-				return "go up";
-			}
-			if (moveDirection == 2) {
-				return "go down";
-			}
-			currentElevatorToWork = data[3];
-			return "invalid";
+		    currentElevatorToWork = data[3];
+		    
+		    int schedCurrFloor = data[1];
+		    int eleCurrFloor = allElevators.get(currentElevatorToWork).getCurrentFloor();
+		    
+		    if (schedCurrFloor != eleCurrFloor) {
+		        return "ignore";
+		    } else {
+		        byte moveDirection = data[2];         
+	            if (moveDirection == 0) {
+	                return "stay";
+	            } // stop
+	            if (moveDirection == 1) {
+	                return "go up";
+	            }
+	            if (moveDirection == 2) {
+	                return "go down";
+	            }           
+	            return "invalid";
+		    }		    
+			
 		} else if (data[0] == UtilityInformation.ELEVATOR_DOOR_MODE) {
 			byte doorState = data[1];
 			currentElevatorToWork = data[2];
