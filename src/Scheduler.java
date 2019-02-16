@@ -233,12 +233,6 @@ public class Scheduler extends ServerPattern {
 	 * @param recievedData
 	 */
 	protected void extractFloorRequestedNumberAndGenerateResponseMessageAndActions(DatagramPacket recievedPacket) {
-//		System.out.println("Elevator was requested at: " + recievedPacket.getData()[1] + " in the direction "
-//				+ recievedPacket.getData()[2] + " with destination " + recievedPacket.getData()[3] + "\n");
-//		byte[] destinationFloor = { UtilityInformation.SEND_DESTINATION_TO_ELEVATOR_MODE, recievedPacket.getData()[3],
-//				UtilityInformation.END_OF_MESSAGE };
-//		sendMessage(destinationFloor, destinationFloor.length, recievedPacket.getAddress(),
-//				UtilityInformation.ELEVATOR_PORT_NUM);
 		UtilityInformation.ElevatorDirection upOrDown = null;
 		if (recievedPacket.getData()[2] == 0) {
 			upOrDown = UtilityInformation.ElevatorDirection.DOWN;
