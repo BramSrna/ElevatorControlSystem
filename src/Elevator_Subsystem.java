@@ -1,3 +1,5 @@
+
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -28,15 +30,19 @@ import java.util.*;
  * Last Edited February 13, 2019
  * 
  */
-public class ElevatorSubsystem  {
+public class Elevator_Subsystem  {
+	// ArrayList containing all the elevators being used by an instance of the system.
 	ArrayList<Elevator> allElevators = new ArrayList<>();
+	
 	// The number of elevators and floors, initialized to 0
 	// These are set during the initial config
 	private int numberOfElevators = 0;
 	private int numberOfFloors = 0;
+	
 	// The destination floor
 	private int destinationFloor;
 
+	// The current elevator number being accesed
 	private static byte currentElevatorToWork = 0;
 
 	// Datagram Packets and Sockets for sending and receiving data
@@ -61,7 +67,8 @@ public class ElevatorSubsystem  {
 	// Start off stationary
 	static State currentState = State.ANALYZING_MESSAGE;
 
-	public ElevatorSubsystem() {
+	// General Constructor for Elevator Subsystem class.
+	public Elevator_Subsystem() {
 		try {
 			schedulerIP = InetAddress.getLocalHost();
 		} catch (UnknownHostException e) {
@@ -181,7 +188,7 @@ public class ElevatorSubsystem  {
 	}
 
 	/*
-	 * Separately analyzing the different events that occur in the system
+	 * Separately analyzing the different events that occur in the elevator subsystem.
 	 * 
 	 * @param event the event that occurred
 	 * 
@@ -245,14 +252,14 @@ public class ElevatorSubsystem  {
 			numberOfElevators = data[1];
 			numberOfFloors = data[2];
 
-			// create new elevators
+			// Based on the config message, set up the elevators and their lights.
 			for (int i = 0; i < numberOfElevators; i++) {
 				Elevator hold = new Elevator(i);
 				hold.allButtons = new Elevator.lampState[numberOfFloors];
 				for (int k = 0; k < numberOfFloors; k++) {
 					hold.allButtons[k] = Elevator.lampState.OFF; // currently making everything OFF
 				}
-				// add to elevator subsystem arraylist of elevators
+				// add to elevator subsystem ArrayList of elevators
 				allElevators.add(hold);
 			}
 			// allButtons = new lampState[numberOfFloors];
@@ -282,6 +289,7 @@ public class ElevatorSubsystem  {
 		}
 		if (str.equals("stop")) {
 			allElevators.get(currentElevatorToWork).Stop();
+			allElevators.get(currentElevatorToWork).allButtons[destinationFloor] = Elevator.lampState.OFF;
 			byte[] returnMessage = { UtilityInformation.ELEVATOR_STOPPED_MODE,
 					(byte) allElevators.get(currentElevatorToWork).currentFloor,
 					(byte) allElevators.get(currentElevatorToWork).elevatorNumber, -1 };
@@ -319,27 +327,26 @@ public class ElevatorSubsystem  {
 		} else if (data[0] == UtilityInformation.ELEVATOR_BUTTON_HIT_MODE) {// send the number of floor clicked
 			return "button clicked";
 		} else if (data[0] == UtilityInformation.ELEVATOR_DIRECTION_MODE) {
-		    currentElevatorToWork = data[3];
-		    
-		    int schedCurrFloor = data[1];
-		    int eleCurrFloor = allElevators.get(currentElevatorToWork).getCurrentFloor();
-		    
-		    if (schedCurrFloor != eleCurrFloor) {
-		        return "ignore";
-		    } else {
-		        byte moveDirection = data[2];         
-	            if (moveDirection == 0) {
-	                return "stay";
-	            } // stop
-	            if (moveDirection == 1) {
-	                return "go up";
-	            }
-	            if (moveDirection == 2) {
-	                return "go down";
-	            }           
-	            return "invalid";
-		    }		    
-			
+            currentElevatorToWork = data[3];
+            
+            int schedCurrFloor = data[1];
+            int eleCurrFloor = allElevators.get(currentElevatorToWork).getCurrentFloor();
+            
+            if (schedCurrFloor != eleCurrFloor) {
+                return "ignore";
+            } else {
+                byte moveDirection = data[2];         
+                if (moveDirection == 0) {
+                    return "stay";
+                } // stop
+                if (moveDirection == 1) {
+                    return "go up";
+                }
+                if (moveDirection == 2) {
+                    return "go down";
+                }           
+                return "invalid";
+            }   
 		} else if (data[0] == UtilityInformation.ELEVATOR_DOOR_MODE) {
 			byte doorState = data[1];
 			currentElevatorToWork = data[2];
@@ -360,8 +367,11 @@ public class ElevatorSubsystem  {
 		return "invalid"; // anything else is an invalid request.
 	}
 
+	/*
+	 * Main method for starting the elevator. 
+	 */
 	public static void main(String[] args) {
-		ElevatorSubsystem elvSub = new ElevatorSubsystem();
+		Elevator_Subsystem elvSub = new Elevator_Subsystem();
 		// receive the config message
 		elvSub.receiveData();
 		for(int i=0; i<elvSub.allElevators.size(); i++) {

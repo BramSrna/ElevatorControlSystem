@@ -6,7 +6,7 @@ import org.junit.jupiter.api.*;
 
 public class ElevatorSubsystemTests {
 	 private TestHost host;
-	 private ElevatorSubsystem elevatorSubsystem;
+	 private Elevator_Subsystem elevatorSubsystem;
 	    
 	    @BeforeEach
 	    void setUp() throws Exception {
@@ -14,7 +14,7 @@ public class ElevatorSubsystemTests {
 				    UtilityInformation.SCHEDULER_PORT_NUM,
 				    UtilityInformation.ELEVATOR_PORT_NUM);
 	        
-	        elevatorSubsystem = new ElevatorSubsystem();
+	        elevatorSubsystem = new Elevator_Subsystem();
 	    }
 	    
 	    @AfterEach
