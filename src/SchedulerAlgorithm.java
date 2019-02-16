@@ -41,15 +41,16 @@ public class SchedulerAlgorithm {
 	public void elevatorHasReachedFloor(Byte floorNum, Byte elevatorNum) {
 		System.out.println("Elevator " + elevatorNum + " has reached floor: " + floorNum);
 
-		if (elevatorStops.get(elevatorNum).contains(floorNum)) {
+		if ((elevatorStops.get(elevatorNum).size() > 0) &&
+		    (elevatorStops.get(elevatorNum).get(0) == floorNum)) {
 			System.out.println("Current floor is a destination.");
 			stopElevator.set(elevatorNum, true);
+			removeFloorFromDestinations(floorNum, elevatorNum);
 		} else {
 			stopElevator.set(elevatorNum, false);
 		}
-
-		currentFloor.set(elevatorNum, floorNum);
-		removeFloorFromDestinations(floorNum, elevatorNum);
+		
+		currentFloor.set(elevatorNum, floorNum);		
 	}
 
 	/**

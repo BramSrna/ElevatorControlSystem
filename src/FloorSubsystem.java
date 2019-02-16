@@ -597,8 +597,6 @@ public class FloorSubsystem extends ServerPattern{
 
 		floorController.sendConfigurationSignal(floorController.getNumElevators(), floorController.getNumFloors());
 
-		System.out.println(floorController.toString());
-
 		// While true
 		// Display the valid options to the user
 		// Based off of user input, run the corresponding method(s)
@@ -611,13 +609,11 @@ public class FloorSubsystem extends ServerPattern{
 				floorController.setNumElevators(ui.getNumElevators());
 				floorController.sendConfigurationSignal(floorController.getNumElevators(),
 						floorController.getNumFloors());
-				System.out.println(floorController.toString());
 			} else if (val == UserInterface.ReturnVals.NEW_TEST_FILE) {
 				// If a new test file was entered, parse the file
 				floorController.parseInputFile(ui.getTestFile());
 				floorController.startFloorThreads();
 				floorController.runSubsystem();
-				System.out.println(floorController.toString());
 			} else if (val == UserInterface.ReturnVals.TEARDOWN) {
 				// If teardown was selected,
 				// Send the teardown signal
