@@ -335,6 +335,10 @@ public class Floor implements Runnable {
 	    
 	}
 	
+	public ArrayList<Integer[]> getServiceRequests(){
+	    return(serviceRequests);
+	}
+	
 	public synchronized void sendRequest() {
 	    while (System.currentTimeMillis() - startTime < serviceRequests.get(0)[0]) {
 	    }

@@ -64,6 +64,11 @@ public abstract class ServerPattern {
         
         return(toReturn);
     }
+
+    public void teardown() {
+        receiver.teardown();
+        
+    }
     
 
 }
@@ -73,10 +78,13 @@ class SignalReceiver implements Runnable {
     private DatagramSocket receiveSocket;
     
     private ServerPattern controller;
+    private boolean run;
     
     private String name;
     
     public SignalReceiver(int portNum, ServerPattern controller, String name) {
+        run = true;
+        
         this.controller = controller;
         this.name = name;
         
@@ -91,7 +99,10 @@ class SignalReceiver implements Runnable {
     }
     
     public void teardown() {
+        run = false;
         receiveSocket.close();
+        receiveSocket = null;
+        
     }
     
     /**
@@ -119,9 +130,11 @@ class SignalReceiver implements Runnable {
             // Block until a datagram is received via sendSocket.
             receiveSocket.receive(receivePacket);
         } catch (IOException e) {
-            e.printStackTrace();
-            this.teardown();
-            System.exit(1);
+            if (run) {
+                e.printStackTrace();
+                this.teardown();
+                System.exit(1);
+            }
         }
 
         // Print out information about the response
@@ -138,7 +151,7 @@ class SignalReceiver implements Runnable {
 
     @Override
     public void run() {
-        while (true) {
+        while (run) {
             DatagramPacket signal = waitForSignal();
             controller.signalReceived(signal, 0);            
         }        

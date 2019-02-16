@@ -12,7 +12,9 @@ public class ElevatorSubsystemTests {
 	    
 	    @BeforeEach
 	    void setUp() throws Exception {
-	        host = new TestHost(1);
+	        host = new TestHost(1, 
+                                UtilityInformation.SCHEDULER_PORT_NUM, 
+                                UtilityInformation.ELEVATOR_PORT_NUM);
 	        elevator = new Elevator(0);
 	    }
 	    

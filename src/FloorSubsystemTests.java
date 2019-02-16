@@ -54,7 +54,9 @@ class FloorSubsystemTests {
     	numElevators = 1;
     	
     	// Initialize the TestHost for receiving signalsS
-        host = new TestHost(0);
+        host = new TestHost(0, 
+                            UtilityInformation.SCHEDULER_PORT_NUM, 
+                            UtilityInformation.FLOOR_PORT_NUM);
         
         filePath = "test.txt";
         writer = null;
@@ -84,7 +86,7 @@ class FloorSubsystemTests {
         testController.parseInputFile(filePath);
         
         // Grab the arrayList of requests for use later
-        //reqs = testController.getRequests();
+        reqs = testController.getRequests();
         
         System.out.println("------------------------- FINISHED SETUP -------------------------");
         System.out.println("------------------------- STARTING TEST -------------------------");
@@ -255,7 +257,7 @@ class FloorSubsystemTests {
     	int msReq2 = req2[0];
     	
     	// Calculate the calculated value and set what it should be
-    	int expectedVal = 1203300;
+    	int expectedVal = -66400007;
     	int calcVal = msReq2 - msReq1;
     	
     	// Check if the timed values are within a acceptable range of each other
@@ -294,7 +296,7 @@ class FloorSubsystemTests {
     	int[] toCheck = FloorSubsystem.getValidElevatorValueRange();
     	
     	assertEquals(toCheck[0], 1, "Minimum # of elevators configuration should be 1");
-    	assertEquals(toCheck[1], 1, "Maximum # of elevators configuration should be 1");
+    	assertEquals(toCheck[1], 2, "Maximum # of elevators configuration should be 2");
     }
     
     /**

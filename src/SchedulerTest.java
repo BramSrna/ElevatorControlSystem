@@ -48,7 +48,9 @@ class SchedulerTest {
 	@SuppressWarnings("static-access")
 	@Test
 	void testOpenElevatorDoors() throws UnknownHostException, InterruptedException {
-		host = new TestHost(1, UtilityInformation.ELEVATOR_PORT_NUM);
+		host = new TestHost(1, 
+            		        UtilityInformation.ELEVATOR_PORT_NUM, 
+            		        UtilityInformation.SCHEDULER_PORT_NUM);
 		Thread thread = new Thread(host);
 		thread.start();
 		thread.sleep(2000);
@@ -69,7 +71,9 @@ class SchedulerTest {
 	@SuppressWarnings("static-access")
 	@Test
 	void testConfigConfirmMessage() throws UnknownHostException, InterruptedException {
-		host = new TestHost(1, UtilityInformation.FLOOR_PORT_NUM);
+		host = new TestHost(1, 
+            		        UtilityInformation.FLOOR_PORT_NUM, 
+                            UtilityInformation.SCHEDULER_PORT_NUM);
 		Thread thread = new Thread(host);
 		thread.start();
 		thread.sleep(2000);
@@ -90,7 +94,9 @@ class SchedulerTest {
 	@SuppressWarnings("static-access")
 	@Test
 	void testSendConfigPacketToElevator() throws UnknownHostException, InterruptedException {
-		host = new TestHost(1, UtilityInformation.ELEVATOR_PORT_NUM);
+		host = new TestHost(1, 
+            		        UtilityInformation.ELEVATOR_PORT_NUM, 
+                            UtilityInformation.SCHEDULER_PORT_NUM);
 		Thread thread = new Thread(host);
 		thread.start();
 		thread.sleep(2000);
@@ -112,7 +118,9 @@ class SchedulerTest {
 	@Test
 	void testExtractFloorRequestedNumberAndGenerateResponseMessageAndActions()
 			throws UnknownHostException, InterruptedException {
-		host = new TestHost(1, UtilityInformation.ELEVATOR_PORT_NUM);
+		host = new TestHost(1, 
+            		        UtilityInformation.ELEVATOR_PORT_NUM, 
+                            UtilityInformation.SCHEDULER_PORT_NUM);
 		Thread thread = new Thread(host);
 		thread.start();
 		thread.sleep(2000);
@@ -133,9 +141,13 @@ class SchedulerTest {
 	@SuppressWarnings("static-access")
 	@Test
 	void testStopElevator() throws UnknownHostException, InterruptedException {
-		host = new TestHost(1, UtilityInformation.ELEVATOR_PORT_NUM);
+		host = new TestHost(1, 
+            		        UtilityInformation.ELEVATOR_PORT_NUM, 
+                            UtilityInformation.SCHEDULER_PORT_NUM);
 		Thread thread = new Thread(host);
-		host2 = new TestHost(1, UtilityInformation.FLOOR_PORT_NUM);
+		host2 = new TestHost(1, 
+            		         UtilityInformation.FLOOR_PORT_NUM, 
+                             UtilityInformation.SCHEDULER_PORT_NUM);
 		Thread thread2 = new Thread(host2);
 		thread.start();
 		thread2.start();
@@ -157,9 +169,13 @@ class SchedulerTest {
 	@SuppressWarnings("static-access")
 	@Test
 	void testSendElevatorUp() throws UnknownHostException, InterruptedException {
-		host = new TestHost(1, UtilityInformation.ELEVATOR_PORT_NUM);
+		host = new TestHost(1, 
+            		        UtilityInformation.ELEVATOR_PORT_NUM, 
+                            UtilityInformation.SCHEDULER_PORT_NUM);
 		Thread thread = new Thread(host);
-		host2 = new TestHost(1, UtilityInformation.FLOOR_PORT_NUM);
+		host2 = new TestHost(1, 
+            		         UtilityInformation.FLOOR_PORT_NUM, 
+                             UtilityInformation.SCHEDULER_PORT_NUM);
 		Thread thread2 = new Thread(host2);
 		thread.start();
 		thread2.start();
@@ -181,9 +197,13 @@ class SchedulerTest {
 	@SuppressWarnings("static-access")
 	@Test
 	void testSendElevatorDown() throws UnknownHostException, InterruptedException {
-		host = new TestHost(1, UtilityInformation.ELEVATOR_PORT_NUM);
+		host = new TestHost(1, 
+            		        UtilityInformation.ELEVATOR_PORT_NUM, 
+                            UtilityInformation.SCHEDULER_PORT_NUM);
 		Thread thread = new Thread(host);
-		host2 = new TestHost(1, UtilityInformation.FLOOR_PORT_NUM);
+		host2 = new TestHost(1, 
+            		         UtilityInformation.FLOOR_PORT_NUM, 
+                             UtilityInformation.SCHEDULER_PORT_NUM);
 		Thread thread2 = new Thread(host2);
 		thread.start();
 		thread2.start();
@@ -205,7 +225,9 @@ class SchedulerTest {
 	@SuppressWarnings("static-access")
 	@Test
 	void testCloseElevatorDoors() throws UnknownHostException, InterruptedException {
-		host = new TestHost(1, UtilityInformation.ELEVATOR_PORT_NUM);
+		host = new TestHost(1, 
+            		        UtilityInformation.ELEVATOR_PORT_NUM, 
+                            UtilityInformation.SCHEDULER_PORT_NUM);
 		Thread thread = new Thread(host);
 		thread.start();
 		thread.sleep(2000);

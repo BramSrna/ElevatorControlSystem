@@ -170,6 +170,7 @@ public class FloorSubsystem extends ServerPattern{
 	public void setNumElevators(int newNumElevators) {
 		if ((newNumElevators < MIN_NUM_ELEVATORS) || (newNumElevators > MAX_NUM_ELEVATORS)) {
 			System.out.println("Error: Elevator value is outside of valid range.");
+			super.teardown();
 			this.teardown();
 			System.exit(1);
 		}
@@ -398,6 +399,7 @@ public class FloorSubsystem extends ServerPattern{
 	 */
 	public void teardown() {
 		sendTeardownSignal();
+		super.teardown();
 		sendSocket.close();
 	}
 	
@@ -701,6 +703,20 @@ public class FloorSubsystem extends ServerPattern{
 		}
 
 	}
+
+    public ArrayList<Integer[]> getRequests() {
+        ArrayList<Integer[]> allRequests = new ArrayList<Integer[]>();
+        ArrayList<Integer[]> tempRequests;
+        
+        for (Floor floor : floors) {
+            tempRequests = floor.getServiceRequests();
+            for (Integer[] req : tempRequests) {
+                allRequests.add(req);
+            }
+        }
+        
+        return(allRequests);
+    }
 }
 
 

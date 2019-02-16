@@ -6,12 +6,12 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 
-public class TestHost implements Runnable {
-    private static final int DEFAULT_RECEIVE_PORT = 
-            UtilityInformation.SCHEDULER_PORT_NUM; 
-    
+public class TestHost implements Runnable {    
     // The port to receive packets on
 	private int RECEIVE_PORT; 
+	
+	// The destination port for all messages
+	private int DEST_PORT;
 
 	private InetAddress address; // The address to receive and send packets on
 
@@ -21,24 +21,6 @@ public class TestHost implements Runnable {
 
 	// Expected number of messages to receive
 	private int expectedNumMessages;
-
-	/**
-	 * testHost
-	 * 
-	 * Constructor
-	 * 
-	 * Creates a new TestHost object.
-	 * Initializes the port and address for receiving.
-	 * This object acts as a simple EchoServer.
-	 * 
-	 * @param expectedNumMessages  The expected number of messages to receive
-	 * 
-	 * @return None
-	 */
-	public TestHost(int expectedNumMessages) {
-	    this(expectedNumMessages, DEFAULT_RECEIVE_PORT);
-
-	}
 
 	/**
 	 * TestHost
@@ -55,9 +37,12 @@ public class TestHost implements Runnable {
 	 * 
 	 * @return None
 	 */
-	public TestHost(int expectedNumMessages, int portNumber) {
+	public TestHost(int expectedNumMessages, 
+        	        int receivePortNumber,
+        	        int destPort) {
 	    // Set the port to the given port
-		RECEIVE_PORT = portNumber;
+		RECEIVE_PORT = receivePortNumber;
+		DEST_PORT = destPort;
 		
 		// Initialize the send and receive sockets
 		try {
@@ -169,8 +154,8 @@ public class TestHost implements Runnable {
 
 		// Print out information about the received packet
 		System.out.println("Test: Packet received:");
-		System.out.println("Test: To address: " + receivePacket.getAddress());
-		System.out.println("Test: To port: " + receivePacket.getPort());
+		System.out.println("Test: From address: " + receivePacket.getAddress());
+		System.out.println("Test: From port: " + receivePacket.getPort());
 		int len = receivePacket.getLength();
 		System.out.println("Test: Length: " + len);
 		System.out.print("Test: Containing (as bytes): ");
@@ -240,7 +225,7 @@ public class TestHost implements Runnable {
 		// Receive and echo the expected number of messages
 		for (int i = 0; i < expectedNumMessages; i++) {
 			receivePacket(expectedLen);
-			sendPacket(receivePacket.getData(), receivePacket.getAddress(), receivePacket.getPort());
+			sendPacket(receivePacket.getData(), receivePacket.getAddress(), DEST_PORT);
 		}
 
 	}
