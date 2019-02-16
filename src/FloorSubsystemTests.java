@@ -55,8 +55,10 @@ class FloorSubsystemTests {
     	
     	// Initialize the TestHost for receiving signalsS
         host = new TestHost(0, 
-                            UtilityInformation.SCHEDULER_PORT_NUM, 
+                            UtilityInformation.SCHEDULER_PORT_NUM,
                             UtilityInformation.FLOOR_PORT_NUM);
+        
+        host.disableResponse();
         
         filePath = "test.txt";
         writer = null;
@@ -142,8 +144,6 @@ class FloorSubsystemTests {
      */
     @Test
     void testSampleInput() {
-    	host.setExpectedNumMessages(0);
-    	
     	// Check that the proper amount of requests were read in
     	assertEquals(reqs.size(), requestCount);
         
@@ -168,14 +168,14 @@ class FloorSubsystemTests {
     void testConfigMessage() {        
         host.setExpectedNumMessages(1);
         
+        host.enableResponse();
+        
         // Create a thread for the test host to run off
         Thread t = new Thread(host);
         t.start();
         
         // Send Config signal
         testController.sendConfigurationSignal(numFloors, numElevators);
-        
-        
     }
     
     /**

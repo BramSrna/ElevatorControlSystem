@@ -168,7 +168,7 @@ public class Scheduler extends ServerPattern {
 		sendMessage(tearDown, tearDown.length, packet.getAddress(), UtilityInformation.ELEVATOR_PORT_NUM);
 		System.out.println("\n\nTEARING DOWN!\n\n");
 		socketTearDown();
-		System.exit(1);
+		System.exit(0);
 	}
 
 	private void elevatorStopped(DatagramPacket packet) {
