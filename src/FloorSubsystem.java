@@ -15,29 +15,18 @@ import javax.swing.*;
 
 public class FloorSubsystem extends ServerPattern{
 	// Sockets and packets used for UDP
-	private DatagramPacket sendPacket, receivePacket;
+	private DatagramPacket sendPacket;
 	private DatagramSocket sendSocket;
 
 	// Important floor indices
-	private int bottomFloor; // Lowest possible floor
-	private int topFloor; // Highest possible floor
 	private int numFloors; // Number of floors that the elevator services
 
 	private int numElevators; // The current number of elevators
 
 	// Size of service requests
 	private final int CONFIG_SIZE = 4;
-	private final int CONFIG_REC_SIZE = 100;
-
 	private final int REQUEST_SIZE = 5;
-
-	private final int ELEVATOR_UPDATE_SIZE = 100;
-
 	private final int TEARDOWN_SIZE = 10;
-
-	// List of service requests parsed from the input file
-	// Sorted in order of time that requests are made
-	private ArrayList<Integer[]> serviceRequests;
 
 	// List of existing floor objects
 	private ArrayList<Floor> floors;
@@ -65,8 +54,6 @@ public class FloorSubsystem extends ServerPattern{
 	 */
 	public FloorSubsystem(int numFloors, int numElevators) {
 	    super(UtilityInformation.FLOOR_PORT_NUM, "FloorSubsystem");
-	    
-		serviceRequests = new ArrayList<Integer[]>();
 
 		floors = new ArrayList<Floor>();
 		floorThreads = new ArrayList<Thread>();
@@ -114,10 +101,6 @@ public class FloorSubsystem extends ServerPattern{
 
 		// Set the number of floors
 		this.numFloors = newNumFloors;
-
-		// Set bottom and top floors
-		this.bottomFloor = 0;
-		this.topFloor = this.numFloors - 1;
 
 		// Check if the list of floors needs to be modified
 		if (floors.size() < numFloors) {

@@ -20,10 +20,7 @@ public abstract class ServerPattern {
 
 	private final int MAX_NUM_SIGNALS = 100;
 
-	private String name;
-
 	public ServerPattern(int portNum, String name) {
-		this.name = name;
 
 		receivedSignals = new ArrayList<DatagramPacket>();
 		receivedSignalsEmpty = true;

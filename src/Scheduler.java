@@ -24,7 +24,6 @@ public class Scheduler extends ServerPattern {
 	private ArrayList<UtilityInformation.ElevatorDirection> elevatorDirection;
 	private State currentState;
 	private byte numElevators;
-	private byte numFloors;
 
 	private SchedulerAlgorithm algor;
 
@@ -169,7 +168,6 @@ public class Scheduler extends ServerPattern {
 	protected void sendConfigPacketToElevator(DatagramPacket configPacket) {
 		System.out.println("Sending config file to Elevator...\n");
 		setNumElevators(configPacket.getData()[1]);
-		setNumFloors(configPacket.getData()[2]);
 		sendMessage(configPacket.getData(), configPacket.getData().length, configPacket.getAddress(),
 				UtilityInformation.ELEVATOR_PORT_NUM);
 	}
@@ -189,15 +187,6 @@ public class Scheduler extends ServerPattern {
 			elevatorDirection.add(UtilityInformation.ElevatorDirection.STATIONARY);
 		}
 		algor.setNumberOfElevators(numElevators);
-	}
-
-	/**
-	 * Set the number of floors in the system
-	 * 
-	 * @param newNumFloors
-	 */
-	public void setNumFloors(byte newNumFloors) {
-		this.numFloors = newNumFloors;
 	}
 
 	/**
