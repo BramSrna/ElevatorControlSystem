@@ -398,4 +398,9 @@ public class SchedulerAlgorithm {
 		System.out.println(stopElevator);
 		System.out.println(elevatorDestinations);
 	}
+
+	public void elevatorStuck(byte floorNum, byte elevatorNum) {
+		// TODO Auto-generated method stub
+		
+	}
 }

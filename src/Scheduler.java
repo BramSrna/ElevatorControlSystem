@@ -380,6 +380,28 @@ public class Scheduler extends ServerPattern {
 		// Continue moving elevator
 		moveToFloor(recievedPacket);
 	}
+	
+	private void handleDoorStuckError(DatagramPacket receivedPacket) {
+		byte stuckDoorState = receivedPacket.getData()[1];
+		byte elevatorNum = receivedPacket.getData()[2];
+		
+		if (stuckDoorState == UtilityInformation.DOOR_CLOSE) {
+			closeElevatorDoors(receivedPacket);
+		} else if (stuckDoorState == UtilityInformation.DOOR_OPEN) {
+			openElevatorDoors(receivedPacket);
+		} else {
+			System.out.println("Error: Invalid Door State.");
+			socketTearDown();			
+			System.exit(1);
+		}	
+	}
+	
+	private void handleElevatorStuckError(DatagramPacket receivedPacket) {
+		byte floorNum = receivedPacket.getData()[1];
+		byte elevatorNum = receivedPacket.getData()[2];
+		
+		algor.elevatorStuck(floorNum, elevatorNum);
+	}
 
 	/**
 	 * Send a message

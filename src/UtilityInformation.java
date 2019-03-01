@@ -2,18 +2,22 @@ public class UtilityInformation {
 
 	public final static int MAX_BYTE_ARRAY_SIZE = 100;
 
+	// Lamp states for lamps in Elevators and on Floors
 	public enum LampState {
 		OFF, ON
 	}
 
+	// Button states for buttons on Elevator and Floors
 	public enum ButtonState {
 		UNPRESSED, PRESSED
 	}
 
+	// ElevatorDirection for display on Floors
 	public enum ElevatorDirection {
 		STATIONARY, UP, DOWN
 	}
 
+	// Byte in messages used to indicate the type of message
 	public final static int MODE_BYTE_IND = 0;
 
 	// Modes
@@ -34,13 +38,16 @@ public class UtilityInformation {
 	public final static byte ELEVATOR_STUCK_ERROR = 1;
 
 	// Messages
+	// Messages (Elevator Direction)
 	public final static byte ELEVATOR_STAY = 0;
 	public final static byte ELEVATOR_UP = 1;
 	public final static byte ELEVATOR_DOWN = 2;
 
+	// Messages (Door States)
 	public final static byte DOOR_CLOSE = 0;
 	public final static byte DOOR_OPEN = 1;
 	
+	// Messages (End of Message Indicator)
 	public final static byte END_OF_MESSAGE = -1;
 
 	// Ports
