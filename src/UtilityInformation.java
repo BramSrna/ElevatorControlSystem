@@ -32,10 +32,12 @@ public class UtilityInformation {
 	public final static byte CONFIG_CONFIRM = 8;
 	public final static byte ELEVATOR_STOPPED_MODE = 9;
 	public final static byte ERROR_MESSAGE_MODE = 10;
-	
+	public final static byte FIX_ERROR_MODE = 10;
+
 	// Error Types
-	public final static byte DOOR_STUCK_ERROR = 0;
-	public final static byte ELEVATOR_STUCK_ERROR = 1;
+	public final static byte DOOR_WONT_CLOSE_ERROR = 0;
+	public final static byte DOOR_WONT_OPEN_ERROR = 1;
+	public final static byte ELEVATOR_STUCK_ERROR = 2;
 
 	// Messages
 	// Messages (Elevator Direction)
@@ -46,7 +48,7 @@ public class UtilityInformation {
 	// Messages (Door States)
 	public final static byte DOOR_CLOSE = 0;
 	public final static byte DOOR_OPEN = 1;
-	
+
 	// Messages (End of Message Indicator)
 	public final static byte END_OF_MESSAGE = -1;
 
