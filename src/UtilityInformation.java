@@ -27,14 +27,21 @@ public class UtilityInformation {
 	public final static byte TEARDOWN_MODE = 7;
 	public final static byte CONFIG_CONFIRM = 8;
 	public final static byte ELEVATOR_STOPPED_MODE = 9;
+	public final static byte ERROR_MESSAGE_MODE = 10;
+	
+	// Error Types
+	public final static byte DOOR_STUCK_ERROR = 0;
+	public final static byte ELEVATOR_STUCK_ERROR = 1;
 
 	// Messages
 	public final static byte ELEVATOR_STAY = 0;
 	public final static byte ELEVATOR_UP = 1;
 	public final static byte ELEVATOR_DOWN = 2;
-	public final static byte END_OF_MESSAGE = -1;
+
 	public final static byte DOOR_CLOSE = 0;
 	public final static byte DOOR_OPEN = 1;
+	
+	public final static byte END_OF_MESSAGE = -1;
 
 	// Ports
 	public final static int SCHEDULER_PORT_NUM = 420;
