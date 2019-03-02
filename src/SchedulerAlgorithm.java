@@ -30,7 +30,8 @@ public class SchedulerAlgorithm {
 		System.out.println("Elevator was requested at: " + source + " in the direction " + upOrDown
 				+ " with destination " + destination);
 
-		byte elevatorNum = addElevatorRequest(source, destination);
+		byte elevatorNum = determineElevatorToGiveRequest(source);
+		elevatorNum = addRequestToElevator(elevatorNum, source, destination);
 		return (elevatorNum);
 	}
 
@@ -79,22 +80,8 @@ public class SchedulerAlgorithm {
 			System.out.println("New destination list: " + elevatorStops.toString() + "\n");
 		}
 	}
-
-	/**
-	 * When a elevator is requested from the floor. The request goes through an
-	 * algorithm and is assigned to an elevator. That elevator will have the
-	 * startFloor and endFloor assigned to it, and that elevator will be tasked with
-	 * fulfilling the request
-	 * 
-	 * @param startFloor
-	 * @param endFloor
-	 * @return Elevator request was assigned to
-	 */
-	private byte addElevatorRequest(byte startFloor, byte endFloor) {
-
-		// TODO Note: This will be changed from iteration to iteration for optimization
-		// purposes
-	    
+	
+	private byte determineElevatorToGiveRequest(byte startFloor) {
         ArrayList<Integer> closestElevator = new ArrayList<Integer>();
         int closestDiff = -1;
         int chosenElevator = -1;
@@ -149,10 +136,15 @@ public class SchedulerAlgorithm {
             chosenElevator = closestElevator.get(0);
         }
         
+        return((byte) chosenElevator);
+	}
+	
+	private byte addRequestToElevator(int chosenElevator, byte startFloor, byte endFloor) {
         int currFloor = currentFloor.get(chosenElevator);
         int startInd = -1;
         int closestInd = 0;
-        closestDiff = Integer.MAX_VALUE;
+        int closestDiff = Integer.MAX_VALUE;
+        int currDiff;
         ArrayList<Byte> currDests = elevatorStops.get(chosenElevator);
         
         if (!elevatorDestinations.get(chosenElevator).contains(endFloor)) {
@@ -234,7 +226,6 @@ public class SchedulerAlgorithm {
         System.out.println("New request list: " + elevatorStops + "\n");        
         
         return((byte) chosenElevator);
-
 	}
 
 	/**
