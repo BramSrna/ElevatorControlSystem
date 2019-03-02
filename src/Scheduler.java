@@ -69,10 +69,6 @@ public class Scheduler extends ServerPattern {
 				currentState = State.RESPONDING_TO_MESSAGE;
 				sendConfigPacketToElevator(packet);
 				eventOccured(Event.CONFIG_MESSAGE, packet);
-			} else if (event.equals(Event.BUTTON_PUSHED_IN_ELEVATOR)) {
-				currentState = State.RESPONDING_TO_MESSAGE;
-				extractElevatorButtonFloorAndGenerateResponseMessageAndActions(packet);
-				moveToFloor(packet);
 			} else if (event.equals(Event.FLOOR_SENSOR_ACTIVATED)) {
 				currentState = State.RESPONDING_TO_MESSAGE;
 				extractFloorReachedNumberAndGenerateResponseMessageAndActions(packet);
@@ -348,20 +344,6 @@ public class Scheduler extends ServerPattern {
 	}
 
 	/**
-	 * For when someone on the Elevator presses a button NOTE: This is not used yet,
-	 * as nobody can press a button while in the elevator in real-time at the
-	 * moment.
-	 * 
-	 * @param recievedPacket
-	 */
-	private void extractElevatorButtonFloorAndGenerateResponseMessageAndActions(DatagramPacket recievedPacket) {
-		System.out.println("(SHOULD NOT HAPPEN YET) Following floor button was hit in the elevator: "
-				+ recievedPacket.getData()[1] + "\n");
-		algor.floorButtonPressed(recievedPacket.getData()[1], recievedPacket.getData()[2]);
-
-	}
-
-	/**
 	 * For when the Floor sends message to Scheduler saying it has arrived.
 	 * 
 	 * @param recievedPacket
@@ -400,8 +382,15 @@ public class Scheduler extends ServerPattern {
 		byte floorNum = receivedPacket.getData()[1];
 		byte elevatorNum = receivedPacket.getData()[2];
 		
-		algor.elevatorStuck(floorNum, elevatorNum);
+		algor.stopUsingElevator(elevatorNum);
 	}
+	
+   private void handleElevatorFixed(DatagramPacket receivedPacket) {
+        byte floorNum = receivedPacket.getData()[1];
+        byte elevatorNum = receivedPacket.getData()[2];
+        
+        algor.resumeUsingElevator(elevatorNum);
+    }
 
 	/**
 	 * Send a message

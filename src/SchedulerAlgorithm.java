@@ -6,12 +6,15 @@ public class SchedulerAlgorithm {
 	private ArrayList<Byte> currentFloor; // Index: Elevators, Byte: Current floor
 	private ArrayList<Boolean> stopElevator; // Index: Elevators, Boolean: Should stop elevator
 	private ArrayList<ArrayList<Byte>> elevatorDestinations; // Index: Elevators, ArrayList: Elevator destinations
+	private ArrayList<Boolean> elevatorUsable;
 
 	public SchedulerAlgorithm(byte numElevators) {
 		elevatorStops = new ArrayList<ArrayList<Byte>>();
 		currentFloor = new ArrayList<Byte>();
 		stopElevator = new ArrayList<Boolean>();
 		elevatorDestinations = new ArrayList<ArrayList<Byte>>();
+		elevatorUsable = new ArrayList<Boolean>();
+		
 		setNumberOfElevators(numElevators);
 	}
 
@@ -75,17 +78,6 @@ public class SchedulerAlgorithm {
 			System.out.println(currentFloor + " was removed from the destinations list");
 			System.out.println("New destination list: " + elevatorStops.toString() + "\n");
 		}
-	}
-
-	/**
-	 * NOTE: This is not used yet, as nobody can press a button while in the
-	 * elevator in real-time at the moment.
-	 * 
-	 * @param pressedButton
-	 * @param elevatorNum
-	 */
-	public void floorButtonPressed(Byte pressedButton, byte elevatorNum) {
-		elevatorDestinations.get(elevatorNum).add(pressedButton);
 	}
 
 	/**
@@ -268,37 +260,6 @@ public class SchedulerAlgorithm {
 	}
 
 	/**
-	 * Check to see if there are floors to go above the current one for a given
-	 * elevator
-	 * 
-	 * @param elevatorNum
-	 * @return
-	 */
-	public boolean floorsToGoToAbove(byte elevatorNum) {
-		for (byte tempFloor : elevatorStops.get(elevatorNum)) {
-			if (tempFloor > currentFloor.get(elevatorNum)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	/**
-	 * Check to see if there are floors to go below for a given elevator
-	 * 
-	 * @param elevatorNum
-	 * @return
-	 */
-	public boolean floorsToGoToBelow(byte elevatorNum) {
-		for (byte tempFloor : elevatorStops.get(elevatorNum)) {
-			if (tempFloor < currentFloor.get(elevatorNum)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	/**
 	 * Determine if a given elevator has anywhere to go
 	 * 
 	 * @param elevatorNum
@@ -321,11 +282,13 @@ public class SchedulerAlgorithm {
 			currentFloor.remove(currentFloor.size() - 1);
 			stopElevator.remove(stopElevator.size() - 1);
 			elevatorDestinations.remove(elevatorDestinations.size() - 1);
+			elevatorUsable.remove(elevatorUsable.size() - 1);
 		}
 
 		while (stopElevator.size() < numElevators) {
 			currentFloor.add((byte) 0);
 			stopElevator.add(true);
+			elevatorUsable.add(true);
 
 			ArrayList<Byte> temp = new ArrayList<Byte>();
 			temp.add((byte) 0);
@@ -347,16 +310,6 @@ public class SchedulerAlgorithm {
 	 */
 	public ArrayList<Byte> getDestinations(byte elevatorNum) {
 		return elevatorDestinations.get(elevatorNum);
-	}
-
-	/**
-	 * Get an elevators stops
-	 * 
-	 * @param elevatorNum
-	 * @return
-	 */
-	public ArrayList<Byte> getElevatorStops(byte elevatorNum) {
-		return elevatorStops.get(elevatorNum);
 	}
 
 	/**
@@ -399,8 +352,11 @@ public class SchedulerAlgorithm {
 		System.out.println(elevatorDestinations);
 	}
 
-	public void elevatorStuck(byte floorNum, byte elevatorNum) {
-		// TODO Auto-generated method stub
-		
+	public void stopUsingElevator(byte elevatorNum) {
+		elevatorUsable.set(elevatorNum, false);
 	}
+	
+   public void resumeUsingElevator(byte elevatorNum) {
+       elevatorUsable.set(elevatorNum, true);
+    }
 }
