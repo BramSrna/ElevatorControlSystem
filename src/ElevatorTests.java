@@ -8,7 +8,9 @@ public class ElevatorTests {
 	    
 	    @BeforeEach
 	    void setUp() throws Exception {
-	        elevator = new Elevator(0); //Elevator #0
+	        Elevator_Subsystem controller = new Elevator_Subsystem();
+	        
+	        elevator = new Elevator(controller, 0); //Elevator #0
 	    }
 	    
 	    @AfterEach
