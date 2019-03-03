@@ -304,7 +304,33 @@ public class SchedulerAlgorithm {
 	}
 
 	public void stopUsingElevator(byte elevatorNum) {
+	    int ind = 0;
+	    int shortestQueue = -1;
+	    int shortestQueueSize = -1;
+	    
+	    while (ind < elevatorStops.size()) {
+	        if ((ind != elevatorNum) && 
+	                ((shortestQueueSize == -1) || (shortestQueueSize < elevatorStops.get(ind).size()))) {
+	            shortestQueueSize = elevatorStops.get(ind).size();
+	            shortestQueue = ind;
+	        }
+	        ind++;
+	    }
+	    
+        ArrayList<Byte> currStops = elevatorStops.get(elevatorNum);	    
+	    elevatorStops.get(shortestQueue).addAll(currStops);
+	    
+	    byte currFloor = currentFloor.get(elevatorNum);
+	    
+	    elevatorStops.set(elevatorNum, new ArrayList<Byte>());
+	    elevatorStops.get(elevatorNum).add(currFloor);
+	    
+	    elevatorDestinations.set(elevatorNum, new ArrayList<Byte>());
+	    elevatorDestinations.get(elevatorNum).add(currFloor);
+	    
 		elevatorUsable.set(elevatorNum, false);
+		
+		stopElevator.set(elevatorNum, true);
 	}
 	
    public void resumeUsingElevator(byte elevatorNum) {
