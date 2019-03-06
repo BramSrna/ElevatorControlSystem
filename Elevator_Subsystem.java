@@ -1,4 +1,4 @@
-package groupProject;
+
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -254,7 +254,7 @@ public class Elevator_Subsystem  {
 
 			// Based on the config message, set up the elevators and their lights.
 			for (int i = 0; i < numberOfElevators; i++) {
-				Elevator hold = new Elevator(i);
+				Elevator hold = new Elevator(this, i);
 				hold.allButtons = new Elevator.lampState[numberOfFloors];
 				for (int k = 0; k < numberOfFloors; k++) {
 					hold.allButtons[k] = Elevator.lampState.OFF; // currently making everything OFF
@@ -262,6 +262,7 @@ public class Elevator_Subsystem  {
 				// add to elevator subsystem ArrayList of elevators
 				allElevators.add(hold);
 			}
+			
 			// allButtons = new lampState[numberOfFloors];
 			byte[] response = { UtilityInformation.CONFIG_CONFIRM, 1, -1 };
 			this.sendData(response, schedulerIP, schedulerPort);
@@ -275,17 +276,9 @@ public class Elevator_Subsystem  {
 		}
 		if (str.equals("go up")) {
 			allElevators.get(currentElevatorToWork).goUp();
-			byte[] returnMessage = { UtilityInformation.FLOOR_SENSOR_MODE,
-					(byte) allElevators.get(currentElevatorToWork).currentFloor,
-					(byte) allElevators.get(currentElevatorToWork).elevatorNumber, -1 };
-			this.sendData(returnMessage, schedulerIP, schedulerPort);
 		}
 		if (str.equals("go down")) {
 			allElevators.get(currentElevatorToWork).goDown();
-			byte[] returnMessage = { UtilityInformation.FLOOR_SENSOR_MODE,
-					(byte) allElevators.get(currentElevatorToWork).currentFloor,
-					(byte) allElevators.get(currentElevatorToWork).elevatorNumber, -1 };
-			this.sendData(returnMessage, schedulerIP, schedulerPort);
 		}
 		if (str.equals("stop")) {
 			allElevators.get(currentElevatorToWork).Stop();
@@ -315,6 +308,13 @@ public class Elevator_Subsystem  {
 		}
 
 	}
+	
+	public void sendFloorSensorMessage(int elevatorNum) {
+        byte[] returnMessage = { UtilityInformation.FLOOR_SENSOR_MODE,
+                (byte) allElevators.get(elevatorNum).currentFloor,
+                (byte) allElevators.get(elevatorNum).elevatorNumber, -1 };
+        this.sendData(returnMessage, schedulerIP, schedulerPort);
+	}
 
 	/*
 	 * Method to validate the form of the array of bytes received from the Scheduler
@@ -327,18 +327,26 @@ public class Elevator_Subsystem  {
 		} else if (data[0] == UtilityInformation.ELEVATOR_BUTTON_HIT_MODE) {// send the number of floor clicked
 			return "button clicked";
 		} else if (data[0] == UtilityInformation.ELEVATOR_DIRECTION_MODE) {
-			byte moveDirection = data[2];
-			if (moveDirection == 0) {
-				return "stay";
-			} // stop
-			if (moveDirection == 1) {
-				return "go up";
-			}
-			if (moveDirection == 2) {
-				return "go down";
-			}
-			currentElevatorToWork = data[3];
-			return "invalid";
+            currentElevatorToWork = data[3];
+            
+            int schedCurrFloor = data[1];
+            int eleCurrFloor = allElevators.get(currentElevatorToWork).getCurrentFloor();
+            
+            if (schedCurrFloor != eleCurrFloor) {
+                return "ignore";
+            } else {
+                byte moveDirection = data[2];         
+                if (moveDirection == 0) {
+                    return "stay";
+                } // stop
+                if (moveDirection == 1) {
+                    return "go up";
+                }
+                if (moveDirection == 2) {
+                    return "go down";
+                }           
+                return "invalid";
+            }   
 		} else if (data[0] == UtilityInformation.ELEVATOR_DOOR_MODE) {
 			byte doorState = data[1];
 			currentElevatorToWork = data[2];
@@ -365,10 +373,6 @@ public class Elevator_Subsystem  {
 	public static void main(String[] args) {
 		Elevator_Subsystem elvSub = new Elevator_Subsystem();
 		// receive the config message
-		elvSub.receiveData();
-		for(int i=0; i<elvSub.allElevators.size(); i++) {
-			elvSub.allElevators.get(i).start();
-		}
 		for(;;) {
 			elvSub.receiveData();
 			elvSub.allElevators.get(currentElevatorToWork).display();
