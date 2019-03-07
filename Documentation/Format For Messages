@@ -1,14 +1,23 @@
-NOTE: Please use spaces NOT TABS to space text apart to keep this file looking nice.
-Floor Encryption to Scheduler
+Format used for messages between the components:
 
-index : Representation
 
-0 :          Request type          0 = Config          2 = Elevator request            7 = Teardown
-1 :                                No. Elevators       Source floor                    -1
-2 :                                No. Floors          Direction, 1 = up, 0 = down
-3 :                                -1                  Destination
-4:                                                     -1
-
-start/stop (4, destinationfloor, current floor, start(0)/stop(1) bit, -1)
-
-open/close doors (5,open(1)/close(0), -1)
+Scheduler To Elevator Subsystem:
+    Teardown:                    {MODE, -1}
+    Config:                      {MODE, NUM ELEVATORS, NUM FLOORS, -1}
+    Elevator destination signal: {MODE, FLOOR NUM, ELEVATOR NUM, -1}
+    Move Elevator:               {MODE, FLOOR NUM, DIRECTION, ELEVATOR NUM, -1}
+    Change Door State:           {MODE, DOOR STATE, ELEVATOR NUM, -1}
+	
+Scheduler To Floor Subsystem:
+    Config Confirm: {MODE, 1, -1}
+    Move Elevator:  {MODE, FLOOR NUM, DIRECTION, ELEVATOR NUM, -1}
+	
+Elevator Subsystem To Scheduler:
+    Config Confirm: {MODE, 1, -1}
+    Elevator Stop:  {MODE, FLOOR_NUM, ELEVATOR_NUM, -1}
+    Floor Sensor:   {MODE, FLOOR_NUM, ELEVATOR_NUM, -1}
+	
+Floor Subsystem To Scheduler:
+    Teardown:         {MODE, -1}
+    Config:           {MODE, NUM ELEVATORS, NUM FLOORS, -1}
+    Elevator Request: {MODE, SOURCE FLOOR, DIRECTION, DESTINATION FLOOR, -1}

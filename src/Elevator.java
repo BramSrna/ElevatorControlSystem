@@ -1,4 +1,4 @@
-/*
+/**
  * SYSC 3303 Elevator Group Project
  * Elevator.java
  * @ author Samy Ibrahim 
