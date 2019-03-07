@@ -282,7 +282,7 @@ public class Scheduler extends ServerPattern {
 	 */
 	protected void stopElevator(DatagramPacket packet, byte elevatorNum) {
 		byte[] stopElevator = { UtilityInformation.ELEVATOR_DIRECTION_MODE, algor.getCurrentFloor(elevatorNum),
-				UtilityInformation.ELEVATOR_STAY, elevatorNum, UtilityInformation.END_OF_MESSAGE };
+				elevatorNum, UtilityInformation.ELEVATOR_STAY, UtilityInformation.END_OF_MESSAGE };
 		sendMessage(stopElevator, stopElevator.length, packet.getAddress(), UtilityInformation.ELEVATOR_PORT_NUM);
 		sendMessage(stopElevator, stopElevator.length, packet.getAddress(), UtilityInformation.FLOOR_PORT_NUM);
 		elevatorDirection.set(elevatorNum, UtilityInformation.ElevatorDirection.STATIONARY);
@@ -297,7 +297,7 @@ public class Scheduler extends ServerPattern {
 	protected void sendElevatorUp(DatagramPacket packet) {
 		byte elevatorNum = packet.getData()[2];
 		byte[] goUp = { UtilityInformation.ELEVATOR_DIRECTION_MODE, algor.getCurrentFloor(elevatorNum),
-				UtilityInformation.ELEVATOR_UP, elevatorNum, UtilityInformation.END_OF_MESSAGE };
+				elevatorNum, UtilityInformation.ELEVATOR_UP, UtilityInformation.END_OF_MESSAGE };
 		System.out.println("Sending elevator up... \n");
 		sendMessage(goUp, goUp.length, packet.getAddress(), UtilityInformation.ELEVATOR_PORT_NUM);
 		sendMessage(goUp, goUp.length, packet.getAddress(), UtilityInformation.FLOOR_PORT_NUM);
@@ -312,7 +312,7 @@ public class Scheduler extends ServerPattern {
 	protected void sendElevatorDown(DatagramPacket packet) {
 		byte elevatorNum = packet.getData()[2];
 		byte[] goDown = { UtilityInformation.ELEVATOR_DIRECTION_MODE, algor.getCurrentFloor(elevatorNum),
-				UtilityInformation.ELEVATOR_DOWN, elevatorNum, UtilityInformation.END_OF_MESSAGE };
+				elevatorNum, UtilityInformation.ELEVATOR_DOWN, UtilityInformation.END_OF_MESSAGE };
 		System.out.println("Sending elevator down... \n");
 		sendMessage(goDown, goDown.length, packet.getAddress(), UtilityInformation.ELEVATOR_PORT_NUM);
 		sendMessage(goDown, goDown.length, packet.getAddress(), UtilityInformation.FLOOR_PORT_NUM);

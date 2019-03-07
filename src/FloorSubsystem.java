@@ -499,10 +499,10 @@ public class FloorSubsystem extends ServerPattern{
 	        
 	        // Request currently does not contain the elevator number,
 	        // so hardcode the value to 1 for now.
-	        int elevatorNum = data[3]; 
+	        int elevatorNum = data[2]; 
 	        
 	        // Get the direction of the elevator
-	        UtilityInformation.ElevatorDirection dir = UtilityInformation.ElevatorDirection.values()[data[2]];
+	        UtilityInformation.ElevatorDirection dir = UtilityInformation.ElevatorDirection.values()[data[3]];
 
 	        // Propagate the information through all Floor
 	        // objects in the FloorSubsystem

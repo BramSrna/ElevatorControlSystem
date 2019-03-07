@@ -5,7 +5,7 @@ Scheduler To Elevator Subsystem:
     Teardown:                    {MODE, -1}
     Config:                      {MODE, NUM ELEVATORS, NUM FLOORS, -1}
     Elevator destination signal: {MODE, FLOOR NUM, ELEVATOR NUM, -1}
-    Move Elevator:               {MODE, FLOOR NUM, DIRECTION, ELEVATOR NUM, -1}
+    Move Elevator:               {MODE, FLOOR NUM, ELEVATOR NUM, DIRECTION, -1}
     Change Door State:           {MODE, DOOR STATE, ELEVATOR NUM, -1}
 	
 Scheduler To Floor Subsystem:
