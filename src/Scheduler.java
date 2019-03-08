@@ -249,8 +249,6 @@ public class Scheduler extends ServerPattern {
 	private void moveToFloor(DatagramPacket packet) {
 		byte elevatorNum = packet.getData()[2];
 
-		// TODO Note: This will be changed from iteration to iteration for optimization
-		// purposes
 		if (algor.somewhereToGo(elevatorNum)) {
 			closeElevatorDoors(packet);
 
@@ -296,8 +294,8 @@ public class Scheduler extends ServerPattern {
 	 */
 	protected void sendElevatorUp(DatagramPacket packet) {
 		byte elevatorNum = packet.getData()[2];
-		byte[] goUp = { UtilityInformation.ELEVATOR_DIRECTION_MODE, algor.getCurrentFloor(elevatorNum),
-				elevatorNum, UtilityInformation.ELEVATOR_UP, UtilityInformation.END_OF_MESSAGE };
+		byte[] goUp = { UtilityInformation.ELEVATOR_DIRECTION_MODE, algor.getCurrentFloor(elevatorNum), elevatorNum,
+				UtilityInformation.ELEVATOR_UP, UtilityInformation.END_OF_MESSAGE };
 		System.out.println("Sending elevator up... \n");
 		sendMessage(goUp, goUp.length, packet.getAddress(), UtilityInformation.ELEVATOR_PORT_NUM);
 		sendMessage(goUp, goUp.length, packet.getAddress(), UtilityInformation.FLOOR_PORT_NUM);
@@ -311,8 +309,8 @@ public class Scheduler extends ServerPattern {
 	 */
 	protected void sendElevatorDown(DatagramPacket packet) {
 		byte elevatorNum = packet.getData()[2];
-		byte[] goDown = { UtilityInformation.ELEVATOR_DIRECTION_MODE, algor.getCurrentFloor(elevatorNum),
-				elevatorNum, UtilityInformation.ELEVATOR_DOWN, UtilityInformation.END_OF_MESSAGE };
+		byte[] goDown = { UtilityInformation.ELEVATOR_DIRECTION_MODE, algor.getCurrentFloor(elevatorNum), elevatorNum,
+				UtilityInformation.ELEVATOR_DOWN, UtilityInformation.END_OF_MESSAGE };
 		System.out.println("Sending elevator down... \n");
 		sendMessage(goDown, goDown.length, packet.getAddress(), UtilityInformation.ELEVATOR_PORT_NUM);
 		sendMessage(goDown, goDown.length, packet.getAddress(), UtilityInformation.FLOOR_PORT_NUM);
@@ -362,35 +360,30 @@ public class Scheduler extends ServerPattern {
 		// Continue moving elevator
 		moveToFloor(recievedPacket);
 	}
-	
+
 	private void handleDoorStuckError(DatagramPacket receivedPacket) {
 		byte stuckDoorState = receivedPacket.getData()[1];
-		byte elevatorNum = receivedPacket.getData()[2];
-		
+
 		if (stuckDoorState == UtilityInformation.DOOR_CLOSE) {
 			closeElevatorDoors(receivedPacket);
 		} else if (stuckDoorState == UtilityInformation.DOOR_OPEN) {
 			openElevatorDoors(receivedPacket);
 		} else {
 			System.out.println("Error: Invalid Door State.");
-			socketTearDown();			
+			socketTearDown();
 			System.exit(1);
-		}	
+		}
 	}
-	
+
 	private void handleElevatorStuckError(DatagramPacket receivedPacket) {
-		byte floorNum = receivedPacket.getData()[1];
 		byte elevatorNum = receivedPacket.getData()[2];
-		
 		algor.stopUsingElevator(elevatorNum);
 	}
-	
-   private void handleElevatorFixed(DatagramPacket receivedPacket) {
-        byte floorNum = receivedPacket.getData()[1];
-        byte elevatorNum = receivedPacket.getData()[2];
-        
-        algor.resumeUsingElevator(elevatorNum);
-    }
+
+	private void handleElevatorFixed(DatagramPacket receivedPacket) {
+		byte elevatorNum = receivedPacket.getData()[2];
+		algor.resumeUsingElevator(elevatorNum);
+	}
 
 	/**
 	 * Send a message
