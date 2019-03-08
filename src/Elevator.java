@@ -42,6 +42,8 @@ public class Elevator extends Thread{
 	
 	boolean inError = false;
 	
+	public boolean isDamaged = false;
+	
 	public Elevator(int number) {
 		elevatorNumber = number;
 	}

@@ -399,7 +399,7 @@ public class Scheduler extends ServerPattern {
 	}
 
 	private void handleDoorFixMessage(DatagramPacket recievedPacket) {
-		algor.resumeUsingElevator(recievedPacket.getData()[2]);
+		algor.resumeUsingElevator(recievedPacket.getData()[1]);
 	}
 
 	/**
