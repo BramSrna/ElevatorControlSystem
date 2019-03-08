@@ -205,7 +205,7 @@ public class Scheduler extends ServerPattern {
 			eventOccured(Event.TEARDOWN, recievedPacket);
 		} else if (mode == UtilityInformation.CONFIG_CONFIRM) { // 8
 			eventOccured(Event.CONFIRM_CONFIG, recievedPacket);
-		} else if (mode == UtilityInformation.ELEVATOR_STOPPED_MODE) { // 8
+		} else if (mode == UtilityInformation.ELEVATOR_STOPPED_MODE) { // 9
 			eventOccured(Event.ELEVATOR_STOPPED, recievedPacket);
 		} else {
 			System.out.println(String.format("Error in readMessage: Undefined mode: %d", mode));
