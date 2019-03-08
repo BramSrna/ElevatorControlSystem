@@ -184,17 +184,6 @@ public class FloorSubsystem extends ServerPattern{
 	 * @return void
 	 */
 	public void parseInputFile(String pathToFile) {
-		// Indices of all significant data in each line of the text file
-		int timeInd = 0;
-		int startFloorInd = 1;
-		int directionFloorInd = 2;
-		int endFloorInd = 3;
-
-		// Significant indices for parsing the time
-		int hourInd = 0;
-		int minInd = 1;
-		int secInd = 2;
-
 		// Setup the file for parsing
 		FileReader input = null;
 
@@ -228,66 +217,20 @@ public class FloorSubsystem extends ServerPattern{
 		// Add the request
 		// Go to the next line
 		while (currLine != null) {
-			// Split the line at spaces
-			String[] info = currLine.split(" ");
-
-			// Get all important parts of data
-			String timeStr = info[timeInd];
-			String startFloorStr = info[startFloorInd];
-			String directionStr = info[directionFloorInd];
-			String finalFloorStr = info[endFloorInd];
-
-			int hourInt = 0;
-			int minInt = 0;
-			int secInt = 0;
-			int milliSecInt = 0;
-			int startFloorInt = 0;
-			int finalFloorInt = 0;
-			UtilityInformation.ElevatorDirection directionEnum;
-
-			// Convert the data to the proper format
-			// Time format is hh:mm:ss.mmmm
-			String[] timeParts = timeStr.split(":");
-
-			// Get the hour and minute
-			hourInt = Integer.parseInt(timeParts[hourInd]);
-			minInt = Integer.parseInt(timeParts[minInd]);
-
-			String[] secParts = timeParts[secInd].split("\\.");
-
-			// Get the second and millisecond
-			secInt = Integer.parseInt(secParts[0]);
-			milliSecInt = Integer.parseInt(secParts[1]);
-
-			// Get the time of request in milliseconds
-			milliSecInt += secInt * 1000;
-			milliSecInt += minInt * 60 * 1000;
-			milliSecInt += hourInt * 60 * 60 * 1000;
+			int[] vals = parseInputFileLine(currLine);
 			
 			if (timeOfFirstRequest == -1) {
-			    timeOfFirstRequest = milliSecInt;
+			    timeOfFirstRequest = vals[0];
 			}
-
-			try {
-				startFloorInt = Integer.parseInt(startFloorStr);
-			} catch (Exception e) {
-				System.out.println("Error: Start floor must be an integer.");
-			}
-
-			try {
-				finalFloorInt = Integer.parseInt(finalFloorStr);
-			} catch (Exception e) {
-				System.out.println("Error: Start floor must be an integer.");
-			}
-
-			directionEnum = UtilityInformation.ElevatorDirection.valueOf(directionStr.toUpperCase());
-
+			
 			// Find the floor where the request was made,
 			// and make the request
 			for (Floor floor : floors) {
-				if (floor.getFloorNumber() == startFloorInt) {
-				    System.out.println(String.format("TIME: %d", milliSecInt - timeOfFirstRequest));
-					floor.createElevatorRequest(milliSecInt - timeOfFirstRequest, directionEnum, finalFloorInt);
+				if (floor.getFloorNumber() == vals[1]) {
+				    System.out.println(String.format("TIME: %d", vals[0] - timeOfFirstRequest));
+					floor.createElevatorRequest(vals[0] - timeOfFirstRequest, 
+                    					        UtilityInformation.ElevatorDirection.values()[vals[2]], 
+                    					        vals[3]);
 				}
 			}
 
@@ -313,6 +256,60 @@ public class FloorSubsystem extends ServerPattern{
 		}
 
 		System.out.println("Finished parsing test file.");
+	}
+	
+	private int[] parseInputFileLine(String line) {        
+        String[] info = line.split(" ");
+
+        // Get all important parts of data
+        String timeStr = info[0];
+        String startFloorStr = info[1];
+        String directionStr = info[2];
+        String finalFloorStr = info[3];
+
+        // Convert the data to the proper format
+        // Time format is hh:mm:ss.mmmm
+        String[] timeParts = timeStr.split(":");
+
+        // Get the hour and minute
+        int hourInt = Integer.parseInt(timeParts[0]);
+        int minInt = Integer.parseInt(timeParts[1]);
+
+        String[] secParts = timeParts[2].split("\\.");
+
+        // Get the second and millisecond
+        int secInt = Integer.parseInt(secParts[0]);
+        int milliSecInt = Integer.parseInt(secParts[1]);
+
+        // Get the time of request in milliseconds
+        milliSecInt += secInt * 1000;
+        milliSecInt += minInt * 60 * 1000;
+        milliSecInt += hourInt * 60 * 60 * 1000;
+
+        int startFloorInt = 0;
+        try {
+            startFloorInt = Integer.parseInt(startFloorStr);
+        } catch (Exception e) {
+            System.out.println("Error: Start floor must be an integer.");
+        }
+
+        int finalFloorInt = 0;
+        try {
+            finalFloorInt = Integer.parseInt(finalFloorStr);
+        } catch (Exception e) {
+            System.out.println("Error: Start floor must be an integer.");
+        }
+
+        UtilityInformation.ElevatorDirection directionEnum = UtilityInformation.ElevatorDirection.valueOf(directionStr.toUpperCase());
+        
+        int[] returnVal = new int[4];
+        returnVal[0] = milliSecInt;
+        returnVal[1] = startFloorInt;
+        returnVal[2] = finalFloorInt;
+        returnVal[3] = directionEnum.ordinal();
+        
+        return(returnVal);
+
 	}
 
 	/**
@@ -396,7 +393,7 @@ public class FloorSubsystem extends ServerPattern{
 		// Construct a message to send with data from given parameters
 		byte[] msg = new byte[TEARDOWN_SIZE];
 		msg[0] = UtilityInformation.TEARDOWN_MODE;
-		msg[1] = -1;
+		msg[1] = UtilityInformation.END_OF_MESSAGE;
 
 		// Send the signal
 		System.out.println("Sending teardown signal...");
@@ -427,7 +424,7 @@ public class FloorSubsystem extends ServerPattern{
 		msg[0] = UtilityInformation.CONFIG_MODE;
 		msg[1] = (byte) numElevators;
 		msg[2] = (byte) numFloors;
-		msg[3] = -1;
+		msg[3] = UtilityInformation.END_OF_MESSAGE;
 
 		// Send the signal
 		System.out.println("Sending configuration signal...");
@@ -465,12 +462,26 @@ public class FloorSubsystem extends ServerPattern{
 		msg[1] = (byte) sourceFloor;
 		msg[2] = (byte) diRequest.ordinal();
 		msg[3] = (byte) destFloor;
-		msg[4] = -1;
+		msg[4] = UtilityInformation.END_OF_MESSAGE;
 
 		// Send the signal
 		System.out.println("Sending elevator request...");
 		sendSignal(msg, UtilityInformation.SCHEDULER_PORT_NUM, addressToSend);
 		System.out.println("Elevator request sent...");
+	}
+	
+	public void sendErrorOccursMessage(UtilityInformation.ErrorType type, int elevatorNum) {
+	    // Construct a message to send with data from given parameters
+	    byte[] msg = new byte[REQUEST_SIZE];
+	    msg[0] = UtilityInformation.ERROR_MESSAGE_MODE;
+	    msg[1] = (byte) type.ordinal();
+	    msg[2] = (byte) elevatorNum;
+	    msg[3] = UtilityInformation.END_OF_MESSAGE;
+	    
+        // Send the signal
+        System.out.println("Sending error occurs message...");
+        sendSignal(msg, UtilityInformation.SCHEDULER_PORT_NUM, addressToSend);
+        System.out.println("Error occurs message sent...");
 	}
 
 	/**
