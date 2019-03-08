@@ -17,7 +17,7 @@ public class Scheduler extends ServerPattern {
 	enum Event {
 		MESSAGE_RECIEVED, CONFIG_MESSAGE, BUTTON_PUSHED_IN_ELEVATOR, FLOOR_SENSOR_ACTIVATED, FLOOR_REQUESTED,
 		MOVE_ELEVATOR, TEARDOWN, CONFIRM_CONFIG, ELEVATOR_STOPPED, ELEVATOR_ERROR, SEND_ELEVATOR_ERROR,
-		FIX_ELEVATOR_ERROR
+		FIX_ELEVATOR_ERROR, FIX_DOOR_ERROR
 	}
 
 	private DatagramSocket sendSocket = null;
@@ -120,7 +120,9 @@ public class Scheduler extends ServerPattern {
 				eventOccured(Event.SEND_ELEVATOR_ERROR, packet);
 
 			} else if (event.equals(Event.FIX_ELEVATOR_ERROR)) {
-				handleElevatorFixed(packet);
+				handleElevatorFixMessage(packet);
+			} else if (event.equals(Event.FIX_DOOR_ERROR)) {
+
 			}
 			currentState = State.WAITING;
 			break;
@@ -228,6 +230,8 @@ public class Scheduler extends ServerPattern {
 			eventOccured(Event.ELEVATOR_ERROR, recievedPacket);
 		} else if (mode == UtilityInformation.FIX_ERROR_MODE) {
 			eventOccured(Event.FIX_ELEVATOR_ERROR, recievedPacket);
+		} else if (mode == UtilityInformation.FIX_DOOR) {
+			eventOccured(Event.FIX_DOOR_ERROR, recievedPacket);
 		} else {
 			System.out.println(String.format("Error in readMessage: Undefined mode: %d", mode));
 		}
@@ -382,20 +386,26 @@ public class Scheduler extends ServerPattern {
 		moveToFloor(recievedPacket);
 	}
 
+	/**
+	 * This is from the Floor to the Elevator.
+	 * 
+	 * @param receivedPacket
+	 */
 	private void handleDoorStuckError(DatagramPacket receivedPacket) {
-		byte stuckDoorState = receivedPacket.getData()[1];
-
-		if (stuckDoorState == UtilityInformation.DOOR_CLOSE) {
-			closeElevatorDoors(receivedPacket);
-		} else if (stuckDoorState == UtilityInformation.DOOR_OPEN) {
-			openElevatorDoors(receivedPacket);
-		} else {
-			System.out.println("Error: Invalid Door State.");
-			socketTearDown();
-			System.exit(1);
-		}
+		sendMessage(receivedPacket.getData(), receivedPacket.getData().length, receivedPacket.getAddress(),
+				UtilityInformation.ELEVATOR_PORT_NUM);
+		algor.tempDisable();
 	}
 
+	private void handleDoorFixMessage(DatagramPacket recievedPacket) {
+		algor.resumeUsingElevator(recievedPacket.getData()[2]);
+	}
+
+	/**
+	 * This is from the Floor to the Elevator.
+	 * 
+	 * @param receivedPacket
+	 */
 	private void handleElevatorStuckError(DatagramPacket receivedPacket) {
 		byte elevatorNum = receivedPacket.getData()[2];
 		sendMessage(receivedPacket.getData(), receivedPacket.getData().length, receivedPacket.getAddress(),
@@ -403,7 +413,12 @@ public class Scheduler extends ServerPattern {
 		algor.stopUsingElevator(elevatorNum);
 	}
 
-	private void handleElevatorFixed(DatagramPacket receivedPacket) {
+	/**
+	 * This is from the Floor to the Elevator for the fatal error.
+	 * 
+	 * @param receivedPacket
+	 */
+	private void handleElevatorFixMessage(DatagramPacket receivedPacket) {
 		byte elevatorNum = receivedPacket.getData()[2];
 		sendMessage(receivedPacket.getData(), receivedPacket.getData().length, receivedPacket.getAddress(),
 				UtilityInformation.ELEVATOR_PORT_NUM);

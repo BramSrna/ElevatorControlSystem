@@ -16,11 +16,9 @@ public class UtilityInformation {
 	public enum ElevatorDirection {
 		STATIONARY, UP, DOWN
 	}
-	
+
 	public enum ErrorType {
-	    DOOR_WONT_CLOSE_ERROR,
-	    DOOR_WONT_OPEN_ERROR,
-	    ELEVATOR_STUCK_ERROR
+		DOOR_WONT_CLOSE_ERROR, DOOR_WONT_OPEN_ERROR, ELEVATOR_STUCK_ERROR
 	}
 
 	// Byte in messages used to indicate the type of message
@@ -39,6 +37,7 @@ public class UtilityInformation {
 	public final static byte ELEVATOR_STOPPED_MODE = 9;
 	public final static byte ERROR_MESSAGE_MODE = 10;
 	public final static byte FIX_ERROR_MODE = 11;
+	public final static byte FIX_DOOR = 12;
 
 	// Error Types
 	public final static byte DOOR_WONT_CLOSE_ERROR = 0;

@@ -1,3 +1,22 @@
+
+Skip to content
+
+Why GitHub?
+
+Enterprise Explore
+
+Marketplace Pricing
+
+Sign in Sign up
+
+3 0
+
+1
+
+BramSrna/ElevatorControlSystem Code Issues 0 Pull requests 0 Projects 0 Insights Join GitHub today
+
+GitHub is home to over 31 million developers working together to host and review code,manage projects,and build software together.ElevatorControlSystem/src/SchedulerAlgorithm.java @BramSrna BramSrna[task]Add pauseElevator method to algorithm 52d 4 c82 9 minutes ago @BramSrna @HaseebGitWitIt 344 lines(284 sloc)10.7 KB
+
 import java.util.ArrayList;
 
 public class SchedulerAlgorithm {
@@ -41,7 +60,7 @@ public class SchedulerAlgorithm {
 		
 		return (elevatorNum);
 	}
-	
+
 	private byte determineElevatorToGiveRequest(byte startFloor) {
         ArrayList<Integer> closestElevator = new ArrayList<Integer>();
         int closestDiff = -1;
@@ -99,8 +118,8 @@ public class SchedulerAlgorithm {
         
         return((byte) chosenElevator);
     }
-    
-    private byte addStopToElevator(byte elevatorNum, byte destFloor, byte minInd) {
+
+	private byte addStopToElevator(byte elevatorNum, byte destFloor, byte minInd) {
         byte endInd = 0;
         int closestDiff = Integer.MAX_VALUE;
         int currDiff;
@@ -328,12 +347,24 @@ public class SchedulerAlgorithm {
 	    elevatorDestinations.set(elevatorNum, new ArrayList<Byte>());
 	    elevatorDestinations.get(elevatorNum).add(currFloor);
 	    
+	    pauseElevator(elevatorNum);
+	}
+
+	public void pauseElevator(byte elevatorNum) {	    
 		elevatorUsable.set(elevatorNum, false);
 		
 		stopElevator.set(elevatorNum, true);
 	}
-	
-   public void resumeUsingElevator(byte elevatorNum) {
+
+	public void resumeUsingElevator(byte elevatorNum) {
        elevatorUsable.set(elevatorNum, true);
     }
 }
+
+©2019 GitHub,Inc.Terms Privacy Security Status Help
+
+Contact GitHub
+Pricing
+    API
+Training
+    Blog About
