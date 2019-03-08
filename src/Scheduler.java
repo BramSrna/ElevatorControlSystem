@@ -122,7 +122,7 @@ public class Scheduler extends ServerPattern {
 			} else if (event.equals(Event.FIX_ELEVATOR_ERROR)) {
 				handleElevatorFixMessage(packet);
 			} else if (event.equals(Event.FIX_DOOR_ERROR)) {
-
+				handleDoorFixMessage(packet);
 			}
 			currentState = State.WAITING;
 			break;
@@ -392,9 +392,10 @@ public class Scheduler extends ServerPattern {
 	 * @param receivedPacket
 	 */
 	private void handleDoorStuckError(DatagramPacket receivedPacket) {
+		byte elevatorNum = receivedPacket.getData()[2];
 		sendMessage(receivedPacket.getData(), receivedPacket.getData().length, receivedPacket.getAddress(),
 				UtilityInformation.ELEVATOR_PORT_NUM);
-		algor.tempDisable();
+		algor.pauseElevator(elevatorNum);
 	}
 
 	private void handleDoorFixMessage(DatagramPacket recievedPacket) {
