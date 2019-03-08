@@ -61,7 +61,7 @@ public class Elevator_Subsystem  {
 	// All events taking place in the elevator
 	enum Event {
 		CONFIG_RECIEVED, BUTTON_PUSHED_IN_ELEVATOR, ELEVATOR_MOVING, STOP_ELEVATOR, UPDATE_DEST, OPEN_DOOR, 
-		CLOSE_DOOR, ISSUE_OCCURING, ISSUE_FIXED
+		CLOSE_DOOR, ISSUE_OCCURING, ISSUE_FIXED, DOOR_ISSUE
 	}
 
 	// Start off stationary
@@ -131,6 +131,7 @@ public class Elevator_Subsystem  {
 		}
 	}
 	
+
 	/*
 	 * The way the receiving aspect of the elevator was designed is to have the
 	 * system constantly receive messages, nothing else, and then decode the
@@ -166,14 +167,14 @@ public class Elevator_Subsystem  {
 		// ALL messages except config have the current elevator in data[2]
 		if(data[0]!= UtilityInformation.CONFIG_MODE) {
 			currentElevatorToWork = data[2];
+			
+			// CHECK IF THE ELEVATOR CORRESPONDING TO THE REQUEST IS IN AN ERROR STATE
+			if(this.checkERROR(data)) {
+				return; // leave method if it is an error state	
+			} // If the message received while in error state is not the fixing message, then simply
+				// return and receive the next message (doing nothing)
+			
 		}
-		
-		// CHECK IF THE ELEVATOR CORRESPONDING TO THE REQUEST IS IN AN ERROR STATE
-		if(this.checkERROR(data)) {
-			return; // leave method if it is an error state	
-		} // If the message received while in error state is not the fixing message, then simply
-			// return and receive the next message (doing nothing)
-		
 		
 		String check = this.validPacket(data);
 		if (check.equals("invalid")) {
@@ -210,7 +211,11 @@ public class Elevator_Subsystem  {
 			}
 		}
 		
-		if(check.equals("door wont open")|| check.equals("door wont close") || check.equals("elevator stuck")) {
+		if(check.equals("door wont open")|| check.equals("door wont close")) {
+			currentState = State.ANALYZING_MESSAGE;
+			eventOccured(Event.DOOR_ISSUE, receivePacket, check, data);
+		}
+		if(check.equals("elevator stuck")){
 			currentState = State.ANALYZING_MESSAGE;
 			eventOccured(Event.ISSUE_OCCURING, receivePacket, check, data);
 		}
@@ -245,6 +250,9 @@ public class Elevator_Subsystem  {
 			}
 			if(event.equals(Event.ISSUE_OCCURING)) {
 				performAction("error", data);
+			}
+			if(event.equals(Event.DOOR_ISSUE)) {
+				performAction("door issue", data);
 			}
 			if(event.equals(Event.ISSUE_FIXED)) {
 				performAction("issue fixed", data);
@@ -344,6 +352,33 @@ public class Elevator_Subsystem  {
 		if(str.equals("error")) {
 			System.out.print(currentElevatorToWork + " ");
 			allElevators.get(currentElevatorToWork).brokenElevator();
+		}
+		if(str.equals("door issue")) {
+			Random r = new Random();
+			if(data[1]==UtilityInformation.DOOR_WONT_OPEN_ERROR) {
+				allElevators.get(currentElevatorToWork).isDamaged = true;
+				while(allElevators.get(currentElevatorToWork).isDamaged == true) {
+					float chance = r.nextFloat();
+					if(chance<= 0.40f){
+						allElevators.get(currentElevatorToWork).openDoor();
+						allElevators.get(currentElevatorToWork).isDamaged = false;
+					}
+				}
+				byte[] issConf = {UtilityInformation.FIX_DOOR, currentElevatorToWork, -1};
+				this.sendData(issConf, schedulerIP, schedulerPort);		
+			}
+			if(data[1]==UtilityInformation.DOOR_WONT_CLOSE_ERROR) {
+				allElevators.get(currentElevatorToWork).isDamaged = true;
+				while(allElevators.get(currentElevatorToWork).isDamaged == true) {
+					float chance = r.nextFloat();
+					if(chance<= 0.40f){
+						allElevators.get(currentElevatorToWork).closeDoor();
+						allElevators.get(currentElevatorToWork).isDamaged = false;
+					}
+				}
+				byte[] issConf = {UtilityInformation.FIX_DOOR, currentElevatorToWork, -1};
+				this.sendData(issConf, schedulerIP, schedulerPort);
+			}
 		}
 		if(str.equals("issue fixed")) {
 			System.out.print(currentElevatorToWork + " ");
