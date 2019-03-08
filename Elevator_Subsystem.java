@@ -364,7 +364,8 @@ public class Elevator_Subsystem  {
 						allElevators.get(currentElevatorToWork).isDamaged = false;
 					}
 				}
-				
+				byte[] issConf = {UtilityInformation.FIX_DOOR, currentElevatorToWork, -1};
+				this.sendData(issConf, schedulerIP, schedulerPort);		
 			}
 			if(data[1]==UtilityInformation.DOOR_WONT_CLOSE_ERROR) {
 				allElevators.get(currentElevatorToWork).isDamaged = true;
@@ -375,6 +376,8 @@ public class Elevator_Subsystem  {
 						allElevators.get(currentElevatorToWork).isDamaged = false;
 					}
 				}
+				byte[] issConf = {UtilityInformation.FIX_DOOR, currentElevatorToWork, -1};
+				this.sendData(issConf, schedulerIP, schedulerPort);
 			}
 		}
 		if(str.equals("issue fixed")) {
