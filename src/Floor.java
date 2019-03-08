@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Random;
 
 public class Floor implements Runnable {
 	private FloorSubsystem controller; // The FloorSubsystem that this object belongs to
@@ -82,9 +83,18 @@ public class Floor implements Runnable {
 		request[1] = this.getFloorNumber();
 		request[2] = direction.ordinal();
 		request[3] = endFloor;
-		request[4] = -1;
+		request[4] = (int) UtilityInformation.END_OF_MESSAGE;
 
 		serviceRequests.add(request);
+	}
+	
+	public void createErrorOccuranceRequest(int timeOfReq, UtilityInformation.ErrorType type) {
+	    Integer[] request = new Integer[3];
+	    request[0] = timeOfReq;
+	    request[1] = type.ordinal();
+	    request[2] = (int) UtilityInformation.END_OF_MESSAGE;
+	    
+	    serviceRequests.add(request);
 	}
 	
 	/**
@@ -345,16 +355,30 @@ public class Floor implements Runnable {
 	    
 	    Integer[] request = serviceRequests.get(0);
 	    
-	    byte[] signal = new byte[4];
+	    if (request.length == 3) {
+	        byte[] signal = new byte[3];
+	        
+	        signal[0] = (byte)(int)request[1];
+	        signal[1] = (byte)(int)request[2];
+	        signal[2] = (byte)(int)request[3];
+	        
+	        Random rand = new Random();
+	        
+	        controller.sendErrorOccursMessage(UtilityInformation.ErrorType.values()[request[1]], rand.nextInt(numElevatorShafts));
+	    } else {
+	        byte[] signal = new byte[4];
+	        
+	        signal[0] = (byte)(int)request[1];
+	        signal[1] = (byte)(int)request[2];
+	        signal[2] = (byte)(int)request[3];
+	        signal[3] = (byte)(int)request[4];
+	        
+	        controller.sendElevatorRequest(request[1], 
+	                                       request[3], 
+	                                       UtilityInformation.ElevatorDirection.values()[request[2]]);
+	    }
 	    
-	    signal[0] = (byte)(int)request[1];
-	    signal[1] = (byte)(int)request[2];
-	    signal[2] = (byte)(int)request[3];
-	    signal[3] = (byte)(int)request[4];
-	    
-	    controller.sendElevatorRequest(request[1], 
-                        	           request[3], 
-                        	           UtilityInformation.ElevatorDirection.values()[request[2]]);
+
 	    
 	    serviceRequests.remove(0);
 	}

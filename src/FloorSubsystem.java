@@ -228,9 +228,14 @@ public class FloorSubsystem extends ServerPattern{
 			for (Floor floor : floors) {
 				if (floor.getFloorNumber() == vals[1]) {
 				    System.out.println(String.format("TIME: %d", vals[0] - timeOfFirstRequest));
-					floor.createElevatorRequest(vals[0] - timeOfFirstRequest, 
-                    					        UtilityInformation.ElevatorDirection.values()[vals[2]], 
-                    					        vals[3]);
+				    
+				    if (vals[2] == -1) {
+				        
+				    } else {
+				        floor.createElevatorRequest(vals[0] - timeOfFirstRequest, 
+                                                    UtilityInformation.ElevatorDirection.values()[vals[2]], 
+                                                    vals[3]);
+				    }
 				}
 			}
 
@@ -258,7 +263,13 @@ public class FloorSubsystem extends ServerPattern{
 		System.out.println("Finished parsing test file.");
 	}
 	
-	private int[] parseInputFileLine(String line) {        
+	private int[] parseInputFileLine(String line) { 
+        int[] returnVal = new int[4];
+        
+        for (int i = 0; i < returnVal.length; i++) {
+            returnVal[i] = -1;
+        }
+        
         String[] info = line.split(" ");
 
         // Get all important parts of data
@@ -266,7 +277,7 @@ public class FloorSubsystem extends ServerPattern{
         String startFloorStr = info[1];
         String directionStr = info[2];
         String finalFloorStr = info[3];
-
+        
         // Convert the data to the proper format
         // Time format is hh:mm:ss.mmmm
         String[] timeParts = timeStr.split(":");
@@ -285,31 +296,37 @@ public class FloorSubsystem extends ServerPattern{
         milliSecInt += secInt * 1000;
         milliSecInt += minInt * 60 * 1000;
         milliSecInt += hourInt * 60 * 60 * 1000;
-
-        int startFloorInt = 0;
-        try {
-            startFloorInt = Integer.parseInt(startFloorStr);
-        } catch (Exception e) {
-            System.out.println("Error: Start floor must be an integer.");
-        }
-
-        int finalFloorInt = 0;
-        try {
-            finalFloorInt = Integer.parseInt(finalFloorStr);
-        } catch (Exception e) {
-            System.out.println("Error: Start floor must be an integer.");
-        }
-
-        UtilityInformation.ElevatorDirection directionEnum = UtilityInformation.ElevatorDirection.valueOf(directionStr.toUpperCase());
         
-        int[] returnVal = new int[4];
-        returnVal[0] = milliSecInt;
-        returnVal[1] = startFloorInt;
-        returnVal[2] = finalFloorInt;
-        returnVal[3] = directionEnum.ordinal();
+        // Check if the current line is an error occurrence or an elevator request
+        try {
+            UtilityInformation.ErrorType errorType = UtilityInformation.ErrorType.valueOf(startFloorStr.toUpperCase());
+            
+            returnVal[0] = milliSecInt;
+            returnVal[1] = errorType.ordinal();
+        } catch (Exception e1) {
+            int startFloorInt = 0;
+            try {
+                startFloorInt = Integer.parseInt(startFloorStr);
+            } catch (Exception e2) {
+                System.out.println("Error: Start floor must be an integer.");
+            }
+
+            int finalFloorInt = 0;
+            try {
+                finalFloorInt = Integer.parseInt(finalFloorStr);
+            } catch (Exception e3) {
+                System.out.println("Error: Start floor must be an integer.");
+            }
+
+            UtilityInformation.ElevatorDirection directionEnum = UtilityInformation.ElevatorDirection.valueOf(directionStr.toUpperCase());
+            
+            returnVal[0] = milliSecInt;
+            returnVal[1] = startFloorInt;
+            returnVal[2] = finalFloorInt;
+            returnVal[3] = directionEnum.ordinal();
+        }
         
         return(returnVal);
-
 	}
 
 	/**
