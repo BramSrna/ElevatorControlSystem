@@ -64,6 +64,7 @@ public class Scheduler extends ServerPattern {
 	 * @param packet
 	 */
 	private void eventOccured(Event event, DatagramPacket packet) {
+		// TODO Try and clean this up
 		switch (currentState) {
 		case READING_MESSAGE:
 			if (event.equals(Event.CONFIG_MESSAGE)) {
