@@ -16,7 +16,8 @@ public class Scheduler extends ServerPattern {
 	// External and internal events
 	enum Event {
 		MESSAGE_RECIEVED, CONFIG_MESSAGE, BUTTON_PUSHED_IN_ELEVATOR, FLOOR_SENSOR_ACTIVATED, FLOOR_REQUESTED,
-		MOVE_ELEVATOR, TEARDOWN, CONFIRM_CONFIG, ELEVATOR_STOPPED
+		MOVE_ELEVATOR, TEARDOWN, CONFIRM_CONFIG, ELEVATOR_STOPPED, ELEVATOR_ERROR, SEND_ELEVATOR_ERROR,
+		FIX_ELEVATOR_ERROR
 	}
 
 	private DatagramSocket sendSocket = null;
@@ -104,6 +105,21 @@ public class Scheduler extends ServerPattern {
 				eventOccured(Event.CONFIRM_CONFIG, packet);
 			} else if (event.equals(Event.ELEVATOR_STOPPED)) {
 				currentState = State.RESPONDING_TO_MESSAGE;
+			} else if (event.equals(Event.ELEVATOR_ERROR)) {
+				currentState = State.RESPONDING_TO_MESSAGE;
+				byte errorType = packet.getData()[1];
+				if (errorType == UtilityInformation.DOOR_WONT_CLOSE_ERROR
+						|| errorType == UtilityInformation.DOOR_WONT_OPEN_ERROR) {
+					handleDoorStuckError(packet);
+				} else if (errorType == UtilityInformation.ELEVATOR_STUCK_ERROR) {
+					handleElevatorStuckError(packet);
+				} else {
+					System.out.println("\n\nThat is an invalid error type!\n\n");
+				}
+				eventOccured(Event.SEND_ELEVATOR_ERROR, packet);
+
+			} else if (event.equals(Event.FIX_ELEVATOR_ERROR)) {
+				handleElevatorFixed(packet);
 			}
 			currentState = State.WAITING;
 			break;
@@ -115,7 +131,7 @@ public class Scheduler extends ServerPattern {
 			break;
 		case RESPONDING_TO_MESSAGE:
 			if (event.equals(Event.MOVE_ELEVATOR) || event.equals(Event.CONFIG_MESSAGE)
-					|| event.equals(Event.CONFIRM_CONFIG)) {
+					|| event.equals(Event.CONFIRM_CONFIG) || event.equals(Event.SEND_ELEVATOR_ERROR)) {
 				currentState = State.WAITING;
 			}
 			break;
@@ -207,6 +223,10 @@ public class Scheduler extends ServerPattern {
 			eventOccured(Event.CONFIRM_CONFIG, recievedPacket);
 		} else if (mode == UtilityInformation.ELEVATOR_STOPPED_MODE) { // 9
 			eventOccured(Event.ELEVATOR_STOPPED, recievedPacket);
+		} else if (mode == UtilityInformation.ERROR_MESSAGE_MODE) {
+			eventOccured(Event.ELEVATOR_ERROR, recievedPacket);
+		} else if (mode == UtilityInformation.FIX_ERROR_MODE) {
+			eventOccured(Event.FIX_ELEVATOR_ERROR, recievedPacket);
 		} else {
 			System.out.println(String.format("Error in readMessage: Undefined mode: %d", mode));
 		}
