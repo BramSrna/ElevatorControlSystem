@@ -1,22 +1,3 @@
-
-Skip to content
-
-Why GitHub?
-
-Enterprise Explore
-
-Marketplace Pricing
-
-Sign in Sign up
-
-3 0
-
-1
-
-BramSrna/ElevatorControlSystem Code Issues 0 Pull requests 0 Projects 0 Insights Join GitHub today
-
-GitHub is home to over 31 million developers working together to host and review code,manage projects,and build software together.ElevatorControlSystem/src/SchedulerAlgorithm.java @BramSrna BramSrna[task]Add pauseElevator method to algorithm 52d 4 c82 9 minutes ago @BramSrna @HaseebGitWitIt 344 lines(284 sloc)10.7 KB
-
 import java.util.ArrayList;
 
 public class SchedulerAlgorithm {
@@ -33,7 +14,7 @@ public class SchedulerAlgorithm {
 		stopElevator = new ArrayList<Boolean>();
 		elevatorDestinations = new ArrayList<ArrayList<Byte>>();
 		elevatorUsable = new ArrayList<Boolean>();
-		
+
 		setNumberOfElevators(numElevators);
 	}
 
@@ -50,116 +31,116 @@ public class SchedulerAlgorithm {
 				+ " with destination " + destination);
 
 		byte elevatorNum = determineElevatorToGiveRequest(source);
-		
-        if (!elevatorDestinations.get(elevatorNum).contains(destination)) {
-            elevatorDestinations.get(elevatorNum).add(destination);
-        }
-		
+
+		if (!elevatorDestinations.get(elevatorNum).contains(destination)) {
+			elevatorDestinations.get(elevatorNum).add(destination);
+		}
+
 		byte index = addStopToElevator(elevatorNum, source, (byte) 0);
 		addStopToElevator(elevatorNum, destination, index);
-		
+
 		return (elevatorNum);
 	}
 
 	private byte determineElevatorToGiveRequest(byte startFloor) {
-        ArrayList<Integer> closestElevator = new ArrayList<Integer>();
-        int closestDiff = -1;
-        int chosenElevator = -1;
-        int currDiff;
-        
-        // Add destination to closest elevator
-        for (int i = 0; i < currentFloor.size(); i++) {
-            currDiff = Math.abs(currentFloor.get(i) - startFloor);
-            if (elevatorUsable.get(i) && 
-                    ((closestDiff == -1) || (currDiff <= closestDiff))) { // same as below
-                closestElevator.add(i);
-                closestDiff = currDiff;
-            }
-        }
-        
-        // Break ties by prioritizing elevators above the start floor
-        if (closestElevator.size() > 1) {
-            ArrayList<Integer> indicesToRemove = new ArrayList<Integer>();
-            
-            for (int i = 0; i < closestElevator.size(); i++) {
-                if (currentFloor.get(closestElevator.get(i)) < startFloor) {
-                    indicesToRemove.add(i);
-                }
-            }
-            
-            if (indicesToRemove.size() < closestElevator.size()) {
-                for (int index : indicesToRemove) {
-                    closestElevator.set(index, null);
-                }
-            }
-            
-            while(closestElevator.remove(null)) {};
-            
-            // Break ties by prioritizing shortest queues
-            int shortestQueue = -1;
-            int currQueueSize;
-            
-            if (closestElevator.size() > 1) {
-                for (int i = 0; i < closestElevator.size(); i++) {
-                    currQueueSize = elevatorStops.get(closestElevator.get(i)).size();
-                    if ((shortestQueue == -1) || 
-                        (currQueueSize < shortestQueue)) {
-                        chosenElevator = closestElevator.get(i);
-                        shortestQueue = currQueueSize;
-                        
-                    }
-                }
-            } else {
-                chosenElevator = closestElevator.get(0);
-            }
-        } else {
-            chosenElevator = closestElevator.get(0);
-        }
-        
-        return((byte) chosenElevator);
-    }
+		ArrayList<Integer> closestElevator = new ArrayList<Integer>();
+		int closestDiff = -1;
+		int chosenElevator = -1;
+		int currDiff;
+
+		// Add destination to closest elevator
+		for (int i = 0; i < currentFloor.size(); i++) {
+			currDiff = Math.abs(currentFloor.get(i) - startFloor);
+			if (elevatorUsable.get(i) && ((closestDiff == -1) || (currDiff <= closestDiff))) { // same as below
+				closestElevator.add(i);
+				closestDiff = currDiff;
+			}
+		}
+
+		// Break ties by prioritizing elevators above the start floor
+		if (closestElevator.size() > 1) {
+			ArrayList<Integer> indicesToRemove = new ArrayList<Integer>();
+
+			for (int i = 0; i < closestElevator.size(); i++) {
+				if (currentFloor.get(closestElevator.get(i)) < startFloor) {
+					indicesToRemove.add(i);
+				}
+			}
+
+			if (indicesToRemove.size() < closestElevator.size()) {
+				for (int index : indicesToRemove) {
+					closestElevator.set(index, null);
+				}
+			}
+
+			while (closestElevator.remove(null)) {
+			}
+			;
+
+			// Break ties by prioritizing shortest queues
+			int shortestQueue = -1;
+			int currQueueSize;
+
+			if (closestElevator.size() > 1) {
+				for (int i = 0; i < closestElevator.size(); i++) {
+					currQueueSize = elevatorStops.get(closestElevator.get(i)).size();
+					if ((shortestQueue == -1) || (currQueueSize < shortestQueue)) {
+						chosenElevator = closestElevator.get(i);
+						shortestQueue = currQueueSize;
+
+					}
+				}
+			} else {
+				chosenElevator = closestElevator.get(0);
+			}
+		} else {
+			chosenElevator = closestElevator.get(0);
+		}
+
+		return ((byte) chosenElevator);
+	}
 
 	private byte addStopToElevator(byte elevatorNum, byte destFloor, byte minInd) {
-        byte endInd = 0;
-        int closestDiff = Integer.MAX_VALUE;
-        int currDiff;
-        byte closestInd = 0;
-        
-        ArrayList<Byte> currDests = elevatorStops.get(elevatorNum);
-        
-        if (currDests.size() == 0) {
-            currDests.add(destFloor);
-        } else {
-            if (!(currDests.contains(destFloor))) {   
-                endInd = -1;
-                for(byte i = minInd; i < currDests.size(); i++) {
-                    if (i != currDests.size() - 1) {
-                        if (((currDests.get(i) < destFloor) && (currDests.get(i + 1) > destFloor)) ||
-                            ((currDests.get(i) > destFloor) && (currDests.get(i + 1) < destFloor))) {
-                            endInd = (byte) (i + 1);
-                        }
-                    }
-                    
-                    currDiff = Math.abs(currDests.get(i) - destFloor);
-                    if (currDiff < closestDiff) {
-                        closestDiff = currDiff;
-                        closestInd = i;
-                    }
-                    
-                }
-                
-                if (endInd == -1) {
-                    endInd = (byte) (closestInd + 1);
-                }
-                
-                currDests.add(endInd, destFloor);
-            }
-        }
-        
-        System.out.println("New request list: " + elevatorStops + "\n");        
-        
-        return(endInd);
-    }
+		byte endInd = 0;
+		int closestDiff = Integer.MAX_VALUE;
+		int currDiff;
+		byte closestInd = 0;
+
+		ArrayList<Byte> currDests = elevatorStops.get(elevatorNum);
+
+		if (currDests.size() == 0) {
+			currDests.add(destFloor);
+		} else {
+			if (!(currDests.contains(destFloor))) {
+				endInd = -1;
+				for (byte i = minInd; i < currDests.size(); i++) {
+					if (i != currDests.size() - 1) {
+						if (((currDests.get(i) < destFloor) && (currDests.get(i + 1) > destFloor))
+								|| ((currDests.get(i) > destFloor) && (currDests.get(i + 1) < destFloor))) {
+							endInd = (byte) (i + 1);
+						}
+					}
+
+					currDiff = Math.abs(currDests.get(i) - destFloor);
+					if (currDiff < closestDiff) {
+						closestDiff = currDiff;
+						closestInd = i;
+					}
+
+				}
+
+				if (endInd == -1) {
+					endInd = (byte) (closestInd + 1);
+				}
+
+				currDests.add(endInd, destFloor);
+			}
+		}
+
+		System.out.println("New request list: " + elevatorStops + "\n");
+
+		return (endInd);
+	}
 
 	/**
 	 * Scheduler has been informed where the elevator is. Update the stopElevator
@@ -171,16 +152,15 @@ public class SchedulerAlgorithm {
 	public void elevatorHasReachedFloor(Byte floorNum, Byte elevatorNum) {
 		System.out.println("Elevator " + elevatorNum + " has reached floor: " + floorNum);
 
-		if ((elevatorStops.get(elevatorNum).size() > 0) &&
-		    (elevatorStops.get(elevatorNum).get(0) == floorNum)) {
+		if ((elevatorStops.get(elevatorNum).size() > 0) && (elevatorStops.get(elevatorNum).get(0) == floorNum)) {
 			System.out.println("Current floor is a destination.");
 			stopElevator.set(elevatorNum, true);
 			removeFloorFromDestinations(floorNum, elevatorNum);
 		} else {
 			stopElevator.set(elevatorNum, false);
 		}
-		
-		currentFloor.set(elevatorNum, floorNum);		
+
+		currentFloor.set(elevatorNum, floorNum);
 	}
 
 	/**
@@ -323,48 +303,40 @@ public class SchedulerAlgorithm {
 	}
 
 	public void stopUsingElevator(byte elevatorNum) {
-	    int ind = 0;
-	    int shortestQueue = -1;
-	    int shortestQueueSize = -1;
-	    
-	    while (ind < elevatorStops.size()) {
-	        if ((ind != elevatorNum) && 
-	                ((shortestQueueSize == -1) || (shortestQueueSize < elevatorStops.get(ind).size()))) {
-	            shortestQueueSize = elevatorStops.get(ind).size();
-	            shortestQueue = ind;
-	        }
-	        ind++;
-	    }
-	    
-        ArrayList<Byte> currStops = elevatorStops.get(elevatorNum);	    
-	    elevatorStops.get(shortestQueue).addAll(currStops);
-	    
-	    byte currFloor = currentFloor.get(elevatorNum);
-	    
-	    elevatorStops.set(elevatorNum, new ArrayList<Byte>());
-	    elevatorStops.get(elevatorNum).add(currFloor);
-	    
-	    elevatorDestinations.set(elevatorNum, new ArrayList<Byte>());
-	    elevatorDestinations.get(elevatorNum).add(currFloor);
-	    
-	    pauseElevator(elevatorNum);
+		int ind = 0;
+		int shortestQueue = -1;
+		int shortestQueueSize = -1;
+
+		while (ind < elevatorStops.size()) {
+			if ((ind != elevatorNum)
+					&& ((shortestQueueSize == -1) || (shortestQueueSize < elevatorStops.get(ind).size()))) {
+				shortestQueueSize = elevatorStops.get(ind).size();
+				shortestQueue = ind;
+			}
+			ind++;
+		}
+
+		ArrayList<Byte> currStops = elevatorStops.get(elevatorNum);
+		elevatorStops.get(shortestQueue).addAll(currStops);
+
+		byte currFloor = currentFloor.get(elevatorNum);
+
+		elevatorStops.set(elevatorNum, new ArrayList<Byte>());
+		elevatorStops.get(elevatorNum).add(currFloor);
+
+		elevatorDestinations.set(elevatorNum, new ArrayList<Byte>());
+		elevatorDestinations.get(elevatorNum).add(currFloor);
+
+		pauseElevator(elevatorNum);
 	}
 
-	public void pauseElevator(byte elevatorNum) {	    
+	public void pauseElevator(byte elevatorNum) {
 		elevatorUsable.set(elevatorNum, false);
-		
+
 		stopElevator.set(elevatorNum, true);
 	}
 
 	public void resumeUsingElevator(byte elevatorNum) {
-       elevatorUsable.set(elevatorNum, true);
-    }
+		elevatorUsable.set(elevatorNum, true);
+	}
 }
-
-©2019 GitHub,Inc.Terms Privacy Security Status Help
-
-Contact GitHub
-Pricing
-    API
-Training
-    Blog About
