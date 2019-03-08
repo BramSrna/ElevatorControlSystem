@@ -10,7 +10,7 @@ public class ElevatorTests {
 	    void setUp() throws Exception {
 	        Elevator_Subsystem controller = new Elevator_Subsystem();
 	        
-	        elevator = new Elevator(controller, 0); //Elevator #0
+	        elevator = new Elevator(0); //Elevator #0
 	    }
 	    
 	    @AfterEach

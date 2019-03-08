@@ -355,24 +355,11 @@ public class Floor implements Runnable {
 	    
 	    Integer[] request = serviceRequests.get(0);
 	    
-	    if (request.length == 3) {
-	        byte[] signal = new byte[3];
-	        
-	        signal[0] = (byte)(int)request[1];
-	        signal[1] = (byte)(int)request[2];
-	        signal[2] = (byte)(int)request[3];
-	        
+	    if (request.length == 3) {	        
 	        Random rand = new Random();
 	        
 	        controller.sendErrorOccursMessage(UtilityInformation.ErrorType.values()[request[1]], rand.nextInt(numElevatorShafts));
-	    } else {
-	        byte[] signal = new byte[4];
-	        
-	        signal[0] = (byte)(int)request[1];
-	        signal[1] = (byte)(int)request[2];
-	        signal[2] = (byte)(int)request[3];
-	        signal[3] = (byte)(int)request[4];
-	        
+	    } else {	        
 	        controller.sendElevatorRequest(request[1], 
 	                                       request[3], 
 	                                       UtilityInformation.ElevatorDirection.values()[request[2]]);

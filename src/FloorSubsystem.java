@@ -230,11 +230,12 @@ public class FloorSubsystem extends ServerPattern{
 				    System.out.println(String.format("TIME: %d", vals[0] - timeOfFirstRequest));
 				    
 				    if (vals[2] == -1) {
-				        
+				        floor.createErrorOccuranceRequest(vals[0] - timeOfFirstRequest, 
+				        								  UtilityInformation.ErrorType.values()[vals[1]]);
 				    } else {
 				        floor.createElevatorRequest(vals[0] - timeOfFirstRequest, 
-                                                    UtilityInformation.ElevatorDirection.values()[vals[2]], 
-                                                    vals[3]);
+                                                    UtilityInformation.ElevatorDirection.values()[vals[3]], 
+                                                    vals[2]);
 				    }
 				}
 			}
@@ -275,8 +276,6 @@ public class FloorSubsystem extends ServerPattern{
         // Get all important parts of data
         String timeStr = info[0];
         String startFloorStr = info[1];
-        String directionStr = info[2];
-        String finalFloorStr = info[3];
         
         // Convert the data to the proper format
         // Time format is hh:mm:ss.mmmm
@@ -304,6 +303,9 @@ public class FloorSubsystem extends ServerPattern{
             returnVal[0] = milliSecInt;
             returnVal[1] = errorType.ordinal();
         } catch (Exception e1) {
+            String directionStr = info[2];
+            String finalFloorStr = info[3];
+            
             int startFloorInt = 0;
             try {
                 startFloorInt = Integer.parseInt(startFloorStr);
