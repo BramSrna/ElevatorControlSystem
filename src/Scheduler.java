@@ -398,11 +398,15 @@ public class Scheduler extends ServerPattern {
 
 	private void handleElevatorStuckError(DatagramPacket receivedPacket) {
 		byte elevatorNum = receivedPacket.getData()[2];
+		sendMessage(receivedPacket.getData(), receivedPacket.getData().length, receivedPacket.getAddress(),
+				UtilityInformation.ELEVATOR_PORT_NUM);
 		algor.stopUsingElevator(elevatorNum);
 	}
 
 	private void handleElevatorFixed(DatagramPacket receivedPacket) {
 		byte elevatorNum = receivedPacket.getData()[2];
+		sendMessage(receivedPacket.getData(), receivedPacket.getData().length, receivedPacket.getAddress(),
+				UtilityInformation.ELEVATOR_PORT_NUM);
 		algor.resumeUsingElevator(elevatorNum);
 	}
 
