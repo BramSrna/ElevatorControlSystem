@@ -328,12 +328,16 @@ public class SchedulerAlgorithm {
 	    elevatorDestinations.set(elevatorNum, new ArrayList<Byte>());
 	    elevatorDestinations.get(elevatorNum).add(currFloor);
 	    
+	    pauseElevator(elevatorNum);
+	}
+	
+	public void pauseElevator(byte elevatorNum) {	    
 		elevatorUsable.set(elevatorNum, false);
 		
 		stopElevator.set(elevatorNum, true);
 	}
 	
-   public void resumeUsingElevator(byte elevatorNum) {
+    public void resumeUsingElevator(byte elevatorNum) {
        elevatorUsable.set(elevatorNum, true);
     }
 }
