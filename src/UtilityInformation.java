@@ -39,6 +39,7 @@ public class UtilityInformation {
 	public final static byte ELEVATOR_STOPPED_MODE = 9;
 	public final static byte ERROR_MESSAGE_MODE = 10;
 	public final static byte FIX_ERROR_MODE = 11;
+	public final static byte FIX_DOOR = 12;
 
 	// Error Types
 	public final static byte DOOR_WONT_CLOSE_ERROR = 0;
