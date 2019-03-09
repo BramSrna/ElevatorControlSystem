@@ -66,6 +66,14 @@ Running the project:
 	- The Scheduler will receive the requests and then use this information to control the elevator(s).
 	- The Scheduler will send instructions to the Elevator system and FloorSubsystem containing movement requests, button and lamp states, door operations, and other important information.
 	- Once the final request is complete, the user can then exit the program, causing a teardown signal to be sent through the system, exiting all running files.
+	
+Changes introduced in iteration 3:
+	Added error handling to the system.
+	Errors are fed into the system through the input file.
+	The following error types are handled: Elevator Stuck/Arrival Sensor Not Workink, Door Stuck Open, Door Stuck Close
+	The errors are handled as follows:
+		Elevator Stuck/Arrival Sensor Not Working: Elevator is disabled in the Scheduler and will stop working, all stops on the broken Elevator are removed and added to a new Elevator.
+		Door Stuck Open + Door Stuck Close: Elevator will continuously attempt to fix the door with a predetermined success rate. Stops are left on the Elevator. Amounts to pausing the Elevator.
 
   Responsibilities:
   Iteration 1: 
@@ -83,6 +91,18 @@ Running the project:
 
 
   Iteration 2: 
+
+    Samy Ibrahim (101037927): Elevator.java, ElevatorSubsystem.java, TestHost.java, UtilityInformation.java, Elevator UML Class diagram, Sequence diagram and State diagram
+    
+    Tri Nhan (101023872) : Floor.java, FloorSubsystem.java, FloorSubsystemTests.java, TestHost.java, UserInterface.java, UtilityInformation.java, ServerPattern.java, GUI, Floor UML diagram
+
+    Abraham Srna (100997482) : Floor.java, FloorSubsystem.java, FloorSubsystemTests.java, TestHost.java, UserInterface.java, UtilityInformation.java, ServerPattern.java, Floor UML diagram
+
+    Haseeb Khan(101009713) : Scheduler.java, SchedulerTest.java, TestHost.java, UtilityInformation.java, ServerPattern.java, Scheduler UML diagram, Scheduler State diagram
+    
+    Hashim Hussen (100996269) : Elevator.java, ElevatorSubsystemTest.java, ElevatorTests.java testHost.java, Elevator UML and State
+
+  Iteration 3: 
 
     Samy Ibrahim (101037927): Elevator.java, ElevatorSubsystem.java, TestHost.java, UtilityInformation.java, Elevator UML Class diagram, Sequence diagram and State diagram
     
