@@ -194,7 +194,8 @@ public class SchedulerAlgorithm {
 	 * @return
 	 */
 	public UtilityInformation.ElevatorDirection whatDirectionShouldTravel(byte elevatorNum) {
-		if (elevatorStops.get(elevatorNum).size() != 0) {
+		if ((elevatorStops.get(elevatorNum).size() != 0) && 
+		        (elevatorUsable.get(elevatorNum) == true)) {
 			int nextFloor = elevatorStops.get(elevatorNum).get(0);
 
 			if (nextFloor > currentFloor.get(elevatorNum)) {
@@ -317,6 +318,7 @@ public class SchedulerAlgorithm {
 		}
 
 		ArrayList<Byte> currStops = elevatorStops.get(elevatorNum);
+	    elevatorStops.get(shortestQueue).add(currentFloor.get(elevatorNum));
 		elevatorStops.get(shortestQueue).addAll(currStops);
 
 		byte currFloor = currentFloor.get(elevatorNum);

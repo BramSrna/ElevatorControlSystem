@@ -344,30 +344,8 @@ public class Elevator_Subsystem  {
 			allElevators.get(currentElevatorToWork).brokenElevator();
 		}
 		if(str.equals("door issue")) {
-			Random r = new Random();
-			if(data[1]==UtilityInformation.DOOR_WONT_OPEN_ERROR) {
-				allElevators.get(currentElevatorToWork).isDamaged = true;
-				while(allElevators.get(currentElevatorToWork).isDamaged == true) {
-					float chance = r.nextFloat();
-					if(chance<= 0.40f){
-						allElevators.get(currentElevatorToWork).openDoor();
-						allElevators.get(currentElevatorToWork).isDamaged = false;
-					}
-				}
-				byte[] issConf = {UtilityInformation.FIX_DOOR, currentElevatorToWork, -1};
-				this.sendData(issConf, schedulerIP, schedulerPort);		
-			}
-			if(data[1]==UtilityInformation.DOOR_WONT_CLOSE_ERROR) {
-				allElevators.get(currentElevatorToWork).isDamaged = true;
-				while(allElevators.get(currentElevatorToWork).isDamaged == true) {
-					float chance = r.nextFloat();
-					if(chance<= 0.40f){
-						allElevators.get(currentElevatorToWork).closeDoor();
-						allElevators.get(currentElevatorToWork).isDamaged = false;
-					}
-				}
-				byte[] issConf = {UtilityInformation.FIX_DOOR, currentElevatorToWork, -1};
-				this.sendData(issConf, schedulerIP, schedulerPort);
+			if ((data[1]==UtilityInformation.DOOR_WONT_OPEN_ERROR) || (data[1]==UtilityInformation.DOOR_WONT_CLOSE_ERROR)) {
+			    allElevators.get(currentElevatorToWork).fixDoorStuckError(data[1]);	
 			}
 		}
 		if(str.equals("issue fixed")) {
@@ -375,6 +353,11 @@ public class Elevator_Subsystem  {
 			allElevators.get(currentElevatorToWork).elevatorFixed();
 		}
 
+	}
+	
+	public void sendElevatorDoorFixedMessage(int elevatorNum) {
+	    byte[] issConf = {UtilityInformation.FIX_DOOR, (byte) elevatorNum, -1};
+        this.sendData(issConf, schedulerIP, schedulerPort);
 	}
 	
     public void sendFloorSensorMessage(int elevatorNum) {

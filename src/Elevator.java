@@ -1,3 +1,5 @@
+import java.util.Random;
+
 /*
  * SYSC 3303 Elevator Group Project
  * Elevator.java
@@ -166,6 +168,42 @@ public class Elevator {
 	public void elevatorFixed() {
 		System.out.println("Elevator is Fixed");
 		inError = false;
+	}
+	
+	public void fixDoorStuckError(byte doorState) {
+	    this.isDamaged = true;
+	    
+	    new Thread(new Runnable() {
+            public void run()  {
+                Random r = new Random();
+                boolean broken = true;
+                float chance;
+                
+                float percentChanceFixDoor = 0.4f;
+                
+                while(broken) {
+                    System.out.println("Attempting to fix door...");
+                    chance = r.nextFloat();
+                    if(chance <= percentChanceFixDoor){
+                        broken = false;
+                    }
+                }
+            }
+        }).start();
+	    
+	    if (doorState == UtilityInformation.DOOR_WONT_CLOSE_ERROR) {
+	        this.closeDoor();
+	    } else if (doorState == UtilityInformation.DOOR_WONT_OPEN_ERROR) {
+	        this.openDoor();
+	    } else {
+	        System.out.println("Error: Unknown error type in Elevator fixDoorStuckError.");
+	        System.exit(1);
+	    }
+        
+        this.isDamaged = false;
+        
+        controller.sendElevatorDoorFixedMessage(this.elevatorNumber);
+	    
 	}
 	
 }
