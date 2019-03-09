@@ -5,29 +5,29 @@ import org.junit.jupiter.api.*;
 
 
 public class ElevatorSubsystemTests {
-	 private TestHost host;
-	 private Elevator_Subsystem elevatorSubsystem;
+	private TestHost host;
+	private Elevator_Subsystem elevatorSubsystem;
 	    
-	    @BeforeEach
-	    void setUp() throws Exception {
-	        host = new TestHost(1,
-				    UtilityInformation.SCHEDULER_PORT_NUM,
-				    UtilityInformation.ELEVATOR_PORT_NUM);
-	        
-	        elevatorSubsystem = new Elevator_Subsystem();
-	    }
-	    
-	    @AfterEach
-	    void tearDown() throws Exception {
-	        host.teardown();
-	        host = null;
-	        
-	        elevatorSubsystem.sendPacket = null;
-	        elevatorSubsystem.receivePacket = null;
-		elevatorSubsystem.sendSocket.close();
-		elevatorSubsystem.receiveSocket.close();
-	        elevatorSubsystem = null;
-	    }
+    @BeforeEach
+    void setUp() throws Exception {
+        host = new TestHost(1,
+			    UtilityInformation.SCHEDULER_PORT_NUM,
+			    UtilityInformation.ELEVATOR_PORT_NUM);
+        
+        elevatorSubsystem = new Elevator_Subsystem();
+    }
+    
+    @AfterEach
+    void tearDown() throws Exception {
+        host.teardown();
+        host = null;
+        
+        elevatorSubsystem.sendPacket = null;
+        elevatorSubsystem.receivePacket = null;
+        elevatorSubsystem.sendSocket.close();
+        elevatorSubsystem.receiveSocket.close();
+        elevatorSubsystem = null;
+    }
 	    
 	    
     /**

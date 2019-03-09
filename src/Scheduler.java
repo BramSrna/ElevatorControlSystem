@@ -28,6 +28,13 @@ public class Scheduler extends ServerPattern {
 
 	private SchedulerAlgorithm algor;
 
+	/**
+	 * Scheduler
+	 * 
+	 * Constructor
+	 * 
+	 * Create a new Scheduler object
+	 */
 	public Scheduler() {
 		super(UtilityInformation.SCHEDULER_PORT_NUM, "Scheduler");
 
@@ -392,6 +399,16 @@ public class Scheduler extends ServerPattern {
 		algor.pauseElevator(elevatorNum);
 	}
 
+	/**
+	 * handleDoorFixMessage
+	 * 
+	 * Handle a message stating that the door was fixed.
+	 * Tells the algorithm to start using that elevator again.
+	 * 
+	 * @param recievedPacket   The received packet containing the message
+	 * 
+	 * @return None
+	 */
 	private void handleDoorFixMessage(DatagramPacket recievedPacket) {
 		algor.resumeUsingElevator(recievedPacket.getData()[1]);
 	}
@@ -452,6 +469,16 @@ public class Scheduler extends ServerPattern {
 		System.out.println("Scheduler: Packet sent.\n");
 	}
 
+	/**
+	 * runScheduler
+	 * 
+	 * Runs the scheduler object. 
+	 * Receives and handle packets.
+	 * 
+	 * @param  None
+	 * 
+	 * @return None
+	 */
 	public void runSheduler() {
 		while (true) {
 			DatagramPacket nextReq = this.getNextRequest();
@@ -459,6 +486,17 @@ public class Scheduler extends ServerPattern {
 		}
 	}
 
+	/**
+	 * main
+	 * 
+	 * Main method
+	 * 
+	 * Creates and runs a new scheduler
+	 * 
+	 * @param args
+	 * 
+	 * @return None
+	 */
 	public static void main(String[] args) {
 		Scheduler scheduler = new Scheduler();
 		scheduler.runSheduler();

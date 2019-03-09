@@ -206,11 +206,29 @@ public class TestHost implements Runnable {
 		expectedNumMessages = expectedNum;
 	}
 	
+	/**
+	 * disableResponse
+	 * 
+	 * Disables this TestHost from sending responses to received messages.
+	 * 
+	 * @param  None
+	 * 
+	 * @return None
+	 */
 	public void disableResponse() {
 	    response = false;
 	}
 	
-   public void enableResponse() {
+	/**
+     * enableResponse
+     * 
+     * Enables this TestHost to send responses to received messages.
+     * 
+     * @param  None
+     * 
+     * @return None
+     */
+    public void enableResponse() {
         response = true;
     }
 

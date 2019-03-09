@@ -4,19 +4,19 @@ import org.junit.jupiter.api.*;
 
 
 public class ElevatorTests {
-	 private Elevator elevator;
+	private Elevator elevator;
 	    
-	    @BeforeEach
-	    void setUp() throws Exception {
-	        Elevator_Subsystem controller = new Elevator_Subsystem();
-	        
-	        elevator = new Elevator(controller, 0); //Elevator #0
-	    }
-	    
-	    @AfterEach
-	    void tearDown() throws Exception {
-	        elevator = null;
-	    }
+    @BeforeEach
+    void setUp() throws Exception {
+        Elevator_Subsystem controller = new Elevator_Subsystem();
+        
+        elevator = new Elevator(controller, 0); //Elevator #0
+    }
+    
+    @AfterEach
+    void tearDown() throws Exception {
+        elevator = null;
+    }
 
     /**
      * testGoUp

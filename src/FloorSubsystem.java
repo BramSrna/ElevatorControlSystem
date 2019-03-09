@@ -264,9 +264,30 @@ public class FloorSubsystem extends ServerPattern{
 		System.out.println("Finished parsing test file.");
 	}
 	
+	/**
+	 * Parse a line in the given input file.
+	 * Returns a list containing the parsed information.
+	 * 
+	 * Expected format for input file line:
+	 *     For Elevator Request:
+	 *         HH:MM:SS.SSS START_FLOOR DIRECTION END_FLOOR
+	 *     For Error Request:
+	 *         HH:MM:SS.SSS ERROR_TYPE
+	 * 
+	 * Format of return:
+	 *     Elevator Request:
+	 *         [Time of request, start floor, final floor, direction]
+	 *     Error Request:
+	 *         [Time of request, error type]
+	 *         
+	 * @param line A line from the input file given as a string
+	 * 
+	 * @return Integer[] containg the information from the line
+	 */
 	private int[] parseInputFileLine(String line) { 
         int[] returnVal = new int[4];
         
+        // Set all values in the return array to -1
         for (int i = 0; i < returnVal.length; i++) {
             returnVal[i] = -1;
         }
@@ -489,6 +510,19 @@ public class FloorSubsystem extends ServerPattern{
 		System.out.println("Elevator request sent...");
 	}
 	
+	/**
+	 * sendErrorOccursMessage
+	 * 
+	 * Sends a new error occurance request to the Scheduler.
+	 * 
+	 * Format:
+	 *     {ERROR_MESSAGE_MODE, Type of error, Elevator number where the error occured, -1}
+	 *     
+	 * @param type The type of error to send
+	 * @param elevatorNum  The elevator number where the error occured.
+	 * 
+	 * @return None
+	 */
 	public void sendErrorOccursMessage(UtilityInformation.ErrorType type, int elevatorNum) {
 	    // Construct a message to send with data from given parameters
 	    byte[] msg = new byte[REQUEST_SIZE];
@@ -596,6 +630,15 @@ public class FloorSubsystem extends ServerPattern{
 	    return(floors);
 	}
 	
+	/**
+	 * startFloorThread
+	 * 
+	 * Starts all floor threads in that the controller owns
+	 * 
+	 * @param  None
+	 * 
+	 * @return None
+	 */
 	public void startFloorThreads() {
 	    for (Thread thread : floorThreads) {
 	        thread.start();
@@ -657,6 +700,15 @@ public class FloorSubsystem extends ServerPattern{
 
 	}
 
+	/**
+	 * getRequests
+	 * 
+	 * Return the current list of requests
+	 * 
+	 * @param  None
+	 * 
+	 * @return ArrayList<Integer[]> List containg all request arrays
+	 */
     public ArrayList<Integer[]> getRequests() {
         ArrayList<Integer[]> allRequests = new ArrayList<Integer[]>();
         ArrayList<Integer[]> tempRequests;

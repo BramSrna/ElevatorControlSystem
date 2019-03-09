@@ -160,28 +160,68 @@ public class Elevator {
 		System.out.println("Door: " + door + " on floor: " + currentFloor);
 	}
 	
+	/**
+	 * brokenElevator
+	 * 
+	 * Set this elevator to the broken state.
+	 * 
+	 * @param  None
+	 * 
+	 * @return None
+	 */
 	public void brokenElevator() {
 		System.out.println("Elevator is Broken");
 		inError = true;
 	}
 	
+	/**
+	 * elevatorFixed
+	 * 
+	 * Set this elevator to the fixed state
+	 * 
+	 * @param  None
+	 * 
+	 * @return None
+	 */
 	public void elevatorFixed() {
 		System.out.println("Elevator is Fixed");
 		inError = false;
 	}
 	
+	/**
+	 * fixDoorStuckError
+	 * 
+	 * Fix this elevator door. Runs a wait loop until the
+	 * door is fixed. Current probability of the door being fixed
+	 * is 40 percent.
+	 * 
+	 * @param doorState    The door state that the elevator is broken in
+	 * 
+	 * @return None
+	 */
 	public void fixDoorStuckError(byte doorState) {
+	    // Set the elevator to damaged
 	    this.isDamaged = true;
 	    
+	    // Run the loop until the door is fixed.
 	    new Thread(new Runnable() {
             public void run()  {
                 Random r = new Random();
                 boolean broken = true;
                 float chance;
                 
+                // The percent change that the elevator will be fixed
                 float percentChanceFixDoor = 0.4f;
                 
+                int sleepTimeBetweenAttempts = 1000;
+                
                 while(broken) {
+                    try {
+                        Thread.sleep(sleepTimeBetweenAttempts);
+                    } catch (InterruptedException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
                     System.out.println("Attempting to fix door...");
                     chance = r.nextFloat();
                     if(chance <= percentChanceFixDoor){
@@ -191,6 +231,7 @@ public class Elevator {
             }
         }).start();
 	    
+	    // Set the door to the fixed state
 	    if (doorState == UtilityInformation.DOOR_WONT_CLOSE_ERROR) {
 	        this.closeDoor();
 	    } else if (doorState == UtilityInformation.DOOR_WONT_OPEN_ERROR) {
@@ -200,8 +241,10 @@ public class Elevator {
 	        System.exit(1);
 	    }
         
+	    // Set the elevator to undamaged
         this.isDamaged = false;
         
+        // Tell the controller that the door is fixed
         controller.sendElevatorDoorFixedMessage(this.elevatorNumber);
 	    
 	}

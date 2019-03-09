@@ -88,6 +88,16 @@ public class Floor implements Runnable {
 		serviceRequests.add(request);
 	}
 	
+	/**
+	 * createErrorOccuredRequest
+	 * 
+	 * Adds an error request to the list of requests to send.
+	 * 
+	 * @param timeOfReq: Time in millliseconds when the error occurs relative to the start time
+	 * @param type: The type of error that occured
+	 * 
+	 * @return None
+	 */
 	public void createErrorOccuranceRequest(int timeOfReq, UtilityInformation.ErrorType type) {
 	    Integer[] request = new Integer[3];
 	    request[0] = timeOfReq;
@@ -345,16 +355,36 @@ public class Floor implements Runnable {
 	    
 	}
 	
+	/**
+	 * getServiceREquests
+	 * 
+	 * Get the current list of service requests.
+	 * 
+	 * @param  None
+	 * 
+	 * @return ArrayList<Integer[]> List containing all current requests
+	 */
 	public ArrayList<Integer[]> getServiceRequests(){
 	    return(serviceRequests);
 	}
 	
+	/**
+	 * sendRequest
+	 * 
+	 * Send the next request in the list of requests at the appropriate time.
+	 * 
+	 * @param  None
+	 * 
+	 * @return None
+	 */
 	public synchronized void sendRequest() {
+	    // Wait until the proper time to send the request
 	    while (System.currentTimeMillis() - startTime < serviceRequests.get(0)[0]) {
 	    }
 	    
 	    Integer[] request = serviceRequests.get(0);
 	    
+	    // Tell the controller to send the request
 	    if (request.length == 3) {	        
 	        Random rand = new Random();
 	        
@@ -365,11 +395,21 @@ public class Floor implements Runnable {
 	                                       UtilityInformation.ElevatorDirection.values()[request[2]]);
 	    }
 	    
-
-	    
+	    // Remove the sent request from the list
 	    serviceRequests.remove(0);
 	}
 
+	/**
+	 * run
+	 * 
+	 * Overridden
+	 * 
+	 * Runs this Floor. Send all requests in the list of requests.
+	 * 
+	 * @param  None
+	 * 
+	 * @return None
+	 */
     @Override
     public void run() {
         startTime = System.currentTimeMillis();

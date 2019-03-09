@@ -355,11 +355,36 @@ public class Elevator_Subsystem  {
 
 	}
 	
+	/**
+	 * sendElevatorDoorFixedMessage
+	 * 
+	 * Send a message to the scheduler stating that the door on the elevator
+	 * has been fixed.
+	 * 
+	 * Format:
+	 *     {FIX_DOOR MODE, elevator number, -1}
+	 *     
+	 * @param elevatorNum  The number of the elevator that has been fixed
+	 * 
+	 * @return None
+	 */
 	public void sendElevatorDoorFixedMessage(int elevatorNum) {
 	    byte[] issConf = {UtilityInformation.FIX_DOOR, (byte) elevatorNum, -1};
         this.sendData(issConf, schedulerIP, schedulerPort);
 	}
 	
+	/**
+	 * sendFloorSensorMessage
+	 * 
+	 * Send a message to the the scheduler that a floor sensor has been activated.
+	 * 
+	 * Format:
+	 *     {FLOOR_SENSOR_MODE, floor number, elevator number, -1}
+	 *     
+	 * @param elevatorNum  The elevator shaft number when the sensor has occured
+	 * 
+	 * @return None
+	 */
     public void sendFloorSensorMessage(int elevatorNum) {
         byte[] returnMessage = { UtilityInformation.FLOOR_SENSOR_MODE,
                 (byte) allElevators.get(elevatorNum).currentFloor,

@@ -20,8 +20,20 @@ public abstract class ServerPattern {
 
 	private final int MAX_NUM_SIGNALS = 100;
 
+	/**
+	 * ServerPattern
+	 * 
+	 * Constructor
+	 * 
+	 * Create a new ServerPattern object. Also creates a new SignalReceiver object
+	 * and runs it.
+	 * 
+	 * @param portNum  Port number to receive requests on
+	 * @param name Name of the ServerPattern
+	 * 
+	 * @return None
+	 */
 	public ServerPattern(int portNum, String name) {
-
 		receivedSignals = new ArrayList<DatagramPacket>();
 		receivedSignalsEmpty = true;
 
@@ -31,9 +43,22 @@ public abstract class ServerPattern {
 		receiverThread.start();
 	}
 
+	/**
+	 * signalReceived
+	 * 
+	 * Synchronized
+	 * 
+	 * Add a new signal to the list of received signals. Waits until
+	 * the list of received signals is not full before adding the received
+	 * signal.
+	 * 
+	 * @param newSignal    DatagramPacket containing the received signal
+	 * @param priority     Priority of the received signal
+	 * 
+	 * @return None
+	 */
 	public synchronized void signalReceived(DatagramPacket newSignal, int priority) {
-
-		// Wait while queue is full
+		// Wait while queue is not full
 		while (receivedSignals.size() >= MAX_NUM_SIGNALS) {
 			try {
 				wait();
@@ -49,8 +74,18 @@ public abstract class ServerPattern {
 		notifyAll();
 	}
 
+	/**
+	 * getNextRequest
+	 * 
+	 * Returns the next request in the list of requests and removes
+	 * it from the list.
+	 * Waits until the list of requests is not empty.
+	 * 
+	 * @param  None
+	 * 
+	 * @return DatagramPacket containing the next received signal
+	 */
 	public synchronized DatagramPacket getNextRequest() {
-
 		// Wait while queue is empty
 		while (receivedSignalsEmpty) {
 			try {
@@ -72,6 +107,11 @@ public abstract class ServerPattern {
 		return (toReturn);
 	}
 
+	/**
+	 * teardown
+	 * 
+	 * Tears down this ServerPattern object
+	 */
 	public void teardown() {
 		receiver.teardown();
 
@@ -94,6 +134,17 @@ class SignalReceiver implements Runnable {
 
 	private String name;
 
+	/**
+	 * signalReceiver
+	 * 
+	 * Creates a new SignalReceiver object
+	 * 
+	 * @param portNum  The port number to receive messages on
+	 * @param controller   The ServerPattern that controls this SignalReceiver object
+	 * @param name The name of this ServerPattern object
+	 * 
+	 * @return None
+	 */
 	public SignalReceiver(int portNum, ServerPattern controller, String name) {
 		run = true;
 
@@ -110,6 +161,11 @@ class SignalReceiver implements Runnable {
 		}
 	}
 
+	/**
+	 * teardown
+	 * 
+	 * Tears down this SignalReceiver object
+	 */
 	public void teardown() {
 		run = false;
 		receiveSocket.close();
@@ -160,6 +216,18 @@ class SignalReceiver implements Runnable {
 		return (receivePacket);
 	}
 
+	/**
+	 * run
+	 * 
+	 * Overridden
+	 * 
+	 * Runs this SignalReceiver object.
+	 * Waits for signals and adds them to the list of received signals.
+	 * 
+	 * @param  None
+	 * 
+	 * @return None
+	 */
 	@Override
 	public void run() {
 		while (run) {

@@ -8,6 +8,16 @@ public class SchedulerAlgorithm {
 	private ArrayList<ArrayList<Byte>> elevatorDestinations; // Index: Elevators, ArrayList: Elevator destinations
 	private ArrayList<Boolean> elevatorUsable;
 
+	/**
+	 * SchedulerAlgorithm
+	 * 
+	 * Constructor
+	 * 
+	 * Creates a new scheduler algorithm class with
+	 * the given number of elevators.
+	 * 
+	 * @param numElevators Number of elevators that the algorithm should control
+	 */
 	public SchedulerAlgorithm(byte numElevators) {
 		elevatorStops = new ArrayList<ArrayList<Byte>>();
 		currentFloor = new ArrayList<Byte>();
@@ -42,6 +52,16 @@ public class SchedulerAlgorithm {
 		return (elevatorNum);
 	}
 
+	/**
+	 * determineElevatorToGiveRequest
+	 * 
+	 * Determines which elevator in the system should be given the request
+	 * with the given start floor.
+	 * 
+	 * @param startFloor   Floor number where request was made
+	 * 
+	 * @return byte containg the elevator number that was given teh request
+	 */
 	private byte determineElevatorToGiveRequest(byte startFloor) {
 		ArrayList<Integer> closestElevator = new ArrayList<Integer>();
 		int closestDiff = -1;
@@ -100,6 +120,19 @@ public class SchedulerAlgorithm {
 		return ((byte) chosenElevator);
 	}
 
+	/**
+	 * addStopToElevator
+	 * 
+	 * Adds the given floor to the list of elevator stops for the
+	 * given elevator number. A minimum index is given that controls
+	 * how early the stop can be placed in the list.
+	 * 
+	 * @param elevatorNum  Elevator number that will get the new request
+	 * @param destFloor    Destination floor that should be added to the list of stops
+	 * @param minInd       Minimum index of the new stop in the list
+	 * 
+	 * @return Byte The index in the list where the request was placed
+	 */
 	private byte addStopToElevator(byte elevatorNum, byte destFloor, byte minInd) {
 		byte endInd = 0;
 		int closestDiff = Integer.MAX_VALUE;
@@ -108,19 +141,29 @@ public class SchedulerAlgorithm {
 
 		ArrayList<Byte> currDests = elevatorStops.get(elevatorNum);
 
+		// First check if the list is empty
 		if (currDests.size() == 0) {
+		    // If empty, just add the floor to the list
 			currDests.add(destFloor);
 		} else {
+		    // Otherwise, check if the value is already in the list
 			if (!(currDests.contains(destFloor))) {
+			    // If not in the list, add the value
+	            // Find the best spot in the list
+			    
 				endInd = -1;
+				// Loop through all stops
 				for (byte i = minInd; i < currDests.size(); i++) {
 					if (i != currDests.size() - 1) {
+					    // If the stop can be placed between two existing stops,
+					    // add the stop there
 						if (((currDests.get(i) < destFloor) && (currDests.get(i + 1) > destFloor))
 								|| ((currDests.get(i) > destFloor) && (currDests.get(i + 1) < destFloor))) {
 							endInd = (byte) (i + 1);
 						}
 					}
 
+					// Check how close the current stop is to the new stop
 					currDiff = Math.abs(currDests.get(i) - destFloor);
 					if (currDiff < closestDiff) {
 						closestDiff = currDiff;
@@ -129,6 +172,8 @@ public class SchedulerAlgorithm {
 
 				}
 
+				// If the stop cannot be palced in between two stops,
+				// add it in the list nearest to the closest stop
 				if (endInd == -1) {
 					endInd = (byte) (closestInd + 1);
 				}
@@ -301,11 +346,23 @@ public class SchedulerAlgorithm {
 		System.out.println(elevatorDestinations);
 	}
 
+	/**
+	 * stopUsingElevator
+	 * 
+	 * Tells the algorithm to stop using the given elevator
+	 * and to remove all stops from that elevator and add
+	 * them to a different elevator.
+	 * 
+	 * @param elevatorNum  The number of the elevator to stop using
+	 * 
+	 * @return None
+	 */
 	public void stopUsingElevator(byte elevatorNum) {
 		int ind = 0;
 		int shortestQueue = -1;
 		int shortestQueueSize = -1;
 
+		// Find the elevator with the shortest queue
 		while (ind < elevatorStops.size()) {
 			if ((ind != elevatorNum)
 					&& ((shortestQueueSize == -1) || (shortestQueueSize < elevatorStops.get(ind).size()))) {
@@ -315,10 +372,13 @@ public class SchedulerAlgorithm {
 			ind++;
 		}
 
+		// Move all stops from the broken elevator to the elevator with the shortest queuse
 		ArrayList<Byte> currStops = elevatorStops.get(elevatorNum);
+		// Add the current floor of the broken elevator first
 	    elevatorStops.get(shortestQueue).add(currentFloor.get(elevatorNum));
 		elevatorStops.get(shortestQueue).addAll(currStops);
 
+		// Clear the list of stops and destinations
 		byte currFloor = currentFloor.get(elevatorNum);
 
 		elevatorStops.set(elevatorNum, new ArrayList<Byte>());
@@ -330,12 +390,31 @@ public class SchedulerAlgorithm {
 		pauseElevator(elevatorNum);
 	}
 
+	/**
+	 * pauseElevator
+	 * 
+	 * Temporarily stop using the given elevator.
+	 * Requests are NOT removed from the elevator, it is just paused.
+	 * 
+	 * @param elevatorNum  Number of elevator to stop using
+	 * 
+	 * @return None
+	 */
 	public void pauseElevator(byte elevatorNum) {
 		elevatorUsable.set(elevatorNum, false);
 
 		stopElevator.set(elevatorNum, true);
 	}
 
+	/**
+	 * resumeUsingElevator
+	 * 
+	 * Unpause the given elevator
+	 * 
+	 * @param elevatorNum  Number of elevator to unpause
+	 * 
+	 * @return None
+	 */
 	public void resumeUsingElevator(byte elevatorNum) {
 		elevatorUsable.set(elevatorNum, true);
 	}
