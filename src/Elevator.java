@@ -228,24 +228,24 @@ public class Elevator {
                         broken = false;
                     }
                 }
+            
+            // Set the door to the fixed state
+            if (doorState == UtilityInformation.DOOR_WONT_CLOSE_ERROR) {
+                closeDoor();
+            } else if (doorState == UtilityInformation.DOOR_WONT_OPEN_ERROR) {
+                openDoor();
+            } else {
+                System.out.println("Error: Unknown error type in Elevator fixDoorStuckError.");
+                System.exit(1);
+            }
+            
+            // Set the elevator to undamaged
+            isDamaged = false;
+            
+            // Tell the controller that the door is fixed
+            controller.sendElevatorDoorFixedMessage(elevatorNumber);
             }
         }).start();
-	    
-	    // Set the door to the fixed state
-	    if (doorState == UtilityInformation.DOOR_WONT_CLOSE_ERROR) {
-	        this.closeDoor();
-	    } else if (doorState == UtilityInformation.DOOR_WONT_OPEN_ERROR) {
-	        this.openDoor();
-	    } else {
-	        System.out.println("Error: Unknown error type in Elevator fixDoorStuckError.");
-	        System.exit(1);
-	    }
-        
-	    // Set the elevator to undamaged
-        this.isDamaged = false;
-        
-        // Tell the controller that the door is fixed
-        controller.sendElevatorDoorFixedMessage(this.elevatorNumber);
 	    
 	}
 	
