@@ -19,7 +19,7 @@
  * 
  * Last Edited March 7, 2019.
  */
-public class Elevator extends Thread{
+public class Elevator {
 	// The elevator car number
 	int elevatorNumber;
 	// The current floor the elevator is on
@@ -36,6 +36,8 @@ public class Elevator extends Thread{
 	// The lamps indicate the floor(s) which will be visited by the elevator
 	lampState[] allButtons;
 	
+	Elevator_Subsystem controller;
+	
 	/*
 	 * General Constructor for Elevator Class
 	 */
@@ -44,8 +46,9 @@ public class Elevator extends Thread{
 	
 	public boolean isDamaged = false;
 	
-	public Elevator(int number) {
+	public Elevator(Elevator_Subsystem controller, int number) {
 		elevatorNumber = number;
+		this.controller = controller;
 	}
 	
 	public int getElevatorNumber() {return this.elevatorNumber;}
@@ -70,11 +73,16 @@ public class Elevator extends Thread{
 	 */
 	public void goUp() {
 		System.out.println("Elevator Moving Up One Floor");
-		try {
-			Thread.sleep(UtilityInformation.TIME_UP_ONE_FLOOR); // it takes approximately 5 seconds to go up one floor
-		} catch (InterruptedException ex) {
-			Thread.currentThread().interrupt();
-		}
+        new Thread( new Runnable() {
+            public void run()  {
+                try  { 
+                    Thread.sleep(UtilityInformation.TIME_UP_ONE_FLOOR);
+                } catch (InterruptedException ie)  {
+
+                }
+                controller.sendFloorSensorMessage(elevatorNumber);
+            }
+        } ).start();
 		currentFloor++;
 		//byte[] data = { UtilityInformation.FLOOR_SENSOR_MODE , (byte) currentFloor, (byte) elevatorNumber, -1 };
 		Elevator_Subsystem.currentState = Elevator_Subsystem.State.ARRIVE_AT_FLOOR;
@@ -87,11 +95,16 @@ public class Elevator extends Thread{
 	 */
 	public void goDown() {
 		System.out.println("Elevator Moving Down One Floor");
-		try {
-			Thread.sleep(UtilityInformation.TIME_DOWN_ONE_FLOOR); // it takes approximately 5 seconds to go up one floor
-		} catch (InterruptedException ex) {
-			Thread.currentThread().interrupt();
-		}
+        new Thread( new Runnable() {
+            public void run()  {
+                try  { 
+                    Thread.sleep(UtilityInformation.TIME_DOWN_ONE_FLOOR);
+                } catch (InterruptedException ie)  {
+
+                }
+                controller.sendFloorSensorMessage(elevatorNumber);
+            }
+        } ).start();
 		currentFloor--;
 		//byte[] data = { UtilityInformation.FLOOR_SENSOR_MODE, (byte) currentFloor, (byte) elevatorNumber, -1 };
 		System.out.println("Elevator arrives on floor");
@@ -111,11 +124,15 @@ public class Elevator extends Thread{
 	 * Method to open the elevator door.
 	 */
 	public void openDoor() {
-		try {
-			Thread.sleep(UtilityInformation.OPEN_DOOR_TIME); // it takes approximately 1 second for the door to open
-		} catch (InterruptedException ex) {
-			Thread.currentThread().interrupt();
-		}
+        new Thread( new Runnable() {
+            public void run()  {
+                try  { 
+                    Thread.sleep(UtilityInformation.OPEN_DOOR_TIME);
+                } catch (InterruptedException ie)  {
+
+                }
+            }
+        } ).start();
 		
 		System.out.println("Elevator Door Opened");
 		door = doorState.OPEN;
@@ -125,12 +142,16 @@ public class Elevator extends Thread{
 	/*
 	 * Method to close the elevator door.
 	 */
-	public void closeDoor() {
-		try {
-			Thread.sleep(UtilityInformation.CLOSE_DOOR_TIME); // it takes approximately 1.5 second for the door to close
-		} catch (InterruptedException ex) {
-			Thread.currentThread().interrupt();
-		}
+	public void closeDoor() {       
+        new Thread(new Runnable() {
+            public void run()  {
+                try  { 
+                    Thread.sleep(UtilityInformation.CLOSE_DOOR_TIME);
+                } catch (InterruptedException ie)  {
+
+                }
+            }
+        }).start();
 		
 		System.out.println("Elevator Door Closed");
 		door = doorState.CLOSED;
@@ -145,12 +166,6 @@ public class Elevator extends Thread{
 	public void elevatorFixed() {
 		System.out.println("Elevator is Fixed");
 		inError = false;
-	}
-	
-	public synchronized void run() {
-		for (;;) {
-			// The elevator thread run method
-		}
 	}
 	
 }
