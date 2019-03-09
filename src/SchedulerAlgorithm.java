@@ -242,12 +242,10 @@ public class SchedulerAlgorithm {
 			elevatorUsable.add(true);
 
 			ArrayList<Byte> temp = new ArrayList<Byte>();
-			temp.add((byte) 0);
 
 			elevatorStops.add(temp);
 
 			temp = new ArrayList<Byte>();
-			temp.add((byte) 0);
 
 			elevatorDestinations.add(temp);
 		}

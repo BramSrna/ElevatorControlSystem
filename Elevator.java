@@ -1,4 +1,7 @@
-package groupProject;
+import java.util.Random;
+
+import Elevator.doorState;
+import Elevator.lampState;
 
 /*
  * SYSC 3303 Elevator Group Project
@@ -21,136 +24,189 @@ package groupProject;
  * 
  * Last Edited March 7, 2019.
  */
-public class Elevator extends Thread{
-	// The elevator car number
-	int elevatorNumber;
-	// The current floor the elevator is on
-	int currentFloor = 0;
-	
-	// USED ENUMS:
-	//Enum for Door
-	enum doorState {OPEN, CLOSED}
-	private doorState door = doorState.CLOSED;
-	
-	// Enum for all lights
-	enum lampState {OFF, ON}
-	
-	// The lamps indicate the floor(s) which will be visited by the elevator
-	lampState[] allButtons;
-	
-	/*
-	 * General Constructor for Elevator Class
-	 */
-	
-	boolean inError = false;
-	
-	public Elevator(int number) {
-		elevatorNumber = number;
-	}
-	
-	public int getElevatorNumber() {return this.elevatorNumber;}
-	public int getCurrentFloor() {return this.currentFloor;}
-	public doorState getDoorState() {return this.door;}
-	
-	/*
-	 * Method to print out each elevators data.
-	 */
-	public void display() {
-		// Simply display 
-		System.out.println("Elevator Number: " + this.getElevatorNumber());
-		System.out.println("Floor Number: " + this.getCurrentFloor() + "\n");
-		for(int i=0; i<allButtons.length; i++) {
-			System.out.println("Floor Number " + i + ": " +allButtons[i]);
-		}
-		System.out.println("\n");
-	}
-	
-	/*
-	 * Method to make the elevator move up one floor.
-	 */
-	public void goUp() {
-		System.out.println("Elevator Moving Up One Floor");
-		try {
-			Thread.sleep(UtilityInformation.TIME_UP_ONE_FLOOR); // it takes approximately 5 seconds to go up one floor
-		} catch (InterruptedException ex) {
-			Thread.currentThread().interrupt();
-		}
-		currentFloor++;
-		//byte[] data = { UtilityInformation.FLOOR_SENSOR_MODE , (byte) currentFloor, (byte) elevatorNumber, -1 };
-		Elevator_Subsystem.currentState = Elevator_Subsystem.State.ARRIVE_AT_FLOOR;
-		System.out.println("Elevator arrives on floor");
-		//this.sendData(data, schedulerIP, schedulerPort);
-	}
+public class Elevator {
+    // The elevator car number
+    int elevatorNumber;
+    // The current floor the elevator is on
+    int currentFloor = 0;
+    
+    // USED ENUMS:
+    //Enum for Door
+    enum doorState {OPEN, CLOSED}
+    private doorState door = doorState.CLOSED;
+    
+    // Enum for all lights
+    enum lampState {OFF, ON}
+    
+    // The lamps indicate the floor(s) which will be visited by the elevator
+    lampState[] allButtons;
+    
+    Elevator_Subsystem controller;
+    
+    /*
+     * General Constructor for Elevator Class
+     */
+    
+    boolean inError = false;
+    
+    public boolean isDamaged = false;
+    
+    public Elevator(Elevator_Subsystem controller, int number) {
+        elevatorNumber = number;
+        this.controller = controller;
+    }
+    
+    public int getElevatorNumber() {return this.elevatorNumber;}
+    public int getCurrentFloor() {return this.currentFloor;}
+    public doorState getDoorState() {return this.door;}
+    
+    /*
+     * Method to print out each elevators data.
+     */
+    public void display() {
+        // Simply display 
+        System.out.println("Elevator Number: " + this.getElevatorNumber());
+        System.out.println("Floor Number: " + this.getCurrentFloor() + "\n");
+        for(int i=0; i<allButtons.length; i++) {
+            System.out.println("Floor Number " + i + ": " +allButtons[i]);
+        }
+        System.out.println("\n");
+    }
+    
+    /*
+     * Method to make the elevator move up one floor.
+     */
+    public void goUp() {
+        System.out.println("Elevator Moving Up One Floor");
+        new Thread( new Runnable() {
+            public void run()  {
+                try  { 
+                    Thread.sleep(UtilityInformation.TIME_UP_ONE_FLOOR);
+                } catch (InterruptedException ie)  {
 
-	/*
-	 * Method to make the elevator move down one floor.
-	 */
-	public void goDown() {
-		System.out.println("Elevator Moving Down One Floor");
-		try {
-			Thread.sleep(UtilityInformation.TIME_DOWN_ONE_FLOOR); // it takes approximately 5 seconds to go up one floor
-		} catch (InterruptedException ex) {
-			Thread.currentThread().interrupt();
-		}
-		currentFloor--;
-		//byte[] data = { UtilityInformation.FLOOR_SENSOR_MODE, (byte) currentFloor, (byte) elevatorNumber, -1 };
-		System.out.println("Elevator arrives on floor");
-		//this.sendData(data, schedulerIP, schedulerPort);
-	}
-	
-	/*
-	 * Method to make the elevator stop moving.
-	 */
-	public void Stop() {
+                }
+                controller.sendFloorSensorMessage(elevatorNumber);
+            }
+        } ).start();
+        currentFloor++;
+        //byte[] data = { UtilityInformation.FLOOR_SENSOR_MODE , (byte) currentFloor, (byte) elevatorNumber, -1 };
+        Elevator_Subsystem.currentState = Elevator_Subsystem.State.ARRIVE_AT_FLOOR;
+        System.out.println("Elevator arrives on floor");
+        //this.sendData(data, schedulerIP, schedulerPort);
+    }
+
+    /*
+     * Method to make the elevator move down one floor.
+     */
+    public void goDown() {
+        System.out.println("Elevator Moving Down One Floor");
+        new Thread( new Runnable() {
+            public void run()  {
+                try  { 
+                    Thread.sleep(UtilityInformation.TIME_DOWN_ONE_FLOOR);
+                } catch (InterruptedException ie)  {
+
+                }
+                controller.sendFloorSensorMessage(elevatorNumber);
+            }
+        } ).start();
+        currentFloor--;
+        //byte[] data = { UtilityInformation.FLOOR_SENSOR_MODE, (byte) currentFloor, (byte) elevatorNumber, -1 };
+        System.out.println("Elevator arrives on floor");
+        //this.sendData(data, schedulerIP, schedulerPort);
+    }
+    
+    /*
+     * Method to make the elevator stop moving.
+     */
+    public void Stop() {
         //byte[] data = { UtilityInformation.ELEVATOR_STOPPED_MODE, (byte) currentFloor, (byte) elevatorNumber, -1 };
         System.out.println("The elevator has stopped moving");
         //this.sendData(data, schedulerIP, schedulerPort);
-	}
+    }
 
-	/*
-	 * Method to open the elevator door.
-	 */
-	public void openDoor() {
-		try {
-			Thread.sleep(UtilityInformation.OPEN_DOOR_TIME); // it takes approximately 1 second for the door to open
-		} catch (InterruptedException ex) {
-			Thread.currentThread().interrupt();
-		}
-		
-		System.out.println("Elevator Door Opened");
-		door = doorState.OPEN;
-		System.out.println("Door: " + door + " on floor: " + currentFloor);
-	}
+    /*
+     * Method to open the elevator door.
+     */
+    public void openDoor() {
+        new Thread( new Runnable() {
+            public void run()  {
+                try  { 
+                    Thread.sleep(UtilityInformation.OPEN_DOOR_TIME);
+                } catch (InterruptedException ie)  {
 
-	/*
-	 * Method to close the elevator door.
-	 */
-	public void closeDoor() {
-		try {
-			Thread.sleep(UtilityInformation.CLOSE_DOOR_TIME); // it takes approximately 1.5 second for the door to close
-		} catch (InterruptedException ex) {
-			Thread.currentThread().interrupt();
-		}
-		
-		System.out.println("Elevator Door Closed");
-		door = doorState.CLOSED;
-		System.out.println("Door: " + door + " on floor: " + currentFloor);
-	}
-	
-	public void brokenElevator() {
-		System.out.println("Elevator is Broken");
-		inError = true;
-	}
-	
-	public void elevatorFixed() {
-		System.out.println("Elevator is Fixed");
-		inError = false;
-	}
-	
-	public synchronized void run() {
-		for (;;) {
-			// The elevator thread run method
-		}
-	}
-	
+                }
+            }
+        } ).start();
+        
+        System.out.println("Elevator Door Opened");
+        door = doorState.OPEN;
+        System.out.println("Door: " + door + " on floor: " + currentFloor);
+    }
+
+    /*
+     * Method to close the elevator door.
+     */
+    public void closeDoor() {       
+        new Thread(new Runnable() {
+            public void run()  {
+                try  { 
+                    Thread.sleep(UtilityInformation.CLOSE_DOOR_TIME);
+                } catch (InterruptedException ie)  {
+
+                }
+            }
+        }).start();
+        
+        System.out.println("Elevator Door Closed");
+        door = doorState.CLOSED;
+        System.out.println("Door: " + door + " on floor: " + currentFloor);
+    }
+    
+    public void brokenElevator() {
+        System.out.println("Elevator is Broken");
+        inError = true;
+    }
+    
+    public void elevatorFixed() {
+        System.out.println("Elevator is Fixed");
+        inError = false;
+    }
+    
+    public void fixDoorStuckError(byte doorState) {
+        this.isDamaged = true;
+        
+        new Thread(new Runnable() {
+            public void run()  {
+                Random r = new Random();
+                boolean broken = true;
+                float chance;
+                
+                float percentChanceFixDoor = 0.4f;
+                
+                while(broken) {
+                    System.out.println("Attempting to fix door...");
+                    chance = r.nextFloat();
+                    if(chance <= percentChanceFixDoor){
+                        broken = false;
+                    }
+                }
+            }
+        }).start();
+        
+        if (doorState == UtilityInformation.DOOR_WONT_CLOSE_ERROR) {
+            this.closeDoor();
+        } else if (doorState == UtilityInformation.DOOR_WONT_OPEN_ERROR) {
+            this.openDoor();
+        } else {
+            System.out.println("Error: Unknown error type in Elevator fixDoorStuckError.");
+            System.exit(1);
+        }
+        
+        this.isDamaged = false;
+        
+        controller.sendElevatorDoorFixedMessage(this.elevatorNumber);
+        
+    }
+    
 }

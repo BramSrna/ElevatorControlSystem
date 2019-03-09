@@ -1,5 +1,3 @@
-package groupProject;
-
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -302,7 +300,7 @@ public class Elevator_Subsystem  {
 
 			// Based on the config message, set up the elevators and their lights.
 			for (int i = 0; i < numberOfElevators; i++) {
-				Elevator hold = new Elevator(i);
+				Elevator hold = new Elevator(this, i);
 				hold.allButtons = new Elevator.lampState[numberOfFloors];
 				for (int k = 0; k < numberOfFloors; k++) {
 					hold.allButtons[k] = Elevator.lampState.OFF; // currently making everything OFF
@@ -323,17 +321,9 @@ public class Elevator_Subsystem  {
 		}
 		if (str.equals("go up")) {
 			allElevators.get(currentElevatorToWork).goUp();
-			byte[] returnMessage = { UtilityInformation.FLOOR_SENSOR_MODE,
-					(byte) allElevators.get(currentElevatorToWork).currentFloor,
-					(byte) allElevators.get(currentElevatorToWork).elevatorNumber, -1 };
-			this.sendData(returnMessage, schedulerIP, schedulerPort);
 		}
 		if (str.equals("go down")) {
 			allElevators.get(currentElevatorToWork).goDown();
-			byte[] returnMessage = { UtilityInformation.FLOOR_SENSOR_MODE,
-					(byte) allElevators.get(currentElevatorToWork).currentFloor,
-					(byte) allElevators.get(currentElevatorToWork).elevatorNumber, -1 };
-			this.sendData(returnMessage, schedulerIP, schedulerPort);
 		}
 		if (str.equals("stop")) {
 			allElevators.get(currentElevatorToWork).Stop();
@@ -354,30 +344,8 @@ public class Elevator_Subsystem  {
 			allElevators.get(currentElevatorToWork).brokenElevator();
 		}
 		if(str.equals("door issue")) {
-			Random r = new Random();
-			if(data[1]==UtilityInformation.DOOR_WONT_OPEN_ERROR) {
-				allElevators.get(currentElevatorToWork).isDamaged = true;
-				while(allElevators.get(currentElevatorToWork).isDamaged == true) {
-					float chance = r.nextFloat();
-					if(chance<= 0.40f){
-						allElevators.get(currentElevatorToWork).openDoor();
-						allElevators.get(currentElevatorToWork).isDamaged = false;
-					}
-				}
-				byte[] issConf = {UtilityInformation.FIX_DOOR, currentElevatorToWork, -1};
-				this.sendData(issConf, schedulerIP, schedulerPort);		
-			}
-			if(data[1]==UtilityInformation.DOOR_WONT_CLOSE_ERROR) {
-				allElevators.get(currentElevatorToWork).isDamaged = true;
-				while(allElevators.get(currentElevatorToWork).isDamaged == true) {
-					float chance = r.nextFloat();
-					if(chance<= 0.40f){
-						allElevators.get(currentElevatorToWork).closeDoor();
-						allElevators.get(currentElevatorToWork).isDamaged = false;
-					}
-				}
-				byte[] issConf = {UtilityInformation.FIX_DOOR, currentElevatorToWork, -1};
-				this.sendData(issConf, schedulerIP, schedulerPort);
+			if ((data[1]==UtilityInformation.DOOR_WONT_OPEN_ERROR) || (data[1]==UtilityInformation.DOOR_WONT_CLOSE_ERROR)) {
+			    allElevators.get(currentElevatorToWork).fixDoorStuckError(data[1]);	
 			}
 		}
 		if(str.equals("issue fixed")) {
@@ -386,6 +354,18 @@ public class Elevator_Subsystem  {
 		}
 
 	}
+	
+	public void sendElevatorDoorFixedMessage(int elevatorNum) {
+	    byte[] issConf = {UtilityInformation.FIX_DOOR, (byte) elevatorNum, -1};
+        this.sendData(issConf, schedulerIP, schedulerPort);
+	}
+	
+    public void sendFloorSensorMessage(int elevatorNum) {
+        byte[] returnMessage = { UtilityInformation.FLOOR_SENSOR_MODE,
+                (byte) allElevators.get(elevatorNum).currentFloor,
+                (byte) allElevators.get(elevatorNum).elevatorNumber, -1 };
+        this.sendData(returnMessage, schedulerIP, schedulerPort);
+    }
 
 	/*
 	 * Method to validate the form of the array of bytes received from the Scheduler
@@ -457,10 +437,6 @@ public class Elevator_Subsystem  {
 	public static void main(String[] args) {
 		Elevator_Subsystem elvSub = new Elevator_Subsystem();
 		// receive the config message
-		elvSub.receiveData();
-		for(int i=0; i<elvSub.allElevators.size(); i++) {
-			elvSub.allElevators.get(i).start();
-		}
 		for(;;) {
 			elvSub.receiveData();
 			elvSub.allElevators.get(currentElevatorToWork).display();

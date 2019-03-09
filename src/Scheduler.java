@@ -75,24 +75,16 @@ public class Scheduler extends ServerPattern {
 				currentState = State.RESPONDING_TO_MESSAGE;
 				extractFloorReachedNumberAndGenerateResponseMessageAndActions(packet);
 			} else if (event.equals(Event.FLOOR_REQUESTED)) {
-				System.out.println("START CURR STATE:");
-				algor.printAllInfo();
 				currentState = State.RESPONDING_TO_MESSAGE;
-				extractFloorRequestedNumberAndGenerateResponseMessageAndActions(packet);
-
-				// If the elevator should stop, change the packet data to the information
-				// required and trigger the floor sensor event
-				for (byte elevatorNum = 0; elevatorNum < numElevators; elevatorNum++) {
-					currentState = State.READING_MESSAGE;
-					if (algor.getStopElevator(elevatorNum)) {
-						byte[] newData = { UtilityInformation.FLOOR_SENSOR_MODE, algor.getCurrentFloor(elevatorNum),
-								elevatorNum, -1 };
-						packet.setData(newData);
-						eventOccured(Event.FLOOR_SENSOR_ACTIVATED, packet);
-					}
+				
+				byte elevatorNum = extractFloorRequestedNumberAndGenerateResponseMessageAndActions(packet);
+				
+				if (algor.getStopElevator(elevatorNum)) {
+				    currentState = State.READING_MESSAGE;
+				    byte[] newData = {UtilityInformation.FLOOR_SENSOR_MODE, algor.getCurrentFloor(elevatorNum), elevatorNum, -1};
+				    packet.setData(newData);
+				    eventOccured(Event.FLOOR_SENSOR_ACTIVATED, packet);
 				}
-				System.out.println("END CURR STATE:");
-				algor.printAllInfo();
 
 				currentState = State.RESPONDING_TO_MESSAGE;
 			} else if (event.equals(Event.TEARDOWN)) {
@@ -242,7 +234,7 @@ public class Scheduler extends ServerPattern {
 	 * 
 	 * @param recievedData
 	 */
-	protected void extractFloorRequestedNumberAndGenerateResponseMessageAndActions(DatagramPacket recievedPacket) {
+	protected byte extractFloorRequestedNumberAndGenerateResponseMessageAndActions(DatagramPacket recievedPacket) {
 		UtilityInformation.ElevatorDirection upOrDown = null;
 		if (recievedPacket.getData()[2] == 0) {
 			upOrDown = UtilityInformation.ElevatorDirection.DOWN;
@@ -264,6 +256,8 @@ public class Scheduler extends ServerPattern {
 			sendMessage(destinationFloor, destinationFloor.length, recievedPacket.getAddress(),
 					UtilityInformation.ELEVATOR_PORT_NUM);
 		}
+		
+		return(elevatorNum);
 	}
 
 	/**
