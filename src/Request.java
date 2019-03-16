@@ -8,11 +8,14 @@ public class Request {
 	private boolean elevatorArrivedDestinationTimeFlag;
 	private byte source;
 	private byte destination;
+	private UtilityInformation.ElevatorDirection requestDirection;
 
-	public Request(long requestArrived, byte source, byte destination) {
+	public Request(long requestArrived, byte source, byte destination,
+			UtilityInformation.ElevatorDirection requestDirection) {
 		elevatorRequestTime = requestArrived;
 		this.source = source;
 		this.destination = destination;
+		this.requestDirection = requestDirection;
 		elevatorPickupTime = 0;
 		elevatorArrivedDestinationTime = 0;
 		elevatorPickupTimeFlag = false;
@@ -42,7 +45,7 @@ public class Request {
 
 	public void printRequestDetails() {
 		System.out.println("\nELEVATOR REQUEST: ");
-		System.out.println("Source: " + source + "Destination: " + destination);
+		System.out.println("Source: " + source + ", Destination: " + destination + ", Direction: " + requestDirection);
 		System.out.println("Elevator was requested at: " + elevatorRequestTime + "ns.");
 		if (elevatorPickupTime != 0) {
 			System.out.println("It took " + (elevatorPickupTime - elevatorRequestTime)
@@ -52,6 +55,19 @@ public class Request {
 			System.out.println("It took " + (elevatorArrivedDestinationTime - elevatorRequestTime)
 					+ "ns for the passenger to reach their destination from time of request.");
 		}
+		System.out.println();
+	}
+
+	public byte getSourceFloor() {
+		return source;
+	}
+
+	public byte getDestinationFloor() {
+		return destination;
+	}
+
+	public UtilityInformation.ElevatorDirection getRequestDirection() {
+		return requestDirection;
 	}
 
 }

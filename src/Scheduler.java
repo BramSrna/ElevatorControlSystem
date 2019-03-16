@@ -25,6 +25,7 @@ public class Scheduler extends ServerPattern {
 	private ArrayList<UtilityInformation.ElevatorDirection> elevatorDirection;
 	private State currentState;
 	private byte numElevators;
+	private long messageRecieveTime;
 
 	private SchedulerAlgorithm algor;
 
@@ -83,14 +84,15 @@ public class Scheduler extends ServerPattern {
 				extractFloorReachedNumberAndGenerateResponseMessageAndActions(packet);
 			} else if (event.equals(Event.FLOOR_REQUESTED)) {
 				currentState = State.RESPONDING_TO_MESSAGE;
-				
+
 				byte elevatorNum = extractFloorRequestedNumberAndGenerateResponseMessageAndActions(packet);
-				
+
 				if (algor.getStopElevator(elevatorNum)) {
-				    currentState = State.READING_MESSAGE;
-				    byte[] newData = {UtilityInformation.FLOOR_SENSOR_MODE, algor.getCurrentFloor(elevatorNum), elevatorNum, -1};
-				    packet.setData(newData);
-				    eventOccured(Event.FLOOR_SENSOR_ACTIVATED, packet);
+					currentState = State.READING_MESSAGE;
+					byte[] newData = { UtilityInformation.FLOOR_SENSOR_MODE, algor.getCurrentFloor(elevatorNum),
+							elevatorNum, -1 };
+					packet.setData(newData);
+					eventOccured(Event.FLOOR_SENSOR_ACTIVATED, packet);
 				}
 
 				currentState = State.RESPONDING_TO_MESSAGE;
@@ -263,8 +265,8 @@ public class Scheduler extends ServerPattern {
 			sendMessage(destinationFloor, destinationFloor.length, recievedPacket.getAddress(),
 					UtilityInformation.ELEVATOR_PORT_NUM);
 		}
-		
-		return(elevatorNum);
+
+		return (elevatorNum);
 	}
 
 	/**
@@ -402,10 +404,10 @@ public class Scheduler extends ServerPattern {
 	/**
 	 * handleDoorFixMessage
 	 * 
-	 * Handle a message stating that the door was fixed.
-	 * Tells the algorithm to start using that elevator again.
+	 * Handle a message stating that the door was fixed. Tells the algorithm to
+	 * start using that elevator again.
 	 * 
-	 * @param recievedPacket   The received packet containing the message
+	 * @param recievedPacket The received packet containing the message
 	 * 
 	 * @return None
 	 */
@@ -472,16 +474,16 @@ public class Scheduler extends ServerPattern {
 	/**
 	 * runScheduler
 	 * 
-	 * Runs the scheduler object. 
-	 * Receives and handle packets.
+	 * Runs the scheduler object. Receives and handle packets.
 	 * 
-	 * @param  None
+	 * @param None
 	 * 
 	 * @return None
 	 */
 	public void runSheduler() {
 		while (true) {
 			DatagramPacket nextReq = this.getNextRequest();
+			messageRecieveTime = System.nanoTime();
 			eventOccured(Event.MESSAGE_RECIEVED, nextReq);
 		}
 	}
