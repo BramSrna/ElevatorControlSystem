@@ -251,8 +251,10 @@ public class Scheduler extends ServerPattern {
 			upOrDown = UtilityInformation.ElevatorDirection.UP;
 		}
 
-		byte elevatorNum = algor.elevatorRequestMade(recievedPacket.getData()[1], recievedPacket.getData()[3],
+		Request tempRequest = new Request(messageRecieveTime, recievedPacket.getData()[1], recievedPacket.getData()[3],
 				upOrDown);
+
+		byte elevatorNum = algor.elevatorRequestMade(tempRequest);
 
 		// Update elevator destinations
 		ArrayList<Byte> elevatorDestinations = algor.getDestinations(elevatorNum);
