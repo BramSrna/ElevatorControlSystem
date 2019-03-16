@@ -72,7 +72,6 @@ public class Scheduler extends ServerPattern {
 	 * @param packet
 	 */
 	private void eventOccured(Event event, DatagramPacket packet) {
-		// TODO Try and clean this up
 		switch (currentState) {
 		case READING_MESSAGE:
 			if (event.equals(Event.CONFIG_MESSAGE)) {
@@ -385,6 +384,8 @@ public class Scheduler extends ServerPattern {
 		if (algor.getStopElevator(elevatorNum)) {
 			stopElevator(recievedPacket, elevatorNum);
 			openElevatorDoors(recievedPacket);
+			// TODO
+			long updatedTime = System.nanoTime();
 		}
 
 		// Continue moving elevator
@@ -439,6 +440,10 @@ public class Scheduler extends ServerPattern {
 		sendMessage(receivedPacket.getData(), receivedPacket.getData().length, receivedPacket.getAddress(),
 				UtilityInformation.ELEVATOR_PORT_NUM);
 		algor.resumeUsingElevator(elevatorNum);
+	}
+
+	private void updateRequestTimes(ArrayList<Request> request, long updatedTime) {
+
 	}
 
 	/**

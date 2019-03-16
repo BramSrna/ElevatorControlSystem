@@ -70,4 +70,12 @@ public class Request {
 		return requestDirection;
 	}
 
+	public boolean getElevatorPickupTimeFlag() {
+		return elevatorPickupTimeFlag;
+	}
+
+	public boolean getElevatorArrivedDestinationTimeFlag() {
+		return elevatorArrivedDestinationTimeFlag;
+	}
+
 }
