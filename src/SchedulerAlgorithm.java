@@ -8,6 +8,11 @@ public class SchedulerAlgorithm {
 	private ArrayList<ArrayList<Byte>> elevatorDestinations; // Index: Elevators, ArrayList: Elevator destinations
 	private ArrayList<Boolean> elevatorUsable;
 
+	// I added this for now so there wouldn't be any errors in Scheduler
+	public ArrayList<Request> getRequests() {
+		return new ArrayList<Request>();
+	}
+
 	/**
 	 * SchedulerAlgorithm
 	 * 
