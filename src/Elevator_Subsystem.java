@@ -27,7 +27,7 @@ import java.util.*;
  * 
  * Last Edited March 7, 2019.
  */
-public class Elevator_Subsystem  {
+public class Elevator_Subsystem extends ServerPattern {
 	// ArrayList containing all the elevators being used by an instance of the system.
 	ArrayList<Elevator> allElevators = new ArrayList<>();
 	
@@ -44,7 +44,7 @@ public class Elevator_Subsystem  {
 
 	// Datagram Packets and Sockets for sending and receiving data
 	DatagramPacket sendPacket, receivePacket;
-	DatagramSocket sendSocket, receiveSocket;
+	DatagramSocket sendSocket;
 
 	// Information for System
 	private InetAddress schedulerIP;
@@ -67,6 +67,8 @@ public class Elevator_Subsystem  {
 
 	// General Constructor for Elevator Subsystem class.
 	public Elevator_Subsystem() {
+	    super(UtilityInformation.ELEVATOR_PORT_NUM, "Elevator_Subsystem");
+	    
 		try {
 			schedulerIP = InetAddress.getLocalHost();
 		} catch (UnknownHostException e) {
@@ -79,11 +81,6 @@ public class Elevator_Subsystem  {
 			// host machine. This socket will be used to
 			// send UDP Datagram packets.
 			sendSocket = new DatagramSocket();
-
-			// Construct a Datagram socket and bind it to port 420 (the Scheduler) on the
-			// local host machine. This socket will be used to
-			// receive UDP Datagram packets.
-			receiveSocket = new DatagramSocket(UtilityInformation.ELEVATOR_PORT_NUM);
 		} catch (SocketException se) {
 			se.printStackTrace();
 			System.exit(1);
@@ -140,27 +137,8 @@ public class Elevator_Subsystem  {
 	 * performed, if not, it is considered invalid.
 	 */
 	public void receiveData() {
-		byte data[] = new byte[100];
-		receivePacket = new DatagramPacket(data, data.length);
-		System.out.println("Elevator: Waiting for Packet.\n");
-
-		// Block until a datagram packet is received from receiveSocket.
-		try {
-			receiveSocket.receive(receivePacket);
-		} catch (IOException e) {
-			System.out.print("IO Exception: likely:");
-			System.out.println("Receive Socket Timed Out.\n" + e);
-			e.printStackTrace();
-			System.exit(1);
-		}
-		// Process the received Datagram.
-		System.out.println("Elevator: Packet received:");
-		System.out.println("From host: " + receivePacket.getAddress());
-		System.out.println("Host port: " + receivePacket.getPort());
-		int len = receivePacket.getLength();
-		System.out.println("Length: " + len);
-		System.out.print("Containing: ");
-		System.out.println(Arrays.toString(data) + "\n");
+		receivePacket = this.getNextRequest();
+		byte data[] = receivePacket.getData();
 		
 		// ALL messages except config have the current elevator in data[2]
 		if(data[0]!= UtilityInformation.CONFIG_MODE) {
@@ -429,7 +407,7 @@ public class Elevator_Subsystem  {
 		} else if (data[0] == UtilityInformation.TEARDOWN_MODE) {
 			System.out.println("Tear-Down Mode");
 			sendSocket.close();
-			receiveSocket.close();
+			super.teardown();
 			System.exit(1);
 		} 
 		
