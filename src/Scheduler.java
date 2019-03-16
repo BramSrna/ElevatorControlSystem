@@ -386,6 +386,7 @@ public class Scheduler extends ServerPattern {
 			openElevatorDoors(recievedPacket);
 			// TODO
 			long updatedTime = System.nanoTime();
+			updateRequestTimes(algor.getRequests(), updatedTime);
 		}
 
 		// Continue moving elevator
@@ -443,7 +444,14 @@ public class Scheduler extends ServerPattern {
 	}
 
 	private void updateRequestTimes(ArrayList<Request> request, long updatedTime) {
-
+		for (Request temp : request) {
+			if (temp.getElevatorPickupTimeFlag()) {
+				temp.setElevatorPickupTime(updatedTime);
+			}
+			if (temp.getElevatorArrivedDestinationTimeFlag()) {
+				temp.setElevatorArrivedDestinationTime(updatedTime);
+			}
+		}
 	}
 
 	/**
