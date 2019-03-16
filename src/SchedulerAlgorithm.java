@@ -13,8 +13,7 @@ public class SchedulerAlgorithm {
 	 * 
 	 * Constructor
 	 * 
-	 * Creates a new scheduler algorithm class with
-	 * the given number of elevators.
+	 * Creates a new scheduler algorithm class with the given number of elevators.
 	 * 
 	 * @param numElevators Number of elevators that the algorithm should control
 	 */
@@ -31,12 +30,13 @@ public class SchedulerAlgorithm {
 	/**
 	 * Called when someone on the floor has requested an elevator
 	 * 
-	 * @param source
-	 * @param destination
-	 * @param upOrDown
+	 * @param request
 	 * @return
 	 */
-	public byte elevatorRequestMade(Byte source, Byte destination, UtilityInformation.ElevatorDirection upOrDown) {
+	public byte elevatorRequestMade(Request request) {
+		Byte source = request.getSourceFloor();
+		Byte destination = request.getDestinationFloor();
+		UtilityInformation.ElevatorDirection upOrDown = request.getRequestDirection();
 		System.out.println("Elevator was requested at: " + source + " in the direction " + upOrDown
 				+ " with destination " + destination);
 
@@ -55,10 +55,10 @@ public class SchedulerAlgorithm {
 	/**
 	 * determineElevatorToGiveRequest
 	 * 
-	 * Determines which elevator in the system should be given the request
-	 * with the given start floor.
+	 * Determines which elevator in the system should be given the request with the
+	 * given start floor.
 	 * 
-	 * @param startFloor   Floor number where request was made
+	 * @param startFloor Floor number where request was made
 	 * 
 	 * @return byte containg the elevator number that was given teh request
 	 */
@@ -123,13 +123,14 @@ public class SchedulerAlgorithm {
 	/**
 	 * addStopToElevator
 	 * 
-	 * Adds the given floor to the list of elevator stops for the
-	 * given elevator number. A minimum index is given that controls
-	 * how early the stop can be placed in the list.
+	 * Adds the given floor to the list of elevator stops for the given elevator
+	 * number. A minimum index is given that controls how early the stop can be
+	 * placed in the list.
 	 * 
-	 * @param elevatorNum  Elevator number that will get the new request
-	 * @param destFloor    Destination floor that should be added to the list of stops
-	 * @param minInd       Minimum index of the new stop in the list
+	 * @param elevatorNum Elevator number that will get the new request
+	 * @param destFloor   Destination floor that should be added to the list of
+	 *                    stops
+	 * @param minInd      Minimum index of the new stop in the list
 	 * 
 	 * @return Byte The index in the list where the request was placed
 	 */
@@ -143,20 +144,20 @@ public class SchedulerAlgorithm {
 
 		// First check if the list is empty
 		if (currDests.size() == 0) {
-		    // If empty, just add the floor to the list
+			// If empty, just add the floor to the list
 			currDests.add(destFloor);
 		} else {
-		    // Otherwise, check if the value is already in the list
+			// Otherwise, check if the value is already in the list
 			if (!(currDests.contains(destFloor))) {
-			    // If not in the list, add the value
-	            // Find the best spot in the list
-			    
+				// If not in the list, add the value
+				// Find the best spot in the list
+
 				endInd = -1;
 				// Loop through all stops
 				for (byte i = minInd; i < currDests.size(); i++) {
 					if (i != currDests.size() - 1) {
-					    // If the stop can be placed between two existing stops,
-					    // add the stop there
+						// If the stop can be placed between two existing stops,
+						// add the stop there
 						if (((currDests.get(i) < destFloor) && (currDests.get(i + 1) > destFloor))
 								|| ((currDests.get(i) > destFloor) && (currDests.get(i + 1) < destFloor))) {
 							endInd = (byte) (i + 1);
@@ -239,8 +240,7 @@ public class SchedulerAlgorithm {
 	 * @return
 	 */
 	public UtilityInformation.ElevatorDirection whatDirectionShouldTravel(byte elevatorNum) {
-		if ((elevatorStops.get(elevatorNum).size() != 0) && 
-		        (elevatorUsable.get(elevatorNum) == true)) {
+		if ((elevatorStops.get(elevatorNum).size() != 0) && (elevatorUsable.get(elevatorNum) == true)) {
 			int nextFloor = elevatorStops.get(elevatorNum).get(0);
 
 			if (nextFloor > currentFloor.get(elevatorNum)) {
@@ -349,11 +349,10 @@ public class SchedulerAlgorithm {
 	/**
 	 * stopUsingElevator
 	 * 
-	 * Tells the algorithm to stop using the given elevator
-	 * and to remove all stops from that elevator and add
-	 * them to a different elevator.
+	 * Tells the algorithm to stop using the given elevator and to remove all stops
+	 * from that elevator and add them to a different elevator.
 	 * 
-	 * @param elevatorNum  The number of the elevator to stop using
+	 * @param elevatorNum The number of the elevator to stop using
 	 * 
 	 * @return None
 	 */
@@ -372,10 +371,11 @@ public class SchedulerAlgorithm {
 			ind++;
 		}
 
-		// Move all stops from the broken elevator to the elevator with the shortest queuse
+		// Move all stops from the broken elevator to the elevator with the shortest
+		// queuse
 		ArrayList<Byte> currStops = elevatorStops.get(elevatorNum);
 		// Add the current floor of the broken elevator first
-	    elevatorStops.get(shortestQueue).add(currentFloor.get(elevatorNum));
+		elevatorStops.get(shortestQueue).add(currentFloor.get(elevatorNum));
 		elevatorStops.get(shortestQueue).addAll(currStops);
 
 		// Clear the list of stops and destinations
@@ -393,10 +393,10 @@ public class SchedulerAlgorithm {
 	/**
 	 * pauseElevator
 	 * 
-	 * Temporarily stop using the given elevator.
-	 * Requests are NOT removed from the elevator, it is just paused.
+	 * Temporarily stop using the given elevator. Requests are NOT removed from the
+	 * elevator, it is just paused.
 	 * 
-	 * @param elevatorNum  Number of elevator to stop using
+	 * @param elevatorNum Number of elevator to stop using
 	 * 
 	 * @return None
 	 */
@@ -411,7 +411,7 @@ public class SchedulerAlgorithm {
 	 * 
 	 * Unpause the given elevator
 	 * 
-	 * @param elevatorNum  Number of elevator to unpause
+	 * @param elevatorNum Number of elevator to unpause
 	 * 
 	 * @return None
 	 */
