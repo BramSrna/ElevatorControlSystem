@@ -5,6 +5,7 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 
 public class Scheduler extends ServerPattern {
 
@@ -256,13 +257,12 @@ public class Scheduler extends ServerPattern {
 		byte elevatorNum = algor.elevatorRequestMade(tempRequest);
 
 		// Update elevator destinations
-		ArrayList<Byte> elevatorDestinations = algor.getDestinations(elevatorNum);
+		LinkedHashSet<Byte> elevatorDestinations = algor.getDestinations(elevatorNum);
 		if (elevatorDestinations.size() > 0) {
-			byte[] destinationFloor = { UtilityInformation.SEND_DESTINATION_TO_ELEVATOR_MODE,
-					elevatorDestinations.get(0), elevatorNum, UtilityInformation.END_OF_MESSAGE };
-			for (int a = 0; a < 10000; a++) {
-				// Delay
-			}
+			byte[] destinationFloor = {UtilityInformation.SEND_DESTINATION_TO_ELEVATOR_MODE,
+                    				   elevatorDestinations.iterator().next(), 
+                    				   elevatorNum, 
+                    				   UtilityInformation.END_OF_MESSAGE };
 			sendMessage(destinationFloor, destinationFloor.length, recievedPacket.getAddress(),
 					UtilityInformation.ELEVATOR_PORT_NUM);
 		}
@@ -386,7 +386,7 @@ public class Scheduler extends ServerPattern {
 			openElevatorDoors(recievedPacket);
 			// TODO
 			long updatedTime = System.nanoTime();
-			updateRequestTimes(algor.getRequests(), updatedTime);
+			updateRequestTimes(algor.getRequests(elevatorNum), updatedTime);
 		}
 
 		// Continue moving elevator

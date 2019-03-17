@@ -33,13 +33,11 @@ public class Request {
 
 	public void setElevatorPickupTime(long time) {
 		elevatorPickupTime = time;
-		elevatorPickupTimeFlag = false;
 		printRequestDetails();
 	}
 
 	public void setElevatorArrivedDestinationTime(long time) {
 		elevatorArrivedDestinationTime = time;
-		elevatorArrivedDestinationTimeFlag = false;
 		printRequestDetails();
 	}
 

@@ -1,17 +1,8 @@
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 
-public class SchedulerAlgorithm {
-
-	private ArrayList<ArrayList<Byte>> elevatorStops; // Index: Elevators, ArrayList: Elevator stops
-	private ArrayList<Byte> currentFloor; // Index: Elevators, Byte: Current floor
-	private ArrayList<Boolean> stopElevator; // Index: Elevators, Boolean: Should stop elevator
-	private ArrayList<ArrayList<Byte>> elevatorDestinations; // Index: Elevators, ArrayList: Elevator destinations
-	private ArrayList<Boolean> elevatorUsable;
-
-	// I added this for now so there wouldn't be any errors in Scheduler
-	public ArrayList<Request> getRequests() {
-		return new ArrayList<Request>();
-	}
+public class SchedulerAlgorithm {	
+	private ArrayList<AlgorithmElevator> elevatorInfo;
 
 	/**
 	 * SchedulerAlgorithm
@@ -23,12 +14,8 @@ public class SchedulerAlgorithm {
 	 * @param numElevators Number of elevators that the algorithm should control
 	 */
 	public SchedulerAlgorithm(byte numElevators) {
-		elevatorStops = new ArrayList<ArrayList<Byte>>();
-		currentFloor = new ArrayList<Byte>();
-		stopElevator = new ArrayList<Boolean>();
-		elevatorDestinations = new ArrayList<ArrayList<Byte>>();
-		elevatorUsable = new ArrayList<Boolean>();
-
+	    elevatorInfo = new ArrayList<AlgorithmElevator>();
+	    
 		setNumberOfElevators(numElevators);
 	}
 
@@ -45,14 +32,8 @@ public class SchedulerAlgorithm {
 		System.out.println("Elevator was requested at: " + source + " in the direction " + upOrDown
 				+ " with destination " + destination);
 
-		byte elevatorNum = determineElevatorToGiveRequest(source);
-
-		if (!elevatorDestinations.get(elevatorNum).contains(destination)) {
-			elevatorDestinations.get(elevatorNum).add(destination);
-		}
-
-		byte index = addStopToElevator(elevatorNum, source, (byte) 0);
-		addStopToElevator(elevatorNum, destination, index);
+		byte elevatorNum = determineElevatorToGiveRequest(request);
+		addRequestToElevator(elevatorNum, request);
 
 		return (elevatorNum);
 	}
@@ -67,59 +48,19 @@ public class SchedulerAlgorithm {
 	 * 
 	 * @return byte containg the elevator number that was given teh request
 	 */
-	private byte determineElevatorToGiveRequest(byte startFloor) {
-		ArrayList<Integer> closestElevator = new ArrayList<Integer>();
-		int closestDiff = -1;
+	private byte determineElevatorToGiveRequest(Request request) {
 		int chosenElevator = -1;
-		int currDiff;
+		int minQueueSize = -1;
+		int currQueueSize;
 
 		// Add destination to closest elevator
-		for (int i = 0; i < currentFloor.size(); i++) {
-			currDiff = Math.abs(currentFloor.get(i) - startFloor);
-			if (elevatorUsable.get(i) && ((closestDiff == -1) || (currDiff <= closestDiff))) { // same as below
-				closestElevator.add(i);
-				closestDiff = currDiff;
+		for (int i = 0; i < elevatorInfo.size(); i++) {
+			currQueueSize = elevatorInfo.get(i).getRequests().size();
+			if (elevatorInfo.get(i).isUsable() && 
+			        ((minQueueSize == -1) || (currQueueSize <= minQueueSize))) { // same as below
+			    minQueueSize = currQueueSize;
+				chosenElevator = i;
 			}
-		}
-
-		// Break ties by prioritizing elevators above the start floor
-		if (closestElevator.size() > 1) {
-			ArrayList<Integer> indicesToRemove = new ArrayList<Integer>();
-
-			for (int i = 0; i < closestElevator.size(); i++) {
-				if (currentFloor.get(closestElevator.get(i)) < startFloor) {
-					indicesToRemove.add(i);
-				}
-			}
-
-			if (indicesToRemove.size() < closestElevator.size()) {
-				for (int index : indicesToRemove) {
-					closestElevator.set(index, null);
-				}
-			}
-
-			while (closestElevator.remove(null)) {
-			}
-			;
-
-			// Break ties by prioritizing shortest queues
-			int shortestQueue = -1;
-			int currQueueSize;
-
-			if (closestElevator.size() > 1) {
-				for (int i = 0; i < closestElevator.size(); i++) {
-					currQueueSize = elevatorStops.get(closestElevator.get(i)).size();
-					if ((shortestQueue == -1) || (currQueueSize < shortestQueue)) {
-						chosenElevator = closestElevator.get(i);
-						shortestQueue = currQueueSize;
-
-					}
-				}
-			} else {
-				chosenElevator = closestElevator.get(0);
-			}
-		} else {
-			chosenElevator = closestElevator.get(0);
 		}
 
 		return ((byte) chosenElevator);
@@ -139,58 +80,8 @@ public class SchedulerAlgorithm {
 	 * 
 	 * @return Byte The index in the list where the request was placed
 	 */
-	private byte addStopToElevator(byte elevatorNum, byte destFloor, byte minInd) {
-		byte endInd = 0;
-		int closestDiff = Integer.MAX_VALUE;
-		int currDiff;
-		byte closestInd = 0;
-
-		ArrayList<Byte> currDests = elevatorStops.get(elevatorNum);
-
-		// First check if the list is empty
-		if (currDests.size() == 0) {
-			// If empty, just add the floor to the list
-			currDests.add(destFloor);
-		} else {
-			// Otherwise, check if the value is already in the list
-			if (!(currDests.contains(destFloor))) {
-				// If not in the list, add the value
-				// Find the best spot in the list
-
-				endInd = -1;
-				// Loop through all stops
-				for (byte i = minInd; i < currDests.size(); i++) {
-					if (i != currDests.size() - 1) {
-						// If the stop can be placed between two existing stops,
-						// add the stop there
-						if (((currDests.get(i) < destFloor) && (currDests.get(i + 1) > destFloor))
-								|| ((currDests.get(i) > destFloor) && (currDests.get(i + 1) < destFloor))) {
-							endInd = (byte) (i + 1);
-						}
-					}
-
-					// Check how close the current stop is to the new stop
-					currDiff = Math.abs(currDests.get(i) - destFloor);
-					if (currDiff < closestDiff) {
-						closestDiff = currDiff;
-						closestInd = i;
-					}
-
-				}
-
-				// If the stop cannot be palced in between two stops,
-				// add it in the list nearest to the closest stop
-				if (endInd == -1) {
-					endInd = (byte) (closestInd + 1);
-				}
-
-				currDests.add(endInd, destFloor);
-			}
-		}
-
-		System.out.println("New request list: " + elevatorStops + "\n");
-
-		return (endInd);
+	private void addRequestToElevator(byte elevatorNum, Request request) {
+		elevatorInfo.get(elevatorNum).addRequest(request);
 	}
 
 	/**
@@ -202,40 +93,26 @@ public class SchedulerAlgorithm {
 	 */
 	public void elevatorHasReachedFloor(Byte floorNum, Byte elevatorNum) {
 		System.out.println("Elevator " + elevatorNum + " has reached floor: " + floorNum);
-
-		if ((elevatorStops.get(elevatorNum).size() > 0) && (elevatorStops.get(elevatorNum).get(0) == floorNum)) {
-			System.out.println("Current floor is a destination.");
-			stopElevator.set(elevatorNum, true);
-			removeFloorFromDestinations(floorNum, elevatorNum);
-		} else {
-			stopElevator.set(elevatorNum, false);
+		
+		boolean stopElevator = true;
+		
+		for (Request req : elevatorInfo.get(elevatorNum).getRequests()) {
+		    if ((req.getElevatorPickupTimeFlag() == false) && 
+		        (req.getSourceFloor() == floorNum)) {
+		        req.setElevatorPickupTimeFlag();
+		        elevatorInfo.get(elevatorNum).setDir(UtilityInformation.ElevatorDirection.STATIONARY);
+		    } else if ((req.getElevatorPickupTimeFlag() == true) && 
+    		           (req.getElevatorArrivedDestinationTimeFlag() == false) && 
+    		           (req.getDestinationFloor() == floorNum)) {
+		        req.setElevatorArrivedDestinationTimeFlag();
+		        elevatorInfo.get(elevatorNum).setDir(UtilityInformation.ElevatorDirection.STATIONARY);
+		    } else {
+		        stopElevator = false;
+		    }
 		}
 
-		currentFloor.set(elevatorNum, floorNum);
-	}
-
-	/**
-	 * Remove a floor from an elevator's destinations
-	 * 
-	 * @param currentFloor
-	 * @param currentElevator
-	 */
-	private void removeFloorFromDestinations(byte currentFloor, byte currentElevator) {
-		if (elevatorStops.get(currentElevator).contains(currentFloor)) {
-			int indToRemove = elevatorStops.get(currentElevator).indexOf(currentFloor);
-			if (indToRemove != -1) {
-				elevatorStops.get(currentElevator).remove(indToRemove);
-			}
-
-			indToRemove = elevatorDestinations.get(currentElevator).indexOf(currentFloor);
-
-			if (indToRemove != -1) {
-				elevatorDestinations.get(currentElevator).remove(indToRemove);
-			}
-
-			System.out.println(currentFloor + " was removed from the destinations list");
-			System.out.println("New destination list: " + elevatorStops.toString() + "\n");
-		}
+		elevatorInfo.get(elevatorNum).setStopElevator(stopElevator);
+		elevatorInfo.get(elevatorNum).setCurrFloor(floorNum);
 	}
 
 	/**
@@ -245,19 +122,59 @@ public class SchedulerAlgorithm {
 	 * @return
 	 */
 	public UtilityInformation.ElevatorDirection whatDirectionShouldTravel(byte elevatorNum) {
-		if ((elevatorStops.get(elevatorNum).size() != 0) && (elevatorUsable.get(elevatorNum) == true)) {
-			int nextFloor = elevatorStops.get(elevatorNum).get(0);
-
-			if (nextFloor > currentFloor.get(elevatorNum)) {
-				return (UtilityInformation.ElevatorDirection.UP);
-			} else if (nextFloor < currentFloor.get(elevatorNum)) {
-				return (UtilityInformation.ElevatorDirection.DOWN);
+		if ((elevatorInfo.get(elevatorNum).getRequests().size() != 0) && 
+		        (elevatorInfo.get(elevatorNum).isUsable())) {
+			UtilityInformation.ElevatorDirection currDir = elevatorInfo.get(elevatorNum).getDir();
+			int currFloor = elevatorInfo.get(elevatorNum).getCurrFloor();
+			
+			if (currDir == UtilityInformation.ElevatorDirection.UP) {
+			    for (Request req : elevatorInfo.get(elevatorNum).getRequests()) {
+			        if (((req.getElevatorPickupTimeFlag() == false) && (req.getSourceFloor() > currFloor)) ||
+			            ((req.getElevatorPickupTimeFlag() == true) && (req.getElevatorArrivedDestinationTimeFlag() == false) && (req.getDestinationFloor() > currFloor))){
+			            return(elevatorInfo.get(elevatorNum).getDir());
+			        }
+			    }
+			    elevatorInfo.get(elevatorNum).setDir(UtilityInformation.ElevatorDirection.DOWN);
+			} else if (currDir == UtilityInformation.ElevatorDirection.DOWN) {
+			    for (Request req : elevatorInfo.get(elevatorNum).getRequests()) {
+                    if (((req.getElevatorPickupTimeFlag() == false) && (req.getSourceFloor() < currFloor)) ||
+                        ((req.getElevatorPickupTimeFlag() == true) && (req.getElevatorArrivedDestinationTimeFlag() == false) && (req.getDestinationFloor() < currFloor))){
+                        return(elevatorInfo.get(elevatorNum).getDir());
+                    }
+                }
+                elevatorInfo.get(elevatorNum).setDir(UtilityInformation.ElevatorDirection.UP);
 			} else {
-				return (UtilityInformation.ElevatorDirection.STATIONARY);
+			    int closestDiff = -1;
+			    int currDiff;
+			    int nextFloor = currFloor;
+			    
+			    for (Request req : elevatorInfo.get(elevatorNum).getRequests()) {
+			        if (req.getElevatorPickupTimeFlag() == false) {
+			            currDiff = Math.abs(currFloor - req.getSourceFloor());
+			            if ((closestDiff == -1) || (currDiff < closestDiff)) {
+			                closestDiff = currDiff;
+			                nextFloor = req.getSourceFloor();
+			            }
+			        } else if ((req.getElevatorPickupTimeFlag() == true) && (req.getElevatorArrivedDestinationTimeFlag() == false)) {
+			            currDiff = Math.abs(currFloor - req.getDestinationFloor());
+                        if ((closestDiff == -1) || (currDiff < closestDiff)) {
+                            closestDiff = currDiff;
+                            nextFloor = req.getDestinationFloor();
+                        }
+			        }
+			    }
+			        
+		        if (nextFloor > currFloor) {
+		            elevatorInfo.get(elevatorNum).setDir(UtilityInformation.ElevatorDirection.UP);
+		        } else if (nextFloor < currFloor) {
+		            elevatorInfo.get(elevatorNum).setDir(UtilityInformation.ElevatorDirection.DOWN);
+		        }
 			}
 		} else {
-			return (UtilityInformation.ElevatorDirection.STATIONARY);
+		    elevatorInfo.get(elevatorNum).setDir(UtilityInformation.ElevatorDirection.STATIONARY);
 		}
+		
+		return(elevatorInfo.get(elevatorNum).getDir());
 	}
 
 	/**
@@ -267,7 +184,14 @@ public class SchedulerAlgorithm {
 	 * @return
 	 */
 	public boolean somewhereToGo(byte elevatorNum) {
-		return (!elevatorStops.get(elevatorNum).isEmpty());
+		for (Request req : elevatorInfo.get(elevatorNum).getRequests()) {
+		    if ((req.getElevatorPickupTimeFlag() == false) ||
+		        (req.getElevatorArrivedDestinationTimeFlag() == false)) {
+		        return(true);
+		    }
+		}
+		
+		return(false);
 	}
 
 	/**
@@ -278,26 +202,12 @@ public class SchedulerAlgorithm {
 	 * @param numElevators
 	 */
 	public void setNumberOfElevators(byte numElevators) {
-		while (stopElevator.size() > numElevators) {
-			elevatorStops.remove(elevatorStops.size() - 1);
-			currentFloor.remove(currentFloor.size() - 1);
-			stopElevator.remove(stopElevator.size() - 1);
-			elevatorDestinations.remove(elevatorDestinations.size() - 1);
-			elevatorUsable.remove(elevatorUsable.size() - 1);
+		while (elevatorInfo.size() > numElevators) {
+			elevatorInfo.remove(elevatorInfo.size() - 1);
 		}
 
-		while (stopElevator.size() < numElevators) {
-			currentFloor.add((byte) 0);
-			stopElevator.add(true);
-			elevatorUsable.add(true);
-
-			ArrayList<Byte> temp = new ArrayList<Byte>();
-
-			elevatorStops.add(temp);
-
-			temp = new ArrayList<Byte>();
-
-			elevatorDestinations.add(temp);
+		while (elevatorInfo.size() < numElevators) {
+			elevatorInfo.add(new AlgorithmElevator((byte) elevatorInfo.size()));
 		}
 	}
 
@@ -307,8 +217,14 @@ public class SchedulerAlgorithm {
 	 * @param elevatorNum
 	 * @return
 	 */
-	public ArrayList<Byte> getDestinations(byte elevatorNum) {
-		return elevatorDestinations.get(elevatorNum);
+	public LinkedHashSet<Byte> getDestinations(byte elevatorNum) {
+	    LinkedHashSet<Byte> dests = new LinkedHashSet<Byte>();
+	    
+	    for (Request req : elevatorInfo.get(elevatorNum).getRequests()) {
+	        dests.add(req.getDestinationFloor());
+	    }
+	    
+		return(dests);
 	}
 
 	/**
@@ -318,7 +234,7 @@ public class SchedulerAlgorithm {
 	 * @return
 	 */
 	public byte getCurrentFloor(byte elevatorNum) {
-		return currentFloor.get(elevatorNum);
+		return elevatorInfo.get(elevatorNum).getCurrFloor();
 	}
 
 	/**
@@ -328,7 +244,7 @@ public class SchedulerAlgorithm {
 	 * @return
 	 */
 	public boolean getStopElevator(byte elevatorNum) {
-		return stopElevator.get(elevatorNum);
+		return elevatorInfo.get(elevatorNum).getStopElevator();
 	}
 
 	/**
@@ -338,17 +254,16 @@ public class SchedulerAlgorithm {
 	 * @param newVal
 	 */
 	public void setStopElevator(byte elevatorNum, boolean newVal) {
-		stopElevator.set(elevatorNum, newVal);
+		elevatorInfo.get(elevatorNum).setStopElevator(newVal);
 	}
 
 	/**
 	 * Print all the information in the lists (for testing purposes)
 	 */
 	public void printAllInfo() {
-		System.out.println(elevatorStops);
-		System.out.println(currentFloor);
-		System.out.println(stopElevator);
-		System.out.println(elevatorDestinations);
+		for (AlgorithmElevator elevator : elevatorInfo) {
+		    elevator.toString();
+		}
 	}
 
 	/**
@@ -362,36 +277,36 @@ public class SchedulerAlgorithm {
 	 * @return None
 	 */
 	public void stopUsingElevator(byte elevatorNum) {
-		int ind = 0;
-		int shortestQueue = -1;
-		int shortestQueueSize = -1;
-
-		// Find the elevator with the shortest queue
-		while (ind < elevatorStops.size()) {
-			if ((ind != elevatorNum)
-					&& ((shortestQueueSize == -1) || (shortestQueueSize < elevatorStops.get(ind).size()))) {
-				shortestQueueSize = elevatorStops.get(ind).size();
-				shortestQueue = ind;
-			}
-			ind++;
-		}
 
 		// Move all stops from the broken elevator to the elevator with the shortest
 		// queuse
-		ArrayList<Byte> currStops = elevatorStops.get(elevatorNum);
-		// Add the current floor of the broken elevator first
-		elevatorStops.get(shortestQueue).add(currentFloor.get(elevatorNum));
-		elevatorStops.get(shortestQueue).addAll(currStops);
+		ArrayList<Request> currReqs = elevatorInfo.get(elevatorNum).getRequests();
+		byte currFloor = elevatorInfo.get(elevatorNum).getCurrFloor();
+		Request tempReq;
+		byte startFloor;
+		byte destFloor;
+		UtilityInformation.ElevatorDirection dir;
+		
+		for (Request req : currReqs) {
+		    if (req.getElevatorPickupTimeFlag()) {
+		        startFloor = currFloor;
+		        destFloor = req.getDestinationFloor();
+		        
+		        if (startFloor < destFloor) {
+		            dir = UtilityInformation.ElevatorDirection.UP;
+		        } else {
+		            dir = UtilityInformation.ElevatorDirection.DOWN;
+		        }
+		        
+		        tempReq = new Request(System.nanoTime(), startFloor, destFloor, dir);
+		    } else {
+		        tempReq = req;
+		    }
+		    
+		    elevatorRequestMade(tempReq);
+		}
 
-		// Clear the list of stops and destinations
-		byte currFloor = currentFloor.get(elevatorNum);
-
-		elevatorStops.set(elevatorNum, new ArrayList<Byte>());
-		elevatorStops.get(elevatorNum).add(currFloor);
-
-		elevatorDestinations.set(elevatorNum, new ArrayList<Byte>());
-		elevatorDestinations.get(elevatorNum).add(currFloor);
-
+		elevatorInfo.get(elevatorNum).clearRequests();
 		pauseElevator(elevatorNum);
 	}
 
@@ -406,9 +321,9 @@ public class SchedulerAlgorithm {
 	 * @return None
 	 */
 	public void pauseElevator(byte elevatorNum) {
-		elevatorUsable.set(elevatorNum, false);
+		elevatorInfo.get(elevatorNum).setUsable(false);
 
-		stopElevator.set(elevatorNum, true);
+		elevatorInfo.get(elevatorNum).setStopElevator(true);
 	}
 
 	/**
@@ -421,6 +336,96 @@ public class SchedulerAlgorithm {
 	 * @return None
 	 */
 	public void resumeUsingElevator(byte elevatorNum) {
-		elevatorUsable.set(elevatorNum, true);
+		elevatorInfo.get(elevatorNum).setUsable(true);
 	}
+	
+    public ArrayList<Request> getRequests(byte elevatorNum) {
+        return(elevatorInfo.get(elevatorNum).getRequests());
+    }
+	    
+	public class AlgorithmElevator {
+	    public byte elevatorNum;
+        public byte currFloor;
+        
+        public ArrayList<Request> elevatorRequests;
+        
+	    public boolean stopElevator;
+	    public boolean elevatorUsable;
+	    
+	    public UtilityInformation.ElevatorDirection dir;
+	    
+	    public AlgorithmElevator(byte elevatorNum) {
+	        this.elevatorNum = elevatorNum;
+	        currFloor = 0;
+	        
+            elevatorRequests = new ArrayList<Request>();
+	        
+	        stopElevator = true;
+	        elevatorUsable = true;
+	        
+	        dir = UtilityInformation.ElevatorDirection.STATIONARY;
+
+	    }
+	    
+	    public void setDir(UtilityInformation.ElevatorDirection newDir) {
+            dir = newDir;
+            
+        }
+
+        public UtilityInformation.ElevatorDirection getDir() {
+            return(dir);
+        }
+
+        public void addRequest(Request request) {
+            elevatorRequests.add(request);            
+        }
+
+        public ArrayList<Request> getRequests() {
+            return(elevatorRequests);
+        }
+
+        public void clearRequests() {
+	        elevatorRequests.clear();
+	    }
+
+        public boolean getStopElevator() {
+            return(stopElevator);
+        }
+
+        public void setUsable(boolean newVal) {
+            elevatorUsable = newVal;            
+        }
+
+        public void setCurrFloor(Byte floorNum) {
+            currFloor = floorNum;            
+        }
+
+        public void setStopElevator(boolean newVal) {
+            stopElevator = newVal;            
+        }
+
+        public boolean isUsable() {
+            return(elevatorUsable);
+        }
+
+        public byte getCurrFloor() {
+            return(currFloor);
+        }
+        
+        public String toString() {
+            String toReturn = "";
+            
+            toReturn += String.format("Elevator number: %d", elevatorNum);
+            toReturn += String.format(" Current Floor: %d", currFloor);
+            toReturn += String.format(" Elevator Usable: %d", elevatorUsable);
+            toReturn += String.format(" Elevator Stopped: %d", stopElevator);
+            
+            return(toReturn);
+            
+        }
+	}
+
+
 }
+
+
