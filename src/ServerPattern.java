@@ -2,8 +2,11 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.HashMap;
 
 /**
  * 
@@ -12,13 +15,15 @@ import java.util.Arrays;
  *
  */
 public abstract class ServerPattern {
-	private ArrayList<DatagramPacket> receivedSignals;
+	private PriorityQueue<DatagramPacket> receivedSignals;
 
 	private SignalReceiver receiver;
 
 	private boolean receivedSignalsEmpty;
 
 	private final int MAX_NUM_SIGNALS = 100;
+	
+	private Map<Byte, Integer> messagePriorities;
 
 	/**
 	 * ServerPattern
@@ -34,7 +39,42 @@ public abstract class ServerPattern {
 	 * @return None
 	 */
 	public ServerPattern(int portNum, String name) {
-		receivedSignals = new ArrayList<DatagramPacket>();
+	    messagePriorities = new HashMap<Byte, Integer>();
+	    messagePriorities.put(UtilityInformation.CONFIG_MODE, 0);
+	    messagePriorities.put(UtilityInformation.FLOOR_SENSOR_MODE, 0);
+	    messagePriorities.put(UtilityInformation.FLOOR_REQUEST_MODE, 0);
+	    messagePriorities.put(UtilityInformation.ELEVATOR_BUTTON_HIT_MODE, 0);
+	    messagePriorities.put(UtilityInformation.ELEVATOR_DIRECTION_MODE, 0);
+	    messagePriorities.put(UtilityInformation.ELEVATOR_DOOR_MODE, 0);
+	    messagePriorities.put(UtilityInformation.SEND_DESTINATION_TO_ELEVATOR_MODE, 0);
+	    messagePriorities.put(UtilityInformation.TEARDOWN_MODE, 0);
+	    messagePriorities.put(UtilityInformation.CONFIG_CONFIRM, 0);
+	    messagePriorities.put(UtilityInformation.ELEVATOR_STOPPED_MODE, 0);
+	    messagePriorities.put(UtilityInformation.ERROR_MESSAGE_MODE, 0);
+	    messagePriorities.put(UtilityInformation.FIX_ERROR_MODE, 0);
+	    messagePriorities.put(UtilityInformation.FIX_DOOR, 0);
+	    
+		receivedSignals = new PriorityQueue<DatagramPacket>(MAX_NUM_SIGNALS, new Comparator<DatagramPacket>() {
+
+            @Override
+            public int compare(DatagramPacket packet1, DatagramPacket packet2) {
+                byte messageType1 = packet1.getData()[UtilityInformation.MODE_BYTE_IND];
+                byte messageType2 = packet2.getData()[UtilityInformation.MODE_BYTE_IND];
+                
+                int priority1 = messagePriorities.get(messageType1);
+                int priority2 = messagePriorities.get(messageType2);
+                
+                if (priority1 < priority2) {
+                    return(-1);
+                } else if (priority1 > priority2) {
+                    return(1);
+                } else {
+                    return(0);
+                }
+            }
+		    
+		});
+		
 		receivedSignalsEmpty = true;
 
 		receiver = new SignalReceiver(portNum, this, name);
@@ -57,7 +97,7 @@ public abstract class ServerPattern {
 	 * 
 	 * @return None
 	 */
-	public synchronized void signalReceived(DatagramPacket newSignal, int priority) {
+	public synchronized void signalReceived(DatagramPacket newSignal) {
 		// Wait while queue is not full
 		while (receivedSignals.size() >= MAX_NUM_SIGNALS) {
 			try {
@@ -67,7 +107,7 @@ public abstract class ServerPattern {
 				e.printStackTrace();
 			}
 		}
-
+		
 		receivedSignals.add(newSignal);
 
 		receivedSignalsEmpty = false;
@@ -96,8 +136,7 @@ public abstract class ServerPattern {
 			}
 		}
 
-		DatagramPacket toReturn = receivedSignals.get(0);
-		receivedSignals.remove(0);
+		DatagramPacket toReturn = receivedSignals.poll();
 
 		if (receivedSignals.size() == 0) {
 			receivedSignalsEmpty = true;
@@ -232,7 +271,7 @@ class SignalReceiver implements Runnable {
 	public void run() {
 		while (run) {
 			DatagramPacket signal = waitForSignal();
-			controller.signalReceived(signal, 0);
+			controller.signalReceived(signal);
 		}
 	}
 }
