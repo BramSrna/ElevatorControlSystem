@@ -66,7 +66,7 @@ class SchedulerTest {
 		DatagramPacket packet = new DatagramPacket(buf, buf.length, InetAddress.getLocalHost(),
 				UtilityInformation.ELEVATOR_PORT_NUM);
 
-		scheduler.openElevatorDoors(packet);
+		scheduler.changeDoorState(packet, UtilityInformation.DoorState.OPEN);
 
 	}
 
@@ -167,7 +167,7 @@ class SchedulerTest {
 		DatagramPacket packet = new DatagramPacket(buf, buf.length, InetAddress.getLocalHost(),
 				UtilityInformation.ELEVATOR_PORT_NUM);
 
-		scheduler.stopElevator(packet, (byte) 0);
+		scheduler.sendElevatorInDirection(packet, UtilityInformation.ElevatorDirection.STATIONARY);
 
 	}
 
@@ -196,7 +196,7 @@ class SchedulerTest {
 		DatagramPacket packet = new DatagramPacket(buf, buf.length, InetAddress.getLocalHost(),
 				UtilityInformation.ELEVATOR_PORT_NUM);
 
-		scheduler.sendElevatorUp(packet);
+		scheduler.sendElevatorInDirection(packet, UtilityInformation.ElevatorDirection.UP);
 
 	}
 
@@ -225,8 +225,7 @@ class SchedulerTest {
 		DatagramPacket packet = new DatagramPacket(buf, buf.length, InetAddress.getLocalHost(),
 				UtilityInformation.ELEVATOR_PORT_NUM);
 
-		scheduler.sendElevatorDown(packet);
-
+		scheduler.sendElevatorInDirection(packet, UtilityInformation.ElevatorDirection.DOWN);
 	}
 
 	/**
@@ -248,7 +247,7 @@ class SchedulerTest {
 		DatagramPacket packet = new DatagramPacket(buf, buf.length, InetAddress.getLocalHost(),
 				UtilityInformation.ELEVATOR_PORT_NUM);
 
-		scheduler.closeElevatorDoors(packet);
+		scheduler.changeDoorState(packet, UtilityInformation.DoorState.CLOSE);
 	}
 
 	/**

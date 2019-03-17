@@ -20,7 +20,11 @@ public class UtilityInformation {
 	public enum ErrorType {
 		DOOR_WONT_CLOSE_ERROR, DOOR_WONT_OPEN_ERROR, ELEVATOR_STUCK_ERROR
 	}
-
+	
+	public enum DoorState
+	{
+	    CLOSE, OPEN
+	}
 	// Byte in messages used to indicate the type of message
 	public final static int MODE_BYTE_IND = 0;
 
