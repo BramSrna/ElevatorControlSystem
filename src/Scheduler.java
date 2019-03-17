@@ -81,57 +81,49 @@ public class Scheduler extends ServerPattern {
 	private void eventOccured(Event event, DatagramPacket packet) {
 		switch (currentState) {
 		case READING_MESSAGE:
-			if (event.equals(Event.CONFIG_MESSAGE)) {
-				currentState = State.RESPONDING_TO_MESSAGE;
-				sendConfigPacketToElevator(packet);
-				eventOccured(Event.CONFIG_MESSAGE, packet);
-			} else if (event.equals(Event.FLOOR_SENSOR_ACTIVATED)) {
-				currentState = State.RESPONDING_TO_MESSAGE;
-				extractFloorReachedNumberAndGenerateResponseMessageAndActions(packet);
-			} else if (event.equals(Event.FLOOR_REQUESTED)) {
-				currentState = State.RESPONDING_TO_MESSAGE;
-
-				byte elevatorNum = extractFloorRequestedNumberAndGenerateResponseMessageAndActions(packet);
-
-				if (algor.getStopElevator(elevatorNum)) {
-					currentState = State.READING_MESSAGE;
-					byte[] newData = { UtilityInformation.FLOOR_SENSOR_MODE, algor.getCurrentFloor(elevatorNum),
-							elevatorNum, -1 };
-					packet.setData(newData);
-					eventOccured(Event.FLOOR_SENSOR_ACTIVATED, packet);
-				}
-
-				currentState = State.RESPONDING_TO_MESSAGE;
-			} else if (event.equals(Event.TEARDOWN)) {
-				currentState = State.END;
-
-				sendTearDownMessage(packet);
-			} else if (event.equals(Event.CONFIRM_CONFIG)) {
-				currentState = State.RESPONDING_TO_MESSAGE;
-
-				sendConfigConfirmMessage(packet);
-				eventOccured(Event.CONFIRM_CONFIG, packet);
-			} else if (event.equals(Event.ELEVATOR_STOPPED)) {
-				currentState = State.RESPONDING_TO_MESSAGE;
-			} else if (event.equals(Event.ELEVATOR_ERROR)) {
-				currentState = State.RESPONDING_TO_MESSAGE;
-				byte errorType = packet.getData()[1];
-				if (errorType == UtilityInformation.DOOR_WONT_CLOSE_ERROR
-						|| errorType == UtilityInformation.DOOR_WONT_OPEN_ERROR) {
-					handleError(packet);
-				} else if (errorType == UtilityInformation.ELEVATOR_STUCK_ERROR) {
-					handleError(packet);
-				} else {
-					System.out.println("\n\nThat is an invalid error type!\n\n");
-				}
-				eventOccured(Event.SEND_ELEVATOR_ERROR, packet);
-
-			} else if (event.equals(Event.FIX_ELEVATOR_ERROR)) {
-				handleElevatorFixMessage(packet);
-			} else if (event.equals(Event.FIX_DOOR_ERROR)) {
-				handleDoorFixMessage(packet);
-			}
+		    currentState = State.RESPONDING_TO_MESSAGE;
+		    
+		    switch(event) {
+		    case CONFIG_MESSAGE:
+		        sendConfigPacketToElevator(packet);
+                eventOccured(Event.CONFIG_MESSAGE, packet);
+                break;
+		    case FLOOR_SENSOR_ACTIVATED:
+		        extractFloorReachedNumberAndGenerateResponseMessageAndActions(packet);
+		        break;
+		    case FLOOR_REQUESTED:
+		        byte elevatorNum = extractFloorRequestedNumberAndGenerateResponseMessageAndActions(packet);
+                currentState = State.READING_MESSAGE;
+                kickStartElevator(packet, elevatorNum);                
+                break;
+		    case TEARDOWN:
+		        currentState = State.END;
+                sendTearDownMessage(packet);
+                break;
+		    case CONFIRM_CONFIG:
+		        sendConfigConfirmMessage(packet);
+                eventOccured(Event.CONFIRM_CONFIG, packet);
+                break;
+		    case ELEVATOR_STOPPED:
+		        break;
+		    case ELEVATOR_ERROR:
+		        handleError(packet);
+                eventOccured(Event.SEND_ELEVATOR_ERROR, packet);
+                break;
+		    case FIX_ELEVATOR_ERROR:
+		        handleElevatorFixMessage(packet);
+		        break;
+		    case FIX_DOOR_ERROR:
+		        handleDoorFixMessage(packet);
+		        break;
+		    default:
+		        System.out.println("Unknown event.");
+		        System.exit(1);
+		        break;
+		    }
+			
 			currentState = State.WAITING;
+			
 			break;
 		case WAITING:
 			if (event.equals(Event.MESSAGE_RECIEVED)) {
@@ -140,8 +132,10 @@ public class Scheduler extends ServerPattern {
 			}
 			break;
 		case RESPONDING_TO_MESSAGE:
-			if (event.equals(Event.MOVE_ELEVATOR) || event.equals(Event.CONFIG_MESSAGE)
-					|| event.equals(Event.CONFIRM_CONFIG) || event.equals(Event.SEND_ELEVATOR_ERROR)) {
+			if (event.equals(Event.MOVE_ELEVATOR) || 
+		        event.equals(Event.CONFIG_MESSAGE) || 
+		        event.equals(Event.CONFIRM_CONFIG) || 
+		        event.equals(Event.SEND_ELEVATOR_ERROR)) {
 				currentState = State.WAITING;
 			}
 			break;
@@ -260,6 +254,18 @@ public class Scheduler extends ServerPattern {
 		}
 
 		return (elevatorNum);
+	}
+	
+	protected void kickStartElevator(DatagramPacket packet, byte elevatorNum) {
+	    if (algor.getStopElevator(elevatorNum)) {
+            currentState = State.READING_MESSAGE;
+            byte[] newData = {UtilityInformation.FLOOR_SENSOR_MODE, 
+                              algor.getCurrentFloor(elevatorNum),
+                              elevatorNum,
+                              -1 };
+            packet.setData(newData);
+            eventOccured(Event.FLOOR_SENSOR_ACTIVATED, packet);
+        }
 	}
 
 	/**
