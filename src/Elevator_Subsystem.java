@@ -322,7 +322,8 @@ public class Elevator_Subsystem extends ServerPattern {
 			allElevators.get(currentElevatorToWork).brokenElevator();
 		}
 		if(str.equals("door issue")) {
-			if ((data[1]==UtilityInformation.DOOR_WONT_OPEN_ERROR) || (data[1]==UtilityInformation.DOOR_WONT_CLOSE_ERROR)) {
+			if ((data[1] == UtilityInformation.ErrorType.DOOR_WONT_OPEN_ERROR.ordinal()) || 
+			    (data[1 ]== UtilityInformation.ErrorType.DOOR_WONT_CLOSE_ERROR.ordinal())) {
 			    allElevators.get(currentElevatorToWork).fixDoorStuckError(data[1]);	
 			}
 		}
@@ -414,13 +415,13 @@ public class Elevator_Subsystem extends ServerPattern {
 		
 		// ITERATION 3 ASK THEM WHAT BYTE IS THE TYPE OF ERROR
 		else if( data[0] == UtilityInformation.ERROR_MESSAGE_MODE) {
-			if(data[1]== UtilityInformation.DOOR_WONT_CLOSE_ERROR) {	
+			if (data[1] == UtilityInformation.ErrorType.DOOR_WONT_CLOSE_ERROR.ordinal()) {	
 				System.out.println("Message from Elevator " + currentElevatorToWork + ": DOOR WONT CLOSE");
 				return "door wont close";
-			}else if(data[1]== UtilityInformation.DOOR_WONT_OPEN_ERROR) {
+			} else if(data[1] == UtilityInformation.ErrorType.DOOR_WONT_OPEN_ERROR.ordinal()) {
 				System.out.println("Message from Elevator " + currentElevatorToWork + ": DOOR WONT OPEN");
 				return "door wont open";
-			}else if(data[1]== UtilityInformation.ELEVATOR_STUCK_ERROR) {
+			} else if(data[1] == UtilityInformation.ErrorType.ELEVATOR_STUCK_ERROR.ordinal()) {
 				System.out.println("Message from Elevator " + currentElevatorToWork + ": I AM STUCK");
 				return "elevator stuck";
 			}

@@ -230,9 +230,9 @@ public class Elevator {
                 }
             
             // Set the door to the fixed state
-            if (doorState == UtilityInformation.DOOR_WONT_CLOSE_ERROR) {
+            if (doorState == UtilityInformation.ErrorType.DOOR_WONT_CLOSE_ERROR.ordinal()) {
                 closeDoor();
-            } else if (doorState == UtilityInformation.DOOR_WONT_OPEN_ERROR) {
+            } else if (doorState == UtilityInformation.ErrorType.DOOR_WONT_OPEN_ERROR.ordinal()) {
                 openDoor();
             } else {
                 System.out.println("Error: Unknown error type in Elevator fixDoorStuckError.");
