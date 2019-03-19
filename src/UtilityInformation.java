@@ -61,7 +61,7 @@ public class UtilityInformation {
 	// Valid ranges for the number of
 	// floors and number of elevators
 	public final static int MIN_NUM_FLOORS = 1;
-	public final static int MAX_NUM_FLOORS = 1000;
+	public final static int MAX_NUM_FLOORS = 22;
 
 	public final static int MIN_NUM_ELEVATORS = 1;
 	public final static int MAX_NUM_ELEVATORS = 4;
