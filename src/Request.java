@@ -16,8 +16,8 @@ public class Request {
 		this.source = source;
 		this.destination = destination;
 		this.requestDirection = requestDirection;
-		elevatorPickupTime = 0;
-		elevatorArrivedDestinationTime = 0;
+		elevatorPickupTime = -1;
+		elevatorArrivedDestinationTime = -1;
 		elevatorPickupTimeFlag = false;
 		elevatorArrivedDestinationTimeFlag = false;
 		// printRequestDetails();
@@ -74,5 +74,17 @@ public class Request {
 
 	public boolean getElevatorArrivedDestinationTimeFlag() {
 		return elevatorArrivedDestinationTimeFlag;
+	}
+
+	public long getElevatorPickupTime() {
+		return(elevatorPickupTime);
+	}
+
+	public long getElevatorArrivedDestinationTime() {
+		return(elevatorArrivedDestinationTime);
+	}
+
+	public long getElevatorRequestTime() {
+		return(elevatorRequestTime);
 	}
 }

@@ -29,6 +29,9 @@ public class Scheduler extends ServerPattern {
 	private long messageRecieveTime;
 
 	private SchedulerAlgorithm algor;
+	
+	private long totalArrivalSensorTime;
+	private int numArrivalSensorTimeSamples;
 
 	/**
 	 * Scheduler
@@ -90,6 +93,10 @@ public class Scheduler extends ServerPattern {
                 break;
 		    case FLOOR_SENSOR_ACTIVATED:
 		        extractFloorReachedNumberAndGenerateResponseMessageAndActions(packet);
+		        
+		        totalArrivalSensorTime += System.nanoTime() - messageRecieveTime;
+		        numArrivalSensorTimeSamples += 1;
+		        
 		        break;
 		    case FLOOR_REQUESTED:
 		        byte elevatorNum = extractFloorRequestedNumberAndGenerateResponseMessageAndActions(packet);
@@ -365,7 +372,8 @@ public class Scheduler extends ServerPattern {
 		if (algor.getStopElevator(elevatorNum)) {
 		    sendElevatorInDirection(recievedPacket, UtilityInformation.ElevatorDirection.STATIONARY);
 			changeDoorState(recievedPacket, UtilityInformation.DoorState.OPEN);
-			// TODO
+			
+			// Set the time in the requests
 			long updatedTime = System.nanoTime();
 			updateRequestTimes(algor.getRequests(elevatorNum), updatedTime);
 		}
@@ -420,10 +428,13 @@ public class Scheduler extends ServerPattern {
 
 	private void updateRequestTimes(ArrayList<Request> request, long updatedTime) {
 		for (Request temp : request) {
-			if (temp.getElevatorPickupTimeFlag()) {
+			if (temp.getElevatorPickupTimeFlag() && 
+			   (temp.getElevatorPickupTime() == -1)) {
 				temp.setElevatorPickupTime(updatedTime);
 			}
-			if (temp.getElevatorArrivedDestinationTimeFlag()) {
+			
+			if (temp.getElevatorArrivedDestinationTimeFlag() && 
+			   (temp.getElevatorArrivedDestinationTime() == -1)) {
 				temp.setElevatorArrivedDestinationTime(updatedTime);
 			}
 		}
@@ -472,9 +483,57 @@ public class Scheduler extends ServerPattern {
         sendMessage(tearDown, tearDown.length, packet.getAddress(), UtilityInformation.ELEVATOR_PORT_NUM);
         System.out.println("\n\nTEARING DOWN!\n\n");
         socketTearDown();
+        printTimingInformation();
         System.exit(0);
     }
 	
+	private void printTimingInformation() {
+		long totalElevatorBtnTime = 0;
+		int numElevatorBtnTimeSamples = 0;
+		
+		long totalFloorBtnTime = 0;
+		int numFloorBtnTimeSamples = 0;
+		
+		long time = -1;
+		long timeOfReq;
+
+		for (byte i = 0; i < numElevators; i++) {
+			for (Request req : algor.getRequests(i)) {
+				timeOfReq = req.getElevatorRequestTime();
+				
+				time = req.getElevatorPickupTime();				
+				if (time != -1) {
+					totalElevatorBtnTime += (time - timeOfReq);
+					numElevatorBtnTimeSamples += 1;
+				}
+				
+				time = req.getElevatorArrivedDestinationTime();
+				if (time != -1) {
+					totalFloorBtnTime += (time - timeOfReq);
+					numFloorBtnTimeSamples += 1;
+				}
+			}
+		}
+		
+		System.out.println(String.format("Average Arrival Sensors Interface Time (ns): %d", 
+				totalArrivalSensorTime / numArrivalSensorTimeSamples));
+		
+		if (numElevatorBtnTimeSamples != 0) {
+			System.out.println(String.format("Average Elevators Buttons Interface Time (ns): %d", 
+					totalElevatorBtnTime / numElevatorBtnTimeSamples));
+		} else {
+			System.out.println("Not enough samples to determine Elevator Buttons Interface time.");
+		}
+		
+		if (numFloorBtnTimeSamples != 0) {
+			System.out.println(String.format("Average Floor Buttons Interface Time (ns): %d", 
+					totalFloorBtnTime / numFloorBtnTimeSamples));
+		} else {
+			System.out.println("Not enough samples to determine Floor Buttons Interface time.");
+		}
+		
+	}
+
 	/**
      * Close send and reciever sockets
      */
