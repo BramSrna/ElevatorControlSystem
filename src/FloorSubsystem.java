@@ -27,6 +27,8 @@ public class FloorSubsystem extends ServerPattern{
 	private final int CONFIG_SIZE = 4;
 	private final int REQUEST_SIZE = 5;
 	private final int TEARDOWN_SIZE = 10;
+	
+	private int requestCount;
 
 	// List of existing floor objects
 	private ArrayList<Floor> floors;
@@ -184,6 +186,8 @@ public class FloorSubsystem extends ServerPattern{
 	 * @return void
 	 */
 	public void parseInputFile(String pathToFile) {
+		requestCount = 0;
+		
 		// Setup the file for parsing
 		FileReader input = null;
 
@@ -239,6 +243,8 @@ public class FloorSubsystem extends ServerPattern{
 				    }
 				}
 			}
+			
+			requestCount += 1;
 
 			// Get the next line in the file
 			try {
@@ -508,6 +514,8 @@ public class FloorSubsystem extends ServerPattern{
 		System.out.println("Sending elevator request...");
 		sendSignal(msg, UtilityInformation.SCHEDULER_PORT_NUM, addressToSend);
 		System.out.println("Elevator request sent...");
+		
+		requestCount -= 1;
 	}
 	
 	/**
@@ -535,6 +543,8 @@ public class FloorSubsystem extends ServerPattern{
         System.out.println("Sending error occurs message...");
         sendSignal(msg, UtilityInformation.SCHEDULER_PORT_NUM, addressToSend);
         System.out.println("Error occurs message sent...");
+        
+        requestCount -= 1;
 	}
 
 	/**
@@ -555,26 +565,39 @@ public class FloorSubsystem extends ServerPattern{
 	 * @return None
 	 */
 	public void runSubsystem() {
-	    while (true) {
+		boolean run = true;
+	    while (run) {
 	        byte data[] = this.getNextRequest().getData();
-
-	        // Get the floor number and elevator number
-	        byte floorNum = data[1];
 	        
-	        // Request currently does not contain the elevator number,
-	        // so hardcode the value to 1 for now.
-	        int elevatorNum = data[2]; 
+	        byte mode = data[0];
 	        
-	        // Get the direction of the elevator
-	        UtilityInformation.ElevatorDirection dir = UtilityInformation.ElevatorDirection.values()[data[3]];
+	        if (mode == UtilityInformation.ALL_REQUESTS_FINISHED_MODE) {
+	        	if (requestCount <= 0) {
+	        		run = false;
+	        	}
+	        } else if (mode == UtilityInformation.ELEVATOR_DIRECTION_MODE) {
+	        	// Get the floor number and elevator number
+		        byte floorNum = data[1];
+		        
+		        // Request currently does not contain the elevator number,
+		        // so hardcode the value to 1 for now.
+		        int elevatorNum = data[2]; 
+		        
+		        // Get the direction of the elevator
+		        UtilityInformation.ElevatorDirection dir = UtilityInformation.ElevatorDirection.values()[data[3]];
 
-	        // Propagate the information through all Floor
-	        // objects in the FloorSubsystem
-	        for (Floor currFloor : floors) {
-	            currFloor.updateElevatorLocation(elevatorNum, floorNum, dir);
+		        // Propagate the information through all Floor
+		        // objects in the FloorSubsystem
+		        for (Floor currFloor : floors) {
+		            currFloor.updateElevatorLocation(elevatorNum, floorNum, dir);
+		        }
+		        
+		        System.out.println(this.toString());
+	        } else {
+	        	System.out.println("Error: Unexpected message type.");
+	        	teardown();
+	        	System.exit(1);
 	        }
-	        
-	        System.out.println(this.toString());
 	    }
 	}
 

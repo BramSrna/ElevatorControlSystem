@@ -105,6 +105,9 @@ public class Scheduler extends ServerPattern {
                 eventOccured(Event.CONFIRM_CONFIG, packet);
                 break;
 		    case ELEVATOR_STOPPED:
+		    	if(checkForFinish() == true) {
+		    		sendAllRequestsFinishedMessage(packet);
+		    	}
 		        break;
 		    case ELEVATOR_ERROR:
 		        handleError(packet);
@@ -151,6 +154,27 @@ public class Scheduler extends ServerPattern {
 		}
 	}
 
+	private void sendAllRequestsFinishedMessage(DatagramPacket packet) {
+		byte[] message = {UtilityInformation.ALL_REQUESTS_FINISHED_MODE,
+						  UtilityInformation.END_OF_MESSAGE};
+		
+		sendMessage(message, message.length, packet.getAddress(), UtilityInformation.FLOOR_PORT_NUM);
+	}
+
+	private boolean checkForFinish() {
+		for (byte i = 0; i < numElevators; i++) {
+			for (Request req : algor.getRequests(i)) {
+				if ((req.getElevatorPickupTimeFlag() == false) ||
+					(req.getElevatorArrivedDestinationTimeFlag() == false)) {
+					return(false);
+				}
+			}
+		}
+		
+		return(true);
+		
+	}
+
 	/**
 	 * Read the message recieved and call the appropriate event
 	 * 
@@ -169,7 +193,7 @@ public class Scheduler extends ServerPattern {
 			eventOccured(Event.BUTTON_PUSHED_IN_ELEVATOR, recievedPacket);
 		} else if (mode == UtilityInformation.TEARDOWN_MODE) { // 7
 			eventOccured(Event.TEARDOWN, recievedPacket);
-		} else if (mode == UtilityInformation.CONFIG_CONFIRM) { // 8
+		} else if (mode == UtilityInformation.CONFIG_CONFIRM_MODE) { // 8
 			eventOccured(Event.CONFIRM_CONFIG, recievedPacket);
 		} else if (mode == UtilityInformation.ELEVATOR_STOPPED_MODE) { // 9
 			eventOccured(Event.ELEVATOR_STOPPED, recievedPacket);
@@ -177,7 +201,7 @@ public class Scheduler extends ServerPattern {
 			eventOccured(Event.ELEVATOR_ERROR, recievedPacket);
 		} else if (mode == UtilityInformation.FIX_ERROR_MODE) {
 			eventOccured(Event.FIX_ELEVATOR_ERROR, recievedPacket);
-		} else if (mode == UtilityInformation.FIX_DOOR) {
+		} else if (mode == UtilityInformation.FIX_DOOR_MODE) {
 			eventOccured(Event.FIX_DOOR_ERROR, recievedPacket);
 		} else {
 			System.out.println(String.format("Error in readMessage: Undefined mode: %d", mode));

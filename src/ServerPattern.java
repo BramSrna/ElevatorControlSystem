@@ -48,11 +48,12 @@ public abstract class ServerPattern {
 	    messagePriorities.put(UtilityInformation.ELEVATOR_DOOR_MODE, 0);
 	    messagePriorities.put(UtilityInformation.SEND_DESTINATION_TO_ELEVATOR_MODE, 0);
 	    messagePriorities.put(UtilityInformation.TEARDOWN_MODE, 0);
-	    messagePriorities.put(UtilityInformation.CONFIG_CONFIRM, 0);
+	    messagePriorities.put(UtilityInformation.CONFIG_CONFIRM_MODE, 0);
 	    messagePriorities.put(UtilityInformation.ELEVATOR_STOPPED_MODE, 0);
 	    messagePriorities.put(UtilityInformation.ERROR_MESSAGE_MODE, 0);
 	    messagePriorities.put(UtilityInformation.FIX_ERROR_MODE, 0);
-	    messagePriorities.put(UtilityInformation.FIX_DOOR, 0);
+	    messagePriorities.put(UtilityInformation.FIX_DOOR_MODE, 0);
+	    messagePriorities.put(UtilityInformation.ALL_REQUESTS_FINISHED_MODE, 0);
 	    
 		receivedSignals = new PriorityQueue<DatagramPacket>(MAX_NUM_SIGNALS, new Comparator<DatagramPacket>() {
 

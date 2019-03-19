@@ -75,5 +75,4 @@ public class Request {
 	public boolean getElevatorArrivedDestinationTimeFlag() {
 		return elevatorArrivedDestinationTimeFlag;
 	}
-
 }

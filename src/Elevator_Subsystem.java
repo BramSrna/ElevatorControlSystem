@@ -287,7 +287,7 @@ public class Elevator_Subsystem extends ServerPattern {
 				allElevators.add(hold);
 			}
 			// allButtons = new lampState[numberOfFloors];
-			byte[] response = { UtilityInformation.CONFIG_CONFIRM, 1, -1 };
+			byte[] response = { UtilityInformation.CONFIG_CONFIRM_MODE, 1, -1 };
 			this.sendData(response, schedulerIP, schedulerPort);
 		}
 
@@ -348,7 +348,7 @@ public class Elevator_Subsystem extends ServerPattern {
 	 * @return None
 	 */
 	public void sendElevatorDoorFixedMessage(int elevatorNum) {
-	    byte[] issConf = {UtilityInformation.FIX_DOOR, (byte) elevatorNum, -1};
+	    byte[] issConf = {UtilityInformation.FIX_DOOR_MODE, (byte) elevatorNum, -1};
         this.sendData(issConf, schedulerIP, schedulerPort);
 	}
 	
