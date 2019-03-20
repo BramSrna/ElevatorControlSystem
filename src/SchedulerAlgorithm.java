@@ -94,20 +94,20 @@ public class SchedulerAlgorithm {
 	public void elevatorHasReachedFloor(Byte floorNum, Byte elevatorNum) {
 		System.out.println("Elevator " + elevatorNum + " has reached floor: " + floorNum);
 		
-		boolean stopElevator = true;
+		boolean stopElevator = false;
 		
 		for (Request req : elevatorInfo.get(elevatorNum).getRequests()) {
 		    if ((req.getElevatorPickupTimeFlag() == false) && 
 		        (req.getSourceFloor() == floorNum)) {
 		        req.setElevatorPickupTimeFlag();
 		        elevatorInfo.get(elevatorNum).setDir(UtilityInformation.ElevatorDirection.STATIONARY);
+		        stopElevator = true;
 		    } else if ((req.getElevatorPickupTimeFlag() == true) && 
     		           (req.getElevatorArrivedDestinationTimeFlag() == false) && 
     		           (req.getDestinationFloor() == floorNum)) {
 		        req.setElevatorArrivedDestinationTimeFlag();
 		        elevatorInfo.get(elevatorNum).setDir(UtilityInformation.ElevatorDirection.STATIONARY);
-		    } else {
-		        stopElevator = false;
+		        stopElevator = true;
 		    }
 		}
 

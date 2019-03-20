@@ -501,7 +501,7 @@ public class FloorSubsystem extends ServerPattern{
 	 * 
 	 * @return None
 	 */
-	public void sendElevatorRequest(int sourceFloor, int destFloor, UtilityInformation.ElevatorDirection diRequest) {
+	public synchronized void sendElevatorRequest(int sourceFloor, int destFloor, UtilityInformation.ElevatorDirection diRequest) {
 		// Construct a message to send with data from given parameters
 		byte[] msg = new byte[REQUEST_SIZE];
 		msg[0] = UtilityInformation.FLOOR_REQUEST_MODE;
@@ -531,7 +531,7 @@ public class FloorSubsystem extends ServerPattern{
 	 * 
 	 * @return None
 	 */
-	public void sendErrorOccursMessage(UtilityInformation.ErrorType type, int elevatorNum) {
+	public synchronized void sendErrorOccursMessage(UtilityInformation.ErrorType type, int elevatorNum) {
 	    // Construct a message to send with data from given parameters
 	    byte[] msg = new byte[REQUEST_SIZE];
 	    msg[0] = UtilityInformation.ERROR_MESSAGE_MODE;

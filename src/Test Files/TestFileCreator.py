@@ -26,9 +26,12 @@ with open("TestFile.txt", "w") as f:
         if groundCheck <= groundWeight:
             startFloor = 0
         else:
-            startFloor = random.randint(0, numFloors)
+            startFloor = random.randint(0, numFloors - 1)
             
-        endFloor = random.randint(0, numFloors)
+        while (True):
+            endFloor = random.randint(0, numFloors - 1)
+            if (endFloor != startFloor):
+                break
         
         dir = ""
         
