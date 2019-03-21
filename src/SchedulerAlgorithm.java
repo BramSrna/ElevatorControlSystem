@@ -122,59 +122,83 @@ public class SchedulerAlgorithm {
 	 * @return
 	 */
 	public UtilityInformation.ElevatorDirection whatDirectionShouldTravel(byte elevatorNum) {
-		if ((elevatorInfo.get(elevatorNum).getRequests().size() != 0) && 
-		        (elevatorInfo.get(elevatorNum).isUsable())) {
-			UtilityInformation.ElevatorDirection currDir = elevatorInfo.get(elevatorNum).getDir();
+		if ((elevatorInfo.get(elevatorNum).getRequests().size() != 0) && (elevatorInfo.get(elevatorNum).isUsable())) {
 			int currFloor = elevatorInfo.get(elevatorNum).getCurrFloor();
+			int nextFloor = determineNextFloor(elevatorNum);
 			
-			if (currDir == UtilityInformation.ElevatorDirection.UP) {
-			    for (Request req : elevatorInfo.get(elevatorNum).getRequests()) {
-			        if (((req.getElevatorPickupTimeFlag() == false) && (req.getSourceFloor() > currFloor)) ||
-			            ((req.getElevatorPickupTimeFlag() == true) && (req.getElevatorArrivedDestinationTimeFlag() == false) && (req.getDestinationFloor() > currFloor))){
-			            return(elevatorInfo.get(elevatorNum).getDir());
-			        }
-			    }
+			if (nextFloor < currFloor) {
 			    elevatorInfo.get(elevatorNum).setDir(UtilityInformation.ElevatorDirection.DOWN);
-			} else if (currDir == UtilityInformation.ElevatorDirection.DOWN) {
-			    for (Request req : elevatorInfo.get(elevatorNum).getRequests()) {
-                    if (((req.getElevatorPickupTimeFlag() == false) && (req.getSourceFloor() < currFloor)) ||
-                        ((req.getElevatorPickupTimeFlag() == true) && (req.getElevatorArrivedDestinationTimeFlag() == false) && (req.getDestinationFloor() < currFloor))){
-                        return(elevatorInfo.get(elevatorNum).getDir());
-                    }
-                }
-                elevatorInfo.get(elevatorNum).setDir(UtilityInformation.ElevatorDirection.UP);
-			} else {
-			    int closestDiff = -1;
-			    int currDiff;
-			    int nextFloor = currFloor;
-			    
-			    for (Request req : elevatorInfo.get(elevatorNum).getRequests()) {
-			        if (req.getElevatorPickupTimeFlag() == false) {
-			            currDiff = Math.abs(currFloor - req.getSourceFloor());
-			            if ((closestDiff == -1) || (currDiff < closestDiff)) {
-			                closestDiff = currDiff;
-			                nextFloor = req.getSourceFloor();
-			            }
-			        } else if ((req.getElevatorPickupTimeFlag() == true) && (req.getElevatorArrivedDestinationTimeFlag() == false)) {
-			            currDiff = Math.abs(currFloor - req.getDestinationFloor());
-                        if ((closestDiff == -1) || (currDiff < closestDiff)) {
-                            closestDiff = currDiff;
-                            nextFloor = req.getDestinationFloor();
-                        }
-			        }
-			    }
-			        
-		        if (nextFloor > currFloor) {
-		            elevatorInfo.get(elevatorNum).setDir(UtilityInformation.ElevatorDirection.UP);
-		        } else if (nextFloor < currFloor) {
-		            elevatorInfo.get(elevatorNum).setDir(UtilityInformation.ElevatorDirection.DOWN);
-		        }
+			} else if (nextFloor == currFloor) {
+			    elevatorInfo.get(elevatorNum).setDir(UtilityInformation.ElevatorDirection.STATIONARY);
+			} else if (nextFloor > currFloor) {
+			    elevatorInfo.get(elevatorNum).setDir(UtilityInformation.ElevatorDirection.UP);
 			}
 		} else {
 		    elevatorInfo.get(elevatorNum).setDir(UtilityInformation.ElevatorDirection.STATIONARY);
 		}
 		
 		return(elevatorInfo.get(elevatorNum).getDir());
+	}
+	
+	private int determineNextFloor(byte elevatorNum) {
+        int nextFloor = -1;
+        
+	    if ((elevatorInfo.get(elevatorNum).getRequests().size() != 0) && (elevatorInfo.get(elevatorNum).isUsable())) {
+            UtilityInformation.ElevatorDirection currDir = elevatorInfo.get(elevatorNum).getDir();            
+            
+            if (currDir == UtilityInformation.ElevatorDirection.UP) {
+                nextFloor = getNextClosestFloorInDirection(elevatorNum, UtilityInformation.ElevatorDirection.UP);
+                
+                if (nextFloor == -1) {
+                    nextFloor = getNextClosestFloorInDirection(elevatorNum, UtilityInformation.ElevatorDirection.DOWN);
+                }
+            } else if (currDir == UtilityInformation.ElevatorDirection.DOWN) {
+                nextFloor = getNextClosestFloorInDirection(elevatorNum, UtilityInformation.ElevatorDirection.DOWN);
+                
+                if (nextFloor == -1) {
+                    nextFloor = getNextClosestFloorInDirection(elevatorNum, UtilityInformation.ElevatorDirection.UP);
+                }
+            } else {                
+                nextFloor = getNextClosestFloorInDirection(elevatorNum, UtilityInformation.ElevatorDirection.STATIONARY);
+            }
+        }
+	    
+	    if (nextFloor == -1) {
+	        nextFloor = elevatorInfo.get(elevatorNum).getCurrFloor();
+	    }
+	    
+	    return(nextFloor);
+	}
+	
+	private int getNextClosestFloorInDirection(byte elevatorNum, UtilityInformation.ElevatorDirection dir) {
+	    int currFloor = -1;
+        int nextFloor = currFloor;
+        int currDiff;
+        int closestDiff = -1;        
+        int currFloorToCompare;
+        
+        for (Request req : elevatorInfo.get(elevatorNum).getRequests()) {
+            currFloorToCompare = -1;
+            
+            if (req.getElevatorPickupTimeFlag() == false) {
+                currFloorToCompare = req.getSourceFloor();
+            } else if ((req.getElevatorPickupTimeFlag() == true) && (req.getElevatorArrivedDestinationTimeFlag() == false)) {
+                currFloorToCompare = req.getDestinationFloor();
+            }
+            
+            if (((dir.equals(UtilityInformation.ElevatorDirection.UP)) && (currFloorToCompare > currFloor)) || 
+                ((dir.equals(UtilityInformation.ElevatorDirection.DOWN)) && (currFloorToCompare < currFloor)) || 
+                (dir.equals(UtilityInformation.ElevatorDirection.STATIONARY))) {
+                currDiff = Math.abs(currFloor - currFloorToCompare);
+                if ((closestDiff == -1) || (currDiff < closestDiff)) {
+                    closestDiff = currDiff;
+                    nextFloor = currFloorToCompare;
+                }
+                
+            }
+        }
+        
+        return(nextFloor);
 	}
 
 	/**
