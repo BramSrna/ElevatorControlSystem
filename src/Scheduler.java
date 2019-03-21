@@ -261,12 +261,7 @@ public class Scheduler extends ServerPattern {
 	 * @param recievedData
 	 */
 	protected byte extractFloorRequestedNumberAndGenerateResponseMessageAndActions(DatagramPacket recievedPacket) {
-		UtilityInformation.ElevatorDirection upOrDown = null;
-		if (recievedPacket.getData()[2] == 0) {
-			upOrDown = UtilityInformation.ElevatorDirection.DOWN;
-		} else {
-			upOrDown = UtilityInformation.ElevatorDirection.UP;
-		}
+		UtilityInformation.ElevatorDirection upOrDown = UtilityInformation.ElevatorDirection.values()[recievedPacket.getData()[2]];
 
 		Request tempRequest = new Request(messageRecieveTime, recievedPacket.getData()[1], recievedPacket.getData()[3],
 				upOrDown);

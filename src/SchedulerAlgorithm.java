@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.Random;
 
 public class SchedulerAlgorithm {	
 	private ArrayList<AlgorithmElevator> elevatorInfo;
@@ -49,23 +50,93 @@ public class SchedulerAlgorithm {
 	 * @return byte containg the elevator number that was given teh request
 	 */
 	private byte determineElevatorToGiveRequest(Request request) {
-		int chosenElevator = -1;
-		int minQueueSize = -1;
-		int currQueueSize;
+	    // Info about request
+        int startFloor = request.getSourceFloor();
+        int destFloor = request.getDestinationFloor();
+        UtilityInformation.ElevatorDirection reqDir = request.getRequestDirection();
+        
+	    // Info about current chosen elevator
+		byte chosenElevator = -1;
+		int doesDirMatch = 0;
+		int startFloorRel = 0;
+        int endFloorRel = 0;
+		
+		// Info about current elevator being checked
+		int currFloor;
+        int currNextFloor;
+        UtilityInformation.ElevatorDirection currDir;
+        
+        // Info about current comparison
+        int currDoesDirMatch;
+        int currStartFloorRel;
+        int currEndFloorRel;
+        boolean isCurrBetter;
+        
+        Random rand = new Random();
+        byte randSelect = (byte) rand.nextInt(elevatorInfo.size());
+        
+        chosenElevator = randSelect;
+        doesDirMatch = reqDir.equals(elevatorInfo.get(randSelect).getDir()) ? 1 : 0;
+        startFloorRel = isBetween(startFloor, elevatorInfo.get(randSelect).getCurrFloor(), determineNextFloor(randSelect));
+        endFloorRel = isBetween(destFloor, elevatorInfo.get(randSelect).getCurrFloor(), determineNextFloor(randSelect));      
 
 		// Add destination to closest elevator
-		for (int i = 0; i < elevatorInfo.size(); i++) {
-			currQueueSize = elevatorInfo.get(i).getRequests().size();
-			if (elevatorInfo.get(i).isUsable() && 
-			        ((minQueueSize == -1) || (currQueueSize <= minQueueSize))) { // same as below
-			    minQueueSize = currQueueSize;
-				chosenElevator = i;
-			}
+		for (byte i = 0; i < elevatorInfo.size(); i++) {
+			currFloor = elevatorInfo.get(i).getCurrFloor();
+			currNextFloor = determineNextFloor(i);
+			currDir = elevatorInfo.get(i).getDir();
+			
+			currDoesDirMatch = reqDir.equals(currDir) ? 1 : 0;
+		    currStartFloorRel = isBetween(startFloor, currFloor, currNextFloor);
+		    currEndFloorRel = isBetween(destFloor, currFloor, currNextFloor);
+			
+		    isCurrBetter = false;
+		    
+		    if (elevatorInfo.get(i).howManyMoreActiveRequests() == 0) {
+		        return(i);
+		    } else if ((currDoesDirMatch > doesDirMatch) ||
+		       ((currDoesDirMatch == doesDirMatch) && (currStartFloorRel > startFloorRel)) ||
+		       ((currDoesDirMatch == doesDirMatch) && (currStartFloorRel == startFloorRel) && (currEndFloorRel > endFloorRel))) {
+		        isCurrBetter = true;
+		    }
+		    
+		    if (isCurrBetter) {
+		        chosenElevator = i;
+		        doesDirMatch = currDoesDirMatch;
+		        startFloorRel = currStartFloorRel;
+		        endFloorRel = currEndFloorRel;		        
+		    }
 		}
 
-		return ((byte) chosenElevator);
+		return (chosenElevator);
 	}
-
+	
+	private int isBetween(int num, int start, int end) {
+	    if (start < end) {
+	        if (num < start) {
+	            return(-1);
+	        } else if (start <= num && num <= end) {
+	            return(1);
+	        } else {
+	            return(0);
+	        }
+	    } else if (start > end) {
+	        if (num > start) {
+                return(-1);
+            } else if (end <= num && num <= start) {
+                return(1);
+            } else {
+                return(0);
+            }
+	    } else {
+	        if (start <= num && num <= end) {
+                return(0);
+            } else {
+                return(-1);
+            }
+	    }
+	}
+	
 	/**
 	 * addStopToElevator
 	 * 
@@ -186,15 +257,17 @@ public class SchedulerAlgorithm {
                 currFloorToCompare = req.getDestinationFloor();
             }
             
-            if (((dir.equals(UtilityInformation.ElevatorDirection.UP)) && (currFloorToCompare > currFloor)) || 
-                ((dir.equals(UtilityInformation.ElevatorDirection.DOWN)) && (currFloorToCompare < currFloor)) || 
-                (dir.equals(UtilityInformation.ElevatorDirection.STATIONARY))) {
-                currDiff = Math.abs(currFloor - currFloorToCompare);
-                if ((closestDiff == -1) || (currDiff < closestDiff)) {
-                    closestDiff = currDiff;
-                    nextFloor = currFloorToCompare;
+            if (currFloorToCompare != -1) {
+                if (((dir.equals(UtilityInformation.ElevatorDirection.UP)) && (currFloorToCompare > currFloor)) || 
+                    ((dir.equals(UtilityInformation.ElevatorDirection.DOWN)) && (currFloorToCompare < currFloor)) || 
+                    (dir.equals(UtilityInformation.ElevatorDirection.STATIONARY))) {
+                    currDiff = Math.abs(currFloor - currFloorToCompare);
+                    if ((closestDiff == -1) || (currDiff < closestDiff)) {
+                        closestDiff = currDiff;
+                        nextFloor = currFloorToCompare;
+                    }
+                    
                 }
-                
             }
         }
         
@@ -434,6 +507,18 @@ public class SchedulerAlgorithm {
 
         public byte getCurrFloor() {
             return(currFloor);
+        }
+        
+        public int howManyMoreActiveRequests() {
+            int count = 0;
+            
+            for (Request req : elevatorRequests) {
+                if (!req.getElevatorPickupTimeFlag() || !req.getElevatorArrivedDestinationTimeFlag()) {
+                    count += 1;
+                }
+            }
+            
+            return(count);
         }
         
         public String toString() {

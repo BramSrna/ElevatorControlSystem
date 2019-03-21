@@ -33,7 +33,7 @@ public class Request {
 
 	public void setElevatorPickupTime(long time) {
 		elevatorPickupTime = time;
-		printRequestDetails();
+		//printRequestDetails();
 	}
 
 	public void setElevatorArrivedDestinationTime(long time) {
