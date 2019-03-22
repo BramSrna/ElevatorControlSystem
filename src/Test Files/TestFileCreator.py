@@ -12,7 +12,7 @@ msStep = 0
 
 numFloors = 10
 
-numRequests = 10
+numRequests = 8
 
 groundWeight = 0
 
@@ -20,7 +20,7 @@ up = "UP"
 down = "DOWN"
 
 with open("TestFile.txt", "w") as f:
-    for i in range(0, numRequests + 1):
+    for i in range(0, numRequests):
         groundCheck = random.uniform(0, 1)
         
         if groundCheck <= groundWeight:

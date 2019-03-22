@@ -50,91 +50,53 @@ public class SchedulerAlgorithm {
 	 * @return byte containg the elevator number that was given teh request
 	 */
 	private byte determineElevatorToGiveRequest(Request request) {
-	    // Info about request
-        int startFloor = request.getSourceFloor();
-        int destFloor = request.getDestinationFloor();
-        UtilityInformation.ElevatorDirection reqDir = request.getRequestDirection();
-        
-	    // Info about current chosen elevator
-		byte chosenElevator = -1;
-		int doesDirMatch = 0;
-		int startFloorRel = 0;
-        int endFloorRel = 0;
-		
-		// Info about current elevator being checked
-		int currFloor;
-        int currNextFloor;
-        UtilityInformation.ElevatorDirection currDir;
-        
-        // Info about current comparison
-        int currDoesDirMatch;
-        int currStartFloorRel;
-        int currEndFloorRel;
-        boolean isCurrBetter;
-        
-        Random rand = new Random();
-        byte randSelect = (byte) rand.nextInt(elevatorInfo.size());
-        
-        chosenElevator = randSelect;
-        doesDirMatch = reqDir.equals(elevatorInfo.get(randSelect).getDir()) ? 1 : 0;
-        startFloorRel = isBetween(startFloor, elevatorInfo.get(randSelect).getCurrFloor(), determineNextFloor(randSelect));
-        endFloorRel = isBetween(destFloor, elevatorInfo.get(randSelect).getCurrFloor(), determineNextFloor(randSelect));      
+	    byte chosenElevator = -1;
+	    int shortestTime = -1;
+	    int time;
 
 		// Add destination to closest elevator
 		for (byte i = 0; i < elevatorInfo.size(); i++) {
-			currFloor = elevatorInfo.get(i).getCurrFloor();
-			currNextFloor = determineNextFloor(i);
-			currDir = elevatorInfo.get(i).getDir();
+			time = howLongUntilRequestWouldBeServed(i, request);
 			
-			currDoesDirMatch = reqDir.equals(currDir) ? 1 : 0;
-		    currStartFloorRel = isBetween(startFloor, currFloor, currNextFloor);
-		    currEndFloorRel = isBetween(destFloor, currFloor, currNextFloor);
-			
-		    isCurrBetter = false;
-		    
-		    if (elevatorInfo.get(i).howManyMoreActiveRequests() == 0) {
-		        return(i);
-		    } else if ((currDoesDirMatch > doesDirMatch) ||
-		       ((currDoesDirMatch == doesDirMatch) && (currStartFloorRel > startFloorRel)) ||
-		       ((currDoesDirMatch == doesDirMatch) && (currStartFloorRel == startFloorRel) && (currEndFloorRel > endFloorRel))) {
-		        isCurrBetter = true;
-		    }
-		    
-		    if (isCurrBetter) {
-		        chosenElevator = i;
-		        doesDirMatch = currDoesDirMatch;
-		        startFloorRel = currStartFloorRel;
-		        endFloorRel = currEndFloorRel;		        
-		    }
+			if ((shortestTime == -1) || (time < shortestTime)) {
+				chosenElevator = i;
+				shortestTime = time;
+			}
 		}
 
 		return (chosenElevator);
 	}
 	
-	private int isBetween(int num, int start, int end) {
-	    if (start < end) {
-	        if (num < start) {
-	            return(-1);
-	        } else if (start <= num && num <= end) {
-	            return(1);
-	        } else {
-	            return(0);
-	        }
-	    } else if (start > end) {
-	        if (num > start) {
-                return(-1);
-            } else if (end <= num && num <= start) {
-                return(1);
-            } else {
-                return(0);
-            }
-	    } else {
-	        if (start <= num && num <= end) {
-                return(0);
-            } else {
-                return(-1);
-            }
-	    }
+	private int howLongUntilRequestWouldBeServed(byte elevatorNum, Request req) {
+		int currFloor = elevatorInfo.get(elevatorNum).getCurrFloor();
+		UtilityInformation.ElevatorDirection dir = elevatorInfo.get(elevatorNum).getDir();
+		int nextFloor = determineNextFloor(elevatorNum);
+		
+		int sourceFloor = req.getSourceFloor();
+		
+		int diff = 0;
+		
+		if (dir.equals(UtilityInformation.ElevatorDirection.UP)) {
+			if (sourceFloor > currFloor) {
+				diff = sourceFloor - currFloor;
+			} else if (sourceFloor < currFloor) {
+				diff = (nextFloor - currFloor) + (nextFloor - sourceFloor);
+			}
+		} else if (dir.equals(UtilityInformation.ElevatorDirection.DOWN)) {
+			if (sourceFloor < currFloor) {
+				diff = currFloor - sourceFloor;
+			} else if (sourceFloor > currFloor) {
+				diff = (currFloor - nextFloor) + (sourceFloor - nextFloor);
+			}
+		} else {
+			if (sourceFloor > currFloor) {
+				diff = sourceFloor - currFloor;
+			} else if (sourceFloor < currFloor) {
+				diff = currFloor - sourceFloor;
+			}
+		}
+		
+		return(diff * UtilityInformation.TIME_UP_ONE_FLOOR);
 	}
 	
 	/**
