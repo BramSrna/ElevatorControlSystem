@@ -493,7 +493,7 @@ public class Scheduler extends ServerPattern {
 		
 		for (byte i = 0; i < numElevators; i++) {
 			for (Request req : algor.getRequests(i)) {
-				System.out.println(req.getElevatorPickupTime());
+				System.out.println(req.getElevatorPickupTime() - req.getElevatorRequestTime());
 			}
 		}
 		
@@ -501,7 +501,7 @@ public class Scheduler extends ServerPattern {
 		
 		for (byte i = 0; i < numElevators; i++) {
 			for (Request req : algor.getRequests(i)) {
-				System.out.println(req.getElevatorArrivedDestinationTime());
+				System.out.println(req.getElevatorArrivedDestinationTime() - req.getElevatorRequestTime());
 			}
 		}
 		
