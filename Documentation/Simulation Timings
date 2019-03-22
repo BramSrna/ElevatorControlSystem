@@ -1,8 +1,25 @@
-4 Elevators, 10 Floors, 8 Requests:
-  Average Arrival Sensors Interface Time (ns): 4363206
-  Average Elevators Buttons Interface Time (ns): 16694252475
-  Average Floor Buttons Interface Time (ns): 30098312000
+4 Elevators, 10 Floors, 10 Requests, No Ground Weight:
+  Average Arrival Sensors Interface Time (ns): 6593679
+  Average Elevators Buttons Interface Time (ns): 49148829800
+  Average Floor Buttons Interface Time (ns): 86281419560
   
-  Average Arrival Sensors Interface Time (ns): 5704909
-  Average Elevators Buttons Interface Time (ns): 14972838500
-  Average Floor Buttons Interface Time (ns): 28930783125
+  Average Arrival Sensors Interface Time (ns): 6369478
+  Average Elevators Buttons Interface Time (ns): 16764100170
+  Average Floor Buttons Interface Time (ns): 30594815410
+  
+  Average Arrival Sensors Interface Time (ns): 24968450
+  Average Elevators Buttons Interface Time (ns): 17124954270
+  Average Floor Buttons Interface Time (ns): 31893313240
+  
+4 Elevators, 10 Floors, 10 Requests, Ground Weight:
+  Average Arrival Sensors Interface Time (ns): 4904920
+  Average Elevators Buttons Interface Time (ns): 2550384640
+  Average Floor Buttons Interface Time (ns): 22422627470
+  
+  Average Arrival Sensors Interface Time (ns): 6264786
+  Average Elevators Buttons Interface Time (ns): 4530457020
+  Average Floor Buttons Interface Time (ns): 14859308360
+  
+  Average Arrival Sensors Interface Time (ns): 5632413
+  Average Elevators Buttons Interface Time (ns): 4690232590
+  Average Floor Buttons Interface Time (ns): 24335356660
