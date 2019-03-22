@@ -12,9 +12,9 @@ msStep = 0
 
 numFloors = 10
 
-numRequests = 8
+numRequests = 10
 
-groundWeight = 0
+groundWeight = 0.5
 
 up = "UP"
 down = "DOWN"
