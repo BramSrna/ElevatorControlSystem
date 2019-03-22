@@ -14,7 +14,7 @@ numFloors = 10
 
 numRequests = 10
 
-groundWeight = 0
+groundWeight = 0.5
 
 up = "UP"
 down = "DOWN"

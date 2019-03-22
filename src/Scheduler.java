@@ -30,8 +30,7 @@ public class Scheduler extends ServerPattern {
 
 	private SchedulerAlgorithm algor;
 	
-	private long totalArrivalSensorTime;
-	private int numArrivalSensorTimeSamples;
+	private ArrayList<Long> arrivalSensorTimes;
 
 	/**
 	 * Scheduler
@@ -42,6 +41,8 @@ public class Scheduler extends ServerPattern {
 	 */
 	public Scheduler() {
 		super(UtilityInformation.SCHEDULER_PORT_NUM, "Scheduler");
+		
+		arrivalSensorTimes = new ArrayList<Long>();
 
 		algor = new SchedulerAlgorithm((byte) 0);
 
@@ -94,8 +95,7 @@ public class Scheduler extends ServerPattern {
 		    case FLOOR_SENSOR_ACTIVATED:
 		        extractFloorReachedNumberAndGenerateResponseMessageAndActions(packet);
 		        
-		        totalArrivalSensorTime += System.nanoTime() - messageRecieveTime;
-		        numArrivalSensorTimeSamples += 1;
+		        arrivalSensorTimes.add(System.nanoTime() - messageRecieveTime);
 		        
 		        break;
 		    case FLOOR_REQUESTED:
@@ -482,49 +482,27 @@ public class Scheduler extends ServerPattern {
         System.exit(0);
     }
 	
-	private void printTimingInformation() {
-		long totalElevatorBtnTime = 0;
-		int numElevatorBtnTimeSamples = 0;
+	private void printTimingInformation() {		
+		System.out.println("Arrival Sensors Interface Times (ns): ");
 		
-		long totalFloorBtnTime = 0;
-		int numFloorBtnTimeSamples = 0;
+		for (Long time : arrivalSensorTimes) {
+			System.out.println(time);
+		}
 		
-		long time = -1;
-		long timeOfReq;
-
+		System.out.println("Elevators Buttons Interface Times (ns): ");
+		
 		for (byte i = 0; i < numElevators; i++) {
 			for (Request req : algor.getRequests(i)) {
-				timeOfReq = req.getElevatorRequestTime();
-				
-				time = req.getElevatorPickupTime();				
-				if (time != -1) {
-					totalElevatorBtnTime += (time - timeOfReq);
-					numElevatorBtnTimeSamples += 1;
-				}
-				
-				time = req.getElevatorArrivedDestinationTime();
-				if (time != -1) {
-					totalFloorBtnTime += (time - timeOfReq);
-					numFloorBtnTimeSamples += 1;
-				}
+				System.out.println(req.getElevatorPickupTime());
 			}
 		}
 		
-		System.out.println(String.format("Average Arrival Sensors Interface Time (ns): %d", 
-				totalArrivalSensorTime / numArrivalSensorTimeSamples));
+		System.out.println("Floor Buttons Interface Times (ns): ");
 		
-		if (numElevatorBtnTimeSamples != 0) {
-			System.out.println(String.format("Average Elevators Buttons Interface Time (ns): %d", 
-					totalElevatorBtnTime / numElevatorBtnTimeSamples));
-		} else {
-			System.out.println("Not enough samples to determine Elevator Buttons Interface time.");
-		}
-		
-		if (numFloorBtnTimeSamples != 0) {
-			System.out.println(String.format("Average Floor Buttons Interface Time (ns): %d", 
-					totalFloorBtnTime / numFloorBtnTimeSamples));
-		} else {
-			System.out.println("Not enough samples to determine Floor Buttons Interface time.");
+		for (byte i = 0; i < numElevators; i++) {
+			for (Request req : algor.getRequests(i)) {
+				System.out.println(req.getElevatorArrivedDestinationTime());
+			}
 		}
 		
 	}
