@@ -7,32 +7,34 @@ and a simulator for the floors (which includes, buttons, lights).
 Files involved in the system:
 	Elevator.java
 		Class ised to simulate an elevator. Simulates the lights, buttons, door, and movement.
-    ElevatorSubsystem.java
-        Class used to control the Elevator objects in the simulation. Communicates with the Scheduler to control the movement of the elevators as well as other elevator behaviour, sich as opening the door.
-    ElevatorSubsystemTests.java
-        Contains JUnit test cases for the ElevatorSubsystem class.
+    	Elevator_Subsystem.java
+        	Class used to control the Elevator objects in the simulation. Communicates with the Scheduler to control the movement of the elevators as well as other elevator behaviour, sich as opening the door.
+    	ElevatorSubsystemTests.java
+        	Contains JUnit test cases for the ElevatorSubsystem class.
 	ElevatorTests.java
 		Contains JUnit test cases for the Elevator class.
-    Floor.java
-        Class used to simulate a floor. Simulates the lights and buttons.
-    FloorSubsystem.java
-        Class used to control the floors in the simulation. Updates floors with elevator location and controls communication with the scheduler.
-    FloorSubsytemTests.java
-        Contains JUnit test cases for the FloorSubsystem class.
-    Scheduler.java
-        Simulates the Scheduler for the system. Controls both the FloorSubsystem and the Elevator classes. In charge of telling the classes what to do. This includes moving the elevator, turning on and off ligths, etc.
-    SchedulerAlgorithm.java
+    	Floor.java
+        	Class used to simulate a floor. Simulates the lights and buttons.
+    	FloorSubsystem.java
+        	Class used to control the floors in the simulation. Updates floors with elevator location and controls communication with the scheduler.
+    	FloorSubsytemTests.java
+        	Contains JUnit test cases for the FloorSubsystem class.
+	Request.java
+		Class used to monitor requests for the system to perform/
+    	Scheduler.java
+        	Simulates the Scheduler for the system. Controls both the FloorSubsystem and the Elevator classes. In charge of telling the classes what to do. This includes moving the elevator, turning on and off ligths, etc.
+    	SchedulerAlgorithm.java
 		Controls the logic for taking requests and divvying the requests to the proper Elevator to minimize wait time.
 	SchedulerTest.java
-        Contains JUnit test cases for the Scheduelr class.
+        	Contains JUnit test cases for the Scheduelr class.
 	ServerPattern.java
 		An abstract class that runs a Thread used to constantly receive data and add the received packets to a shared buffer. Implementation classes then wait on this shared buffer to get messages.
-    TestHost.java
-        Helper class used in JUnit test cases by acting as an EchoServer.
-    UserInterface.java
-        Contains the code needed for communicating with the user and obtaining needed information.
-    UtilityInformation.java
-        Header file containg important information shared between the three systems.
+    	TestHost.java
+        	Helper class used in JUnit test cases by acting as an EchoServer.
+    	UserInterface.java
+        	Contains the code needed for communicating with the user and obtaining needed information.
+    	UtilityInformation.java
+        	Header file containg important information shared between the three systems.
         
 Setup instructions: 
 	1. Extract the zip file, this should contain the code for the assignment and all UML diagrams
@@ -66,14 +68,15 @@ Running the project:
 	- The Scheduler will receive the requests and then use this information to control the elevator(s).
 	- The Scheduler will send instructions to the Elevator system and FloorSubsystem containing movement requests, button and lamp states, door operations, and other important information.
 	- Once the final request is complete, the user can then exit the program, causing a teardown signal to be sent through the system, exiting all running files.
+	- After the teardown is performed, the Scheduler will print out all of its timings.
 	
-Changes introduced in iteration 3:
-	Added error handling to the system.
-	Errors are fed into the system through the input file.
-	The following error types are handled: Elevator Stuck/Arrival Sensor Not Workink, Door Stuck Open, Door Stuck Close
-	The errors are handled as follows:
-		Elevator Stuck/Arrival Sensor Not Working: Elevator is disabled in the Scheduler and will stop working, all stops on the broken Elevator are removed and added to a new Elevator.
-		Door Stuck Open + Door Stuck Close: Elevator will continuously attempt to fix the door with a predetermined success rate. Stops are left on the Elevator. Amounts to pausing the Elevator.
+Changes introduced in iteration 4:
+	Timed the following events:
+		Arrival Sensor Interface
+		Elevator Buttons Interface
+		Floor Buttons Interface
+	Refactored the code to simplify the timing process.
+	Created the Request class to monitor requests and refactored the Scheduler and alogirthm to acommadate this change.
 
   Responsibilities:
   Iteration 1: 
@@ -102,6 +105,8 @@ Changes introduced in iteration 3:
     
     Hashim Hussen (100996269) : Elevator.java, ElevatorSubsystemTest.java, ElevatorTests.java testHost.java, Elevator UML and State
 
+
+
   Iteration 3: 
 
     Samy Ibrahim (101037927): Elevator.java, ElevatorSubsystem.java, TestHost.java, UtilityInformation.java, Elevator UML Class diagram, Sequence diagram and State diagram
@@ -111,5 +116,18 @@ Changes introduced in iteration 3:
     Abraham Srna (100997482) : Floor.java, FloorSubsystem.java, FloorSubsystemTests.java, TestHost.java, UserInterface.java, UtilityInformation.java, ServerPattern.java, Floor UML diagram
 
     Haseeb Khan(101009713) : Scheduler.java, SchedulerTest.java, TestHost.java, UtilityInformation.java, ServerPattern.java, Scheduler UML diagram, Scheduler State diagram
+    
+    Hashim Hussen (100996269) : Elevator.java, ElevatorSubsystemTest.java, ElevatorTests.java testHost.java, Elevator UML and State
+    
+    
+Iteration 4: 
+
+    Samy Ibrahim (101037927): Elevator.java, ElevatorSubsystem.java, TestHost.java, UtilityInformation.java, Elevator UML Class diagram, Sequence diagram and State diagram
+    
+    Tri Nhan (101023872) : Floor.java, FloorSubsystem.java, FloorSubsystemTests.java, TestHost.java, UserInterface.java, UtilityInformation.java, ServerPattern.java, GUI, Floor UML diagram
+
+    Abraham Srna (100997482) : Floor.java, FloorSubsystem.java, FloorSubsystemTests.java, TestHost.java, UserInterface.java, UtilityInformation.java, ServerPattern.java, SchedulerAlgorthm.java, Floor UML diagram
+
+    Haseeb Khan(101009713) : Scheduler.java, SchedulerTest.java, SchedulerAlgorthm.java, TestHost.java, UtilityInformation.java, ServerPattern.java, Request.java, Scheduler UML diagram, Scheduler State diagram
     
     Hashim Hussen (100996269) : Elevator.java, ElevatorSubsystemTest.java, ElevatorTests.java testHost.java, Elevator UML and State
