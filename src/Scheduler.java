@@ -31,6 +31,8 @@ public class Scheduler extends ServerPattern {
 	private SchedulerAlgorithm algor;
 	
 	private ArrayList<Long> arrivalSensorTimes;
+	private ArrayList<Long> processRequestTimes;
+	private ArrayList<Long> openElevatorDoorTimes;
 
 	/**
 	 * Scheduler
@@ -43,6 +45,8 @@ public class Scheduler extends ServerPattern {
 		super(UtilityInformation.SCHEDULER_PORT_NUM, "Scheduler");
 		
 		arrivalSensorTimes = new ArrayList<Long>();
+		processRequestTimes = new ArrayList<Long>();
+		openElevatorDoorTimes = new ArrayList<Long>();
 
 		algor = new SchedulerAlgorithm((byte) 0);
 
@@ -101,7 +105,8 @@ public class Scheduler extends ServerPattern {
 		    case FLOOR_REQUESTED:
 		        byte elevatorNum = extractFloorRequestedNumberAndGenerateResponseMessageAndActions(packet);
                 currentState = State.READING_MESSAGE;
-                kickStartElevator(packet, elevatorNum);                
+                kickStartElevator(packet, elevatorNum);
+                processRequestTimes.add(System.nanoTime() - messageRecieveTime);
                 break;
 		    case TEARDOWN:
 		        currentState = State.END;
@@ -421,6 +426,8 @@ public class Scheduler extends ServerPattern {
 		    sendElevatorInDirection(recievedPacket, UtilityInformation.ElevatorDirection.STATIONARY);
 			changeDoorState(recievedPacket, UtilityInformation.DoorState.OPEN);
 			
+			openElevatorDoorTimes.add(System.nanoTime() - messageRecieveTime);
+			
 			// Set the time in the requests
 			long updatedTime = System.nanoTime();
 			updateRequestTimes(algor.getRequests(elevatorNum), updatedTime);
@@ -573,6 +580,18 @@ public class Scheduler extends ServerPattern {
 		
 		for (Long time : arrivalSensorTimes) {
 			System.out.println(time);
+		}
+		
+		System.out.println("Add Request To List Times (ns): ");
+		
+		for (Long time : processRequestTimes) {
+		    System.out.println(time);
+		}
+		
+		System.out.println("Open Elevator Door Times (ns); ");
+		
+		for (Long time : openElevatorDoorTimes) {
+		    System.out.println(time);
 		}
 		
 		System.out.println("Elevators Buttons Interface Times (ns): ");
