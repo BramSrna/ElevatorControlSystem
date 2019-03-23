@@ -67,6 +67,17 @@ public class SchedulerAlgorithm {
 		return (chosenElevator);
 	}
 	
+	/**
+	 * howLongUntilRequestWouldBeServed
+	 * 
+	 * Determines how long it would take for the current elevator to start
+	 * the given request (i.e. to pick the person up)
+	 * 
+	 * @param elevatorNum  The number of the elevator
+	 * @param req  The Request to service
+	 * 
+	 * @return int Time in milliseconds it would take the current elevator to service the request
+	 */
 	private int howLongUntilRequestWouldBeServed(byte elevatorNum, Request req) {
 		int currFloor = elevatorInfo.get(elevatorNum).getCurrFloor();
 		UtilityInformation.ElevatorDirection dir = elevatorInfo.get(elevatorNum).getDir();
@@ -100,7 +111,7 @@ public class SchedulerAlgorithm {
 	}
 	
 	/**
-	 * addStopToElevator
+	 * addRequestToElevator
 	 * 
 	 * Adds the given floor to the list of elevator stops for the given elevator
 	 * number. A minimum index is given that controls how early the stop can be
@@ -173,6 +184,15 @@ public class SchedulerAlgorithm {
 		return(elevatorInfo.get(elevatorNum).getDir());
 	}
 	
+	/**
+	 * determineNextFloor
+	 * 
+	 * Determine the next floor that the given elevator should head to.
+	 * 
+	 * @param elevatorNum  The number of the elevator to check
+	 * 
+	 * @return int The next floor number
+	 */
 	private int determineNextFloor(byte elevatorNum) {
         int nextFloor = -1;
         
@@ -203,6 +223,19 @@ public class SchedulerAlgorithm {
 	    return(nextFloor);
 	}
 	
+	/**
+	 * getNextClosestFloorInDirection
+	 * 
+	 * Get the next closest floor to the given elevator's current floor
+	 * in the given direction. Returns the current floor if there are no
+	 * other floors in that direction to visit.
+	 * 
+	 * @param elevatorNum  The number of the elevator to check
+	 * @param dir  The direction to check relative to the current floor
+	 * 
+	 * @return int The closest floor in the given direction.
+	 *             Returns the current floor if nothing else available
+	 */
 	private int getNextClosestFloorInDirection(byte elevatorNum, UtilityInformation.ElevatorDirection dir) {
 	    int currFloor = -1;
         int nextFloor = currFloor;
@@ -398,21 +431,50 @@ public class SchedulerAlgorithm {
 		elevatorInfo.get(elevatorNum).setUsable(true);
 	}
 	
+	/**
+	 * getRequests
+	 * 
+	 * Returns the list of requests that the given elevator has
+	 * 
+	 * @param elevatorNum  The number of the elevator to check
+	 * 
+	 * @return ArrayList<Request>  Containing all of the elevator's past and current requests
+	 */
     public ArrayList<Request> getRequests(byte elevatorNum) {
         return(elevatorInfo.get(elevatorNum).getRequests());
     }
 	    
+    /**
+     * AlgorithmElevator
+     * 
+     * Class used as a data structure to track the information
+     * about each elevator.
+     *
+     */
 	public class AlgorithmElevator {
+	    // Info about elevator
 	    public byte elevatorNum;
         public byte currFloor;
         
+        // Requests given to the eelvator
         public ArrayList<Request> elevatorRequests;
         
+        // Condition of elevator
 	    public boolean stopElevator;
 	    public boolean elevatorUsable;
 	    
+	    // Current direction of the elevator
 	    public UtilityInformation.ElevatorDirection dir;
 	    
+	    /**
+	     * AlgorithmElevator
+	     * 
+	     * Creates a new AlgorithmElevator object
+	     * 
+	     * @param elevatorNum  The number of teh created elevator
+	     * 
+	     * @return None
+	     */
 	    public AlgorithmElevator(byte elevatorNum) {
 	        this.elevatorNum = elevatorNum;
 	        currFloor = 0;
@@ -426,51 +488,160 @@ public class SchedulerAlgorithm {
 
 	    }
 	    
+	    /**
+	     * setDir
+	     * 
+	     * Sets the current direction of the elevator to the given value
+	     * 
+	     * @param newDir   The new direction for the elevator
+	     * 
+	     * @return void
+	     */
 	    public void setDir(UtilityInformation.ElevatorDirection newDir) {
             dir = newDir;
             
         }
 
+	    /**
+	     * getDir
+	     * 
+	     * Returns the current direction of the elevator
+	     * 
+	     * @param  None
+	     * 
+	     * @return ElevatorDirection   The current direction of the eelvator
+	     */
         public UtilityInformation.ElevatorDirection getDir() {
             return(dir);
         }
 
+        /**
+         * addRequest
+         * 
+         * Adds the given Request to the list of Requests
+         * 
+         * @param request   The Request to add to the list
+         * 
+         * @return  void
+         */
         public void addRequest(Request request) {
             elevatorRequests.add(request);            
         }
 
+        /**
+         * getRequests
+         * 
+         * Returns the current list of requests
+         * 
+         * @param   None
+         * 
+         * @return  ArrayList<Request> List of past and current requests
+         */
         public ArrayList<Request> getRequests() {
             return(elevatorRequests);
         }
 
+        /**
+         * clearRequests
+         * 
+         * Empties the list of requests
+         * 
+         * @param   None
+         * 
+         * @return  void
+         */
         public void clearRequests() {
 	        elevatorRequests.clear();
 	    }
 
+        /**
+         * getStopElevator
+         * 
+         * Gets the current value of stopElevator
+         * 
+         * @param   None
+         * 
+         * @return  boolean Current value of stopElevator
+         */
         public boolean getStopElevator() {
             return(stopElevator);
         }
 
+        /**
+         * setUsable
+         * 
+         * Sets the elevatorUsable boolean to the given value
+         * 
+         * @param newVal    The new value for elevatorUsable
+         * 
+         * @return  void
+         */
         public void setUsable(boolean newVal) {
             elevatorUsable = newVal;            
         }
 
+        /**
+         * setCurrFloor
+         * 
+         * Sets the current floor of the elevator to the given value
+         * 
+         * @param floorNum  The new floor number for the elevator
+         * 
+         * @return  void
+         */
         public void setCurrFloor(Byte floorNum) {
             currFloor = floorNum;            
         }
 
+        /**
+         * setStopElevator
+         * 
+         * Sets stopElevator to the given value
+         * 
+         * @param newVal    The new value for stopElevator
+         * 
+         * @return  void
+         */
         public void setStopElevator(boolean newVal) {
             stopElevator = newVal;            
         }
 
+        /**
+         * isUsable
+         * 
+         * Returns the current value of elevatorUsable
+         * 
+         * @param   None
+         * 
+         * @return  boolean The current value of elevatorUsable
+         */
         public boolean isUsable() {
             return(elevatorUsable);
         }
 
+        /**
+         * getCurrFloor
+         * 
+         * Returns the current floor of the elevator
+         * 
+         * @param   None
+         * 
+         * @return  byte    The current floor of the elevator
+         */
         public byte getCurrFloor() {
             return(currFloor);
         }
         
+        /**
+         * howManyMoreActiveRequests
+         * 
+         * Returns the number of active requests that this elevator has
+         * i.e. the number of requests that have not been completed yet
+         * 
+         * @param   None
+         * 
+         * @return  int The number of active requests
+         */
         public int howManyMoreActiveRequests() {
             int count = 0;
             
@@ -483,6 +654,15 @@ public class SchedulerAlgorithm {
             return(count);
         }
         
+        /**
+         * toString
+         * 
+         * Returns a string describing this elevator
+         * 
+         * @param   None
+         * 
+         * @return  String describing this object
+         */
         public String toString() {
             String toReturn = "";
             

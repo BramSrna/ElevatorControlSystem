@@ -161,6 +161,16 @@ public class Scheduler extends ServerPattern {
 		}
 	}
 
+	/**
+	 * sendAllRequestsFinishedMessage
+	 * 
+	 * Send a message to the FloorSubsystem signifying that
+	 * all current requests have been completed.
+	 * 
+	 * @param packet   The received DatagramPacket that triggered this method call
+	 * 
+	 * @return void
+	 */
 	private void sendAllRequestsFinishedMessage(DatagramPacket packet) {
 		byte[] message = {UtilityInformation.ALL_REQUESTS_FINISHED_MODE,
 						  UtilityInformation.END_OF_MESSAGE};
@@ -168,6 +178,16 @@ public class Scheduler extends ServerPattern {
 		sendMessage(message, message.length, packet.getAddress(), UtilityInformation.FLOOR_PORT_NUM);
 	}
 
+	/**
+	 * checkForFinish
+	 * 
+	 * Check if all current requests have been completed.
+	 * Return whether this is true or not.
+	 * 
+	 * @param  None
+	 * 
+	 * @return boolean True if all requests are completed, false otherwise
+	 */
 	private boolean checkForFinish() {
 		for (byte i = 0; i < numElevators; i++) {
 			for (Request req : algor.getRequests(i)) {
@@ -282,6 +302,17 @@ public class Scheduler extends ServerPattern {
 		return (elevatorNum);
 	}
 	
+	/**
+	 * kickStartElevator
+	 * 
+	 * Checks if the given elevator is stopped.
+	 * If the elevator is stopped, then a floor sensor message is triggered.
+	 * 
+	 * @param packet   The DatagramPacket that caused this method to be called
+	 * @param elevatorNum  The number of the elevator to kick start
+	 * 
+	 * @return void
+	 */
 	protected void kickStartElevator(DatagramPacket packet, byte elevatorNum) {
 	    if (algor.getStopElevator(elevatorNum)) {
             currentState = State.READING_MESSAGE;
@@ -325,6 +356,17 @@ public class Scheduler extends ServerPattern {
 		eventOccured(Event.MOVE_ELEVATOR, packet);
 	}
 	
+	/**
+	 * sendElevatorInDirection
+	 * 
+	 * Send the elevator designated by the given DatagramPacket in
+	 * the given direction.
+	 * 
+	 * @param packet   The DatagramPacket containing the number of the elevator to move
+	 * @param direction    The direction to move the elevator in
+	 * 
+	 * @return void
+	 */
 	protected void sendElevatorInDirection(DatagramPacket packet, UtilityInformation.ElevatorDirection direction) {
 	    byte elevatorNum = packet.getData()[2];
         byte[] message = {UtilityInformation.ELEVATOR_DIRECTION_MODE, 
@@ -344,6 +386,17 @@ public class Scheduler extends ServerPattern {
         }
 	}
 	
+	/**
+	 * changeDoorState
+	 * 
+	 * Change the door state of the elevator designated
+	 * by the given DatagramPacket to the given state.
+	 * 
+	 * @param packet   The DatagramPacket that triggered this method to be called
+	 * @param state    The new state of the Elevator's door
+	 * 
+	 * @return void
+	 */
 	protected void changeDoorState(DatagramPacket packet, UtilityInformation.DoorState state) {
 	    byte elevatorNum = packet.getData()[2];
         byte[] closeDoor = {UtilityInformation.ELEVATOR_DOOR_MODE, 
@@ -377,6 +430,15 @@ public class Scheduler extends ServerPattern {
 		moveToFloor(recievedPacket);
 	}
 	
+	/**
+	 * handleError
+	 * 
+	 * Handle the error contained in the given packet.
+	 * 
+	 * @param packet   The DatagramPacket containing the error
+	 * 
+	 * @return void
+	 */
 	private void handleError(DatagramPacket packet) {
 	    byte errorType = packet.getData()[1];
 	    byte elevatorNum = packet.getData()[2];
@@ -421,6 +483,17 @@ public class Scheduler extends ServerPattern {
 		algor.resumeUsingElevator(elevatorNum);
 	}
 
+	/**
+	 * updateRequestTimes
+	 * 
+	 * Updates the times of all requests based on their flag values
+	 * and whether or not their times have already been set.
+	 * 
+	 * @param request  ArrayList of all requests to update
+	 * @param updatedTime  The time to update the requests to
+	 * 
+	 * @return void
+	 */
 	private void updateRequestTimes(ArrayList<Request> request, long updatedTime) {
 		for (Request temp : request) {
 			if (temp.getElevatorPickupTimeFlag() && 
@@ -482,6 +555,19 @@ public class Scheduler extends ServerPattern {
         System.exit(0);
     }
 	
+    /**
+     * printTimingInformation
+     * 
+     * Prints all measured timing information.
+     * This includes:
+     *  Arrival Sensor Times
+     *  Elevator Button Times
+     *  Floor Button Times
+     *  
+     * @param   None
+     * 
+     * @return  void
+     */
 	private void printTimingInformation() {		
 		System.out.println("Arrival Sensors Interface Times (ns): ");
 		

@@ -356,7 +356,7 @@ public class Floor implements Runnable {
 	}
 	
 	/**
-	 * getServiceREquests
+	 * getServiceRequests
 	 * 
 	 * Get the current list of service requests.
 	 * 
