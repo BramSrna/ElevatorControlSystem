@@ -12,7 +12,7 @@ msStep = 0
 
 numFloors = 22
 
-numRequests = 10
+numRequests = 20
 
 groundWeight = 0.5
 
