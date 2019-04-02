@@ -283,9 +283,9 @@ public class Elevator_Subsystem extends ServerPattern {
 			// Based on the config message, set up the elevators and their lights.
 			for (int i = 0; i < numberOfElevators; i++) {
 				Elevator hold = new Elevator(this, i);
-				hold.allButtons = new Elevator.lampState[numberOfFloors];
+				hold.allButtons = new UtilityInformation.LampState[numberOfFloors];
 				for (int k = 0; k < numberOfFloors; k++) {
-					hold.allButtons[k] = Elevator.lampState.OFF; // currently making everything OFF
+					hold.allButtons[k] = UtilityInformation.LampState.OFF; // currently making everything OFF
 				}
 				// add to elevator subsystem ArrayList of elevators
 				allElevators.add(hold);
@@ -302,20 +302,20 @@ public class Elevator_Subsystem extends ServerPattern {
 		}
 
 		if (str.equals("open door")) {
-			addStateToQueue(currentElevatorToWork, Elevator.Action.OPEN_DOOR);
+			addActionToQueue(currentElevatorToWork, Elevator.Action.OPEN_DOOR);
 		}
 		if (str.equals("close door")) {
-			addStateToQueue(currentElevatorToWork, Elevator.Action.CLOSE_DOOR);
+			addActionToQueue(currentElevatorToWork, Elevator.Action.CLOSE_DOOR);
 		}
 		if (str.equals("go up")) {
-			addStateToQueue(currentElevatorToWork, Elevator.Action.MOVE_UP);
+			addActionToQueue(currentElevatorToWork, Elevator.Action.MOVE_UP);
 		}
 		if (str.equals("go down")) {
-			addStateToQueue(currentElevatorToWork, Elevator.Action.MOVE_DOWN);
+			addActionToQueue(currentElevatorToWork, Elevator.Action.MOVE_DOWN);
 		}
 		if (str.equals("stop")) {
 			allElevators.get(currentElevatorToWork).Stop();
-			allElevators.get(currentElevatorToWork).allButtons[destinationFloor] = Elevator.lampState.OFF;
+			allElevators.get(currentElevatorToWork).allButtons[destinationFloor] = UtilityInformation.LampState.OFF;
 			byte[] returnMessage = { UtilityInformation.ELEVATOR_STOPPED_MODE,
 					(byte) allElevators.get(currentElevatorToWork).currentFloor,
 					(byte) allElevators.get(currentElevatorToWork).elevatorNumber, -1 };
@@ -325,22 +325,22 @@ public class Elevator_Subsystem extends ServerPattern {
 		if (str.equals("destination")) {
 			destinationFloor = data[1];
 			currentElevatorToWork = data[2];
-			allElevators.get(currentElevatorToWork).allButtons[destinationFloor] = Elevator.lampState.ON;
+			allElevators.get(currentElevatorToWork).allButtons[destinationFloor] = UtilityInformation.LampState.ON;
 		}
 		if(str.equals("error")) {
 			System.out.print(currentElevatorToWork + " ");
-			addStateToQueue(currentElevatorToWork, Elevator.Action.BROKEN);
+			addActionToQueue(currentElevatorToWork, Elevator.Action.BROKEN);
 		}
 		if(str.equals("door issue")) {
 			if (data[1] == UtilityInformation.ErrorType.DOOR_WONT_OPEN_ERROR.ordinal()) {
-				addStateToQueue(currentElevatorToWork, Elevator.Action.DAMAGED_OPEN);
+				addActionToQueue(currentElevatorToWork, Elevator.Action.DAMAGED_OPEN);
 			} else if (data[1]== UtilityInformation.ErrorType.DOOR_WONT_CLOSE_ERROR.ordinal()) {
-				addStateToQueue(currentElevatorToWork, Elevator.Action.DAMAGED_CLOSED);	
+				addActionToQueue(currentElevatorToWork, Elevator.Action.DAMAGED_CLOSED);	
 			}
 		}
 		if(str.equals("issue fixed")) {
 			System.out.print(currentElevatorToWork + " ");
-			addStateToQueue(currentElevatorToWork, Elevator.Action.FIXED);
+			addActionToQueue(currentElevatorToWork, Elevator.Action.FIXED);
 		}
 
 	}
@@ -468,7 +468,7 @@ public class Elevator_Subsystem extends ServerPattern {
 		
 	}
 	
-	public synchronized void addStateToQueue(int elevatorNumber, Elevator.Action stateToAdd) {
+	public synchronized void addActionToQueue(int elevatorNumber, Elevator.Action stateToAdd) {
 		nextActions.get(elevatorNumber).add(stateToAdd);
 		
 		notifyAll();

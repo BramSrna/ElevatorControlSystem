@@ -29,11 +29,8 @@ public class Elevator implements Runnable {
 	
 	private UtilityInformation.DoorState door = UtilityInformation.DoorState.CLOSE;
 	
-	// Enum for all lights
-	enum lampState {OFF, ON}
-	
 	// The lamps indicate the floor(s) which will be visited by the elevator
-	lampState[] allButtons;
+	UtilityInformation.LampState[] allButtons;
 	
 	Elevator_Subsystem controller;
 	
@@ -85,13 +82,23 @@ public class Elevator implements Runnable {
 	public void move(UtilityInformation.ElevatorDirection dir) {		
     	System.out.println(String.format("Elevator Moving %s One Floor", dir.toString()));
     	
-        try  { 
-            Thread.sleep(UtilityInformation.TIME_UP_ONE_FLOOR);
-        } catch (InterruptedException ie)  {
+    	if (dir.equals(UtilityInformation.ElevatorDirection.UP)) {
+    		try  { 
+                Thread.sleep(UtilityInformation.TIME_UP_ONE_FLOOR);
+            } catch (InterruptedException ie)  {
 
-        }                
-        
-        currentFloor++;
+            }              
+            
+            currentFloor++;
+    	} else if (dir.equals(UtilityInformation.ElevatorDirection.DOWN)) {
+    		try  { 
+                Thread.sleep(UtilityInformation.TIME_DOWN_ONE_FLOOR);
+            } catch (InterruptedException ie)  {
+
+            }              
+            
+            currentFloor--;
+    	}        
         
         controller.sendFloorSensorMessage(elevatorNumber);
         
@@ -109,11 +116,19 @@ public class Elevator implements Runnable {
 	 * Method to open the elevator door.
 	 */
 	public void changeDoorState(UtilityInformation.DoorState newState) {
-        try  { 
-            Thread.sleep(UtilityInformation.OPEN_DOOR_TIME);
-        } catch (InterruptedException ie)  {
+		if (newState.equals(UtilityInformation.DoorState.OPEN)) {
+			try  { 
+	            Thread.sleep(UtilityInformation.OPEN_DOOR_TIME);
+	        } catch (InterruptedException ie)  {
 
-        }
+	        }
+		} else if (newState.equals(UtilityInformation.DoorState.CLOSE)) {
+			try  { 
+	            Thread.sleep(UtilityInformation.CLOSE_DOOR_TIME);
+	        } catch (InterruptedException ie)  {
+
+	        }
+		}        
         
         System.out.println(String.format("Elevator Door %s", newState.toString()));
         
