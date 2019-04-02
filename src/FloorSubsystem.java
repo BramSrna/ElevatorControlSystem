@@ -717,7 +717,7 @@ public class FloorSubsystem extends ServerPattern{
 				floorController.teardown();
 				floorController = null;
 
-				System.exit(1);
+				System.exit(0);
 			}
 		}
 

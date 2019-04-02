@@ -21,16 +21,13 @@ import java.util.Random;
  * 
  * Last Edited March 7, 2019.
  */
-public class Elevator {
+public class Elevator implements Runnable {
 	// The elevator car number
 	int elevatorNumber;
 	// The current floor the elevator is on
 	int currentFloor = 0;
 	
-	// USED ENUMS:
-	//Enum for Door
-	enum doorState {OPEN, CLOSED}
-	private doorState door = doorState.CLOSED;
+	private UtilityInformation.DoorState door = UtilityInformation.DoorState.CLOSE;
 	
 	// Enum for all lights
 	enum lampState {OFF, ON}
@@ -42,20 +39,32 @@ public class Elevator {
 	
 	/*
 	 * General Constructor for Elevator Class
-	 */
+	 */	
+	// USED ENUMS:
+	// State machine states
+	enum State {
+		MOVE_UP,
+		MOVE_DOWN,
+		OPEN_DOOR,
+		CLOSE_DOOR,
+		BROKEN,
+		DAMAGED_OPEN,
+		DAMAGED_CLOSED,
+		WAITING,
+		FIXED
+	}
 	
-	boolean inError = false;
-	
-	public boolean isDamaged = false;
+	private State currState;
 	
 	public Elevator(Elevator_Subsystem controller, int number) {
 		elevatorNumber = number;
 		this.controller = controller;
+		currState = State.WAITING;
 	}
 	
 	public int getElevatorNumber() {return this.elevatorNumber;}
 	public int getCurrentFloor() {return this.currentFloor;}
-	public doorState getDoorState() {return this.door;}
+	public UtilityInformation.DoorState getDoorState() {return this.door;}
 	
 	/*
 	 * Method to print out each elevators data.
@@ -73,90 +82,42 @@ public class Elevator {
 	/*
 	 * Method to make the elevator move up one floor.
 	 */
-	public void goUp() {
-		System.out.println("Elevator Moving Up One Floor");
-        new Thread( new Runnable() {
-            public void run()  {
-                try  { 
-                    Thread.sleep(UtilityInformation.TIME_UP_ONE_FLOOR);
-                } catch (InterruptedException ie)  {
+	public void move(UtilityInformation.ElevatorDirection dir) {		
+    	System.out.println(String.format("Elevator Moving %s One Floor", dir.toString()));
+    	
+        try  { 
+            Thread.sleep(UtilityInformation.TIME_UP_ONE_FLOOR);
+        } catch (InterruptedException ie)  {
 
-                }
-                controller.sendFloorSensorMessage(elevatorNumber);
-            }
-        } ).start();
-		currentFloor++;
-		//byte[] data = { UtilityInformation.FLOOR_SENSOR_MODE , (byte) currentFloor, (byte) elevatorNumber, -1 };
-		Elevator_Subsystem.currentState = Elevator_Subsystem.State.ARRIVE_AT_FLOOR;
-		System.out.println("Elevator arrives on floor");
-		//this.sendData(data, schedulerIP, schedulerPort);
-	}
-
-	/*
-	 * Method to make the elevator move down one floor.
-	 */
-	public void goDown() {
-		System.out.println("Elevator Moving Down One Floor");
-        new Thread( new Runnable() {
-            public void run()  {
-                try  { 
-                    Thread.sleep(UtilityInformation.TIME_DOWN_ONE_FLOOR);
-                } catch (InterruptedException ie)  {
-
-                }
-                controller.sendFloorSensorMessage(elevatorNumber);
-            }
-        } ).start();
-		currentFloor--;
-		//byte[] data = { UtilityInformation.FLOOR_SENSOR_MODE, (byte) currentFloor, (byte) elevatorNumber, -1 };
-		System.out.println("Elevator arrives on floor");
-		//this.sendData(data, schedulerIP, schedulerPort);
+        }                
+        
+        currentFloor++;
+        
+        controller.sendFloorSensorMessage(elevatorNumber);
+        
+        System.out.println("Elevator arrives on floor");
 	}
 	
 	/*
 	 * Method to make the elevator stop moving.
 	 */
 	public void Stop() {
-        //byte[] data = { UtilityInformation.ELEVATOR_STOPPED_MODE, (byte) currentFloor, (byte) elevatorNumber, -1 };
         System.out.println("The elevator has stopped moving");
-        //this.sendData(data, schedulerIP, schedulerPort);
 	}
 
 	/*
 	 * Method to open the elevator door.
 	 */
-	public void openDoor() {
-        new Thread( new Runnable() {
-            public void run()  {
-                try  { 
-                    Thread.sleep(UtilityInformation.OPEN_DOOR_TIME);
-                } catch (InterruptedException ie)  {
+	public void changeDoorState(UtilityInformation.DoorState newState) {
+        try  { 
+            Thread.sleep(UtilityInformation.OPEN_DOOR_TIME);
+        } catch (InterruptedException ie)  {
 
-                }
-            }
-        } ).start();
-		
-		System.out.println("Elevator Door Opened");
-		door = doorState.OPEN;
-		System.out.println("Door: " + door + " on floor: " + currentFloor);
-	}
-
-	/*
-	 * Method to close the elevator door.
-	 */
-	public void closeDoor() {       
-        new Thread(new Runnable() {
-            public void run()  {
-                try  { 
-                    Thread.sleep(UtilityInformation.CLOSE_DOOR_TIME);
-                } catch (InterruptedException ie)  {
-
-                }
-            }
-        }).start();
-		
-		System.out.println("Elevator Door Closed");
-		door = doorState.CLOSED;
+        }
+        
+        System.out.println(String.format("Elevator Door %s", newState.toString()));
+        
+		door = newState;
 		System.out.println("Door: " + door + " on floor: " + currentFloor);
 	}
 	
@@ -171,7 +132,6 @@ public class Elevator {
 	 */
 	public void brokenElevator() {
 		System.out.println("Elevator is Broken");
-		inError = true;
 	}
 	
 	/**
@@ -185,7 +145,6 @@ public class Elevator {
 	 */
 	public void elevatorFixed() {
 		System.out.println("Elevator is Fixed");
-		inError = false;
 	}
 	
 	/**
@@ -200,53 +159,94 @@ public class Elevator {
 	 * @return None
 	 */
 	public void fixDoorStuckError(byte doorState) {
-	    // Set the elevator to damaged
-	    this.isDamaged = true;
-	    
 	    // Run the loop until the door is fixed.
-	    new Thread(new Runnable() {
-            public void run()  {
-                Random r = new Random();
-                boolean broken = true;
-                float chance;
-                
-                // The percent change that the elevator will be fixed
-                float percentChanceFixDoor = 0.4f;
-                
-                int sleepTimeBetweenAttempts = 1000;
-                
-                while(broken) {
-                    try {
-                        Thread.sleep(sleepTimeBetweenAttempts);
-                    } catch (InterruptedException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
-                    System.out.println("Attempting to fix door...");
-                    chance = r.nextFloat();
-                    if(chance <= percentChanceFixDoor){
-                        broken = false;
-                    }
-                }
-            
-            // Set the door to the fixed state
-            if (doorState == UtilityInformation.ErrorType.DOOR_WONT_CLOSE_ERROR.ordinal()) {
-                closeDoor();
-            } else if (doorState == UtilityInformation.ErrorType.DOOR_WONT_OPEN_ERROR.ordinal()) {
-                openDoor();
-            } else {
-                System.out.println("Error: Unknown error type in Elevator fixDoorStuckError.");
-                System.exit(1);
+        Random r = new Random();
+        boolean broken = true;
+        float chance;
+        
+        // The percent change that the elevator will be fixed
+        float percentChanceFixDoor = 0.4f;
+        
+        int sleepTimeBetweenAttempts = 1000;
+        
+        while(broken) {
+            try {
+                Thread.sleep(sleepTimeBetweenAttempts);
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
             }
-            
-            // Set the elevator to undamaged
-            isDamaged = false;
-            
-            // Tell the controller that the door is fixed
-            controller.sendElevatorDoorFixedMessage(elevatorNumber);
+            System.out.println("Attempting to fix door...");
+            chance = r.nextFloat();
+            if(chance <= percentChanceFixDoor){
+                broken = false;
             }
-        }).start();
+        }
+    
+	    // Set the door to the fixed state
+	    if (doorState == UtilityInformation.ErrorType.DOOR_WONT_CLOSE_ERROR.ordinal()) {
+	        changeDoorState(UtilityInformation.DoorState.CLOSE);
+	    } else if (doorState == UtilityInformation.ErrorType.DOOR_WONT_OPEN_ERROR.ordinal()) {
+	    	changeDoorState(UtilityInformation.DoorState.OPEN);
+	    } else {
+	        System.out.println("Error: Unknown error type in Elevator fixDoorStuckError.");
+	        System.exit(1);
+	    }
 	    
+	    // Tell the controller that the door is fixed
+	    controller.sendElevatorDoorFixedMessage(elevatorNumber);	    
+	}
+
+	public State getCurrState() {
+		return(currState);
+	}
+
+	public boolean isInErrorState() {
+		return(currState.equals(State.BROKEN));
+	}
+	
+	public void changeState(State newState) {
+		currState = newState;
+		
+		switch (currState) {
+		case MOVE_UP:
+			move(UtilityInformation.ElevatorDirection.UP);
+			break;
+		case MOVE_DOWN:
+			move(UtilityInformation.ElevatorDirection.DOWN);
+			break;
+		case OPEN_DOOR:
+			changeDoorState(UtilityInformation.DoorState.OPEN);
+			break;
+		case CLOSE_DOOR:
+			changeDoorState(UtilityInformation.DoorState.CLOSE);
+			break;
+		case BROKEN:
+			brokenElevator();
+			break;
+		case DAMAGED_OPEN:
+			fixDoorStuckError((byte) UtilityInformation.ErrorType.DOOR_WONT_OPEN_ERROR.ordinal());
+			break;
+		case DAMAGED_CLOSED:
+			fixDoorStuckError((byte) UtilityInformation.ErrorType.DOOR_WONT_CLOSE_ERROR.ordinal());
+			break;
+		case WAITING:
+			break;
+		default:
+			System.out.println("Error: Unknown State.");
+			System.exit(1);
+		}
+		
+		currState = State.WAITING;
+	}
+
+	@Override
+	public void run() {		
+		while (true) {
+			State nextState = controller.getNextStateForElevator(elevatorNumber);
+			changeState(nextState);
+		}
+		
 	}
 	
 }

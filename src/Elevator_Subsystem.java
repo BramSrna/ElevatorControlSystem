@@ -49,6 +49,8 @@ public class Elevator_Subsystem extends ServerPattern {
 	// Information for System
 	private InetAddress schedulerIP;
 	private int schedulerPort = 420;
+	
+	private ArrayList<LinkedList<Elevator.State>> nextStates;
 
 	// USED ENUMS:
 	// State machine states
@@ -68,6 +70,8 @@ public class Elevator_Subsystem extends ServerPattern {
 	// General Constructor for Elevator Subsystem class.
 	public Elevator_Subsystem() {
 	    super(UtilityInformation.ELEVATOR_PORT_NUM, "Elevator_Subsystem");
+	    
+	    nextStates = new ArrayList<LinkedList<Elevator.State>>();
 	    
 		try {
 			schedulerIP = InetAddress.getLocalHost();
@@ -119,7 +123,7 @@ public class Elevator_Subsystem extends ServerPattern {
 	 */
 	public boolean checkERROR(byte[] data) {
 		// Check if elevator in error state, elevator subsystem in error state, and if the message is not the fixer.
-		if(allElevators.get(data[2]).inError == true && data[0]!=11) {
+		if(allElevators.get(data[2]).isInErrorState() == true && data[0]!=11) {
 			return true;
 		}else {
 			return false;
@@ -285,23 +289,29 @@ public class Elevator_Subsystem extends ServerPattern {
 				}
 				// add to elevator subsystem ArrayList of elevators
 				allElevators.add(hold);
+				nextStates.add(new LinkedList<Elevator.State>());
 			}
 			// allButtons = new lampState[numberOfFloors];
 			byte[] response = { UtilityInformation.CONFIG_CONFIRM_MODE, 1, -1 };
 			this.sendData(response, schedulerIP, schedulerPort);
+			
+			for (Elevator ele : allElevators) {
+				Thread t = new Thread(ele);
+				t.start();
+			}
 		}
 
 		if (str.equals("open door")) {
-			allElevators.get(currentElevatorToWork).openDoor();
+			addStateToQueue(currentElevatorToWork, Elevator.State.OPEN_DOOR);
 		}
 		if (str.equals("close door")) {
-			allElevators.get(currentElevatorToWork).closeDoor();
+			addStateToQueue(currentElevatorToWork, Elevator.State.CLOSE_DOOR);
 		}
 		if (str.equals("go up")) {
-			allElevators.get(currentElevatorToWork).goUp();
+			addStateToQueue(currentElevatorToWork, Elevator.State.MOVE_UP);
 		}
 		if (str.equals("go down")) {
-			allElevators.get(currentElevatorToWork).goDown();
+			addStateToQueue(currentElevatorToWork, Elevator.State.MOVE_DOWN);
 		}
 		if (str.equals("stop")) {
 			allElevators.get(currentElevatorToWork).Stop();
@@ -319,17 +329,18 @@ public class Elevator_Subsystem extends ServerPattern {
 		}
 		if(str.equals("error")) {
 			System.out.print(currentElevatorToWork + " ");
-			allElevators.get(currentElevatorToWork).brokenElevator();
+			addStateToQueue(currentElevatorToWork, Elevator.State.BROKEN);
 		}
 		if(str.equals("door issue")) {
-			if ((data[1] == UtilityInformation.ErrorType.DOOR_WONT_OPEN_ERROR.ordinal()) || 
-			    (data[1 ]== UtilityInformation.ErrorType.DOOR_WONT_CLOSE_ERROR.ordinal())) {
-			    allElevators.get(currentElevatorToWork).fixDoorStuckError(data[1]);	
+			if (data[1] == UtilityInformation.ErrorType.DOOR_WONT_OPEN_ERROR.ordinal()) {
+				addStateToQueue(currentElevatorToWork, Elevator.State.DAMAGED_OPEN);
+			} else if (data[1]== UtilityInformation.ErrorType.DOOR_WONT_CLOSE_ERROR.ordinal()) {
+				addStateToQueue(currentElevatorToWork, Elevator.State.DAMAGED_CLOSED);	
 			}
 		}
 		if(str.equals("issue fixed")) {
 			System.out.print(currentElevatorToWork + " ");
-			allElevators.get(currentElevatorToWork).elevatorFixed();
+			addStateToQueue(currentElevatorToWork, Elevator.State.FIXED);
 		}
 
 	}
@@ -382,7 +393,16 @@ public class Elevator_Subsystem extends ServerPattern {
 		} else if (data[0] == UtilityInformation.ELEVATOR_BUTTON_HIT_MODE) {// send the number of floor clicked
 			return "button clicked";
 		} else if (data[0] == UtilityInformation.ELEVATOR_DIRECTION_MODE) {
+			currentElevatorToWork = data[2];
+			
+			byte checkFloor = data[1];
+			
+			if (checkFloor != allElevators.get(currentElevatorToWork).getCurrentFloor()) {				
+				return "ignore";
+			}
+			
 			byte moveDirection = data[3];
+			
 			if (moveDirection == 0) {
 				return "stay";
 			} // stop
@@ -392,7 +412,7 @@ public class Elevator_Subsystem extends ServerPattern {
 			if (moveDirection == 2) {
 				return "go down";
 			}
-			currentElevatorToWork = data[2];
+			
 			return "invalid";
 		} else if (data[0] == UtilityInformation.ELEVATOR_DOOR_MODE) {
 			byte doorState = data[1];
@@ -409,7 +429,7 @@ public class Elevator_Subsystem extends ServerPattern {
 			System.out.println("Tear-Down Mode");
 			sendSocket.close();
 			super.teardown();
-			System.exit(1);
+			System.exit(0);
 		} 
 		
 		
@@ -446,5 +466,28 @@ public class Elevator_Subsystem extends ServerPattern {
 			elvSub.allElevators.get(currentElevatorToWork).display();
 		}
 		
+	}
+	
+	public synchronized void addStateToQueue(int elevatorNumber, Elevator.State stateToAdd) {
+		nextStates.get(elevatorNumber).add(stateToAdd);
+		
+		notifyAll();
+	}
+
+	public synchronized Elevator.State getNextStateForElevator(int elevatorNumber) {
+		while (nextStates.get(elevatorNumber).isEmpty()) {
+			try {
+				wait();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		Elevator.State nextState = nextStates.get(elevatorNumber).remove();
+		
+		notifyAll();
+		
+		return(nextState);
 	}
 }

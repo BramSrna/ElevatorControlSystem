@@ -32,7 +32,7 @@ public class ElevatorTests {
 	{
 		//The elevator's floor number before moving
 		int previousFloor = elevator.getCurrentFloor();
-		elevator.goUp();
+		elevator.move(UtilityInformation.ElevatorDirection.UP);
 		
 		assertEquals(previousFloor + 1,elevator.getCurrentFloor());
 	}
@@ -51,7 +51,7 @@ public class ElevatorTests {
 	{
 		//The elevator's floor number before moving
 		int previousFloor = elevator.getCurrentFloor();
-		elevator.goDown();
+		elevator.move(UtilityInformation.ElevatorDirection.DOWN);
 		
 		assertEquals(previousFloor - 1,elevator.getCurrentFloor());
 	}
@@ -69,11 +69,11 @@ public class ElevatorTests {
 	public void testOpenDoor()
 	{
 		//Confirm that the elevator doors are closed beforehand
-		elevator.closeDoor();
+		elevator.changeDoorState(UtilityInformation.DoorState.CLOSE);
 		
 		//The doorState before opening (i.e. closed)
-		Elevator.doorState previousDoorState = elevator.getDoorState();
-		elevator.openDoor();
+		UtilityInformation.DoorState previousDoorState = elevator.getDoorState();
+		elevator.changeDoorState(UtilityInformation.DoorState.OPEN);
 		
 		assertNotEquals(previousDoorState,elevator.getDoorState());
 	}
@@ -91,11 +91,11 @@ public class ElevatorTests {
 	public void testCloseDoor()
 	{
 		//Confirm that the elevator doors are open beforehand
-		elevator.openDoor();
+		elevator.changeDoorState(UtilityInformation.DoorState.OPEN);
 		
 		//The doorState before closing (i.e. opened)
-		Elevator.doorState previousDoorState = elevator.getDoorState();
-		elevator.closeDoor();
+		UtilityInformation.DoorState previousDoorState = elevator.getDoorState();
+		elevator.changeDoorState(UtilityInformation.DoorState.CLOSE);
 		
 		assertNotEquals(previousDoorState,elevator.getDoorState());
 	}
