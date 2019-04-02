@@ -241,7 +241,7 @@ public class SchedulerAlgorithm {
 	 *             Returns the current floor if nothing else available
 	 */
 	private int getNextClosestFloorInDirection(byte elevatorNum, UtilityInformation.ElevatorDirection dir) {
-	    int currFloor = -1;
+	    int currFloor = elevatorInfo.get(elevatorNum).getCurrFloor();
         int nextFloor = currFloor;
         int currDiff;
         int closestDiff = -1;        
@@ -268,6 +268,10 @@ public class SchedulerAlgorithm {
                     
                 }
             }
+        }
+        
+        if (nextFloor == currFloor) {
+            nextFloor = -1;
         }
         
         return(nextFloor);
