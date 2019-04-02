@@ -58,7 +58,7 @@ public class SchedulerAlgorithm {
 		for (byte i = 0; i < elevatorInfo.size(); i++) {
 			time = howLongUntilRequestWouldBeServed(i, request);
 			
-			if ((shortestTime == -1) || (time < shortestTime)) {
+			if (((shortestTime == -1) || (time < shortestTime)) && elevatorInfo.get(i).isUsable()) {
 				chosenElevator = i;
 				shortestTime = time;
 			}
@@ -387,6 +387,8 @@ public class SchedulerAlgorithm {
 		byte destFloor;
 		UtilityInformation.ElevatorDirection dir;
 		
+		pauseElevator(elevatorNum);
+		
 		for (Request req : currReqs) {
 		    if (req.getElevatorPickupTimeFlag()) {
 		        startFloor = currFloor;
@@ -406,8 +408,7 @@ public class SchedulerAlgorithm {
 		    elevatorRequestMade(tempReq);
 		}
 
-		elevatorInfo.get(elevatorNum).clearRequests();
-		pauseElevator(elevatorNum);
+		elevatorInfo.get(elevatorNum).clearRequests();		
 	}
 
 	/**
