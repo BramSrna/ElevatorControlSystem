@@ -50,7 +50,7 @@ public class Elevator_Subsystem extends ServerPattern {
 	private InetAddress schedulerIP;
 	private int schedulerPort = 420;
 	
-	private ArrayList<LinkedList<Elevator.State>> nextStates;
+	private ArrayList<LinkedList<Elevator.Action>> nextActions;
 
 	// USED ENUMS:
 	// State machine states
@@ -71,7 +71,7 @@ public class Elevator_Subsystem extends ServerPattern {
 	public Elevator_Subsystem() {
 	    super(UtilityInformation.ELEVATOR_PORT_NUM, "Elevator_Subsystem");
 	    
-	    nextStates = new ArrayList<LinkedList<Elevator.State>>();
+	    nextActions = new ArrayList<LinkedList<Elevator.Action>>();
 	    
 		try {
 			schedulerIP = InetAddress.getLocalHost();
@@ -289,7 +289,7 @@ public class Elevator_Subsystem extends ServerPattern {
 				}
 				// add to elevator subsystem ArrayList of elevators
 				allElevators.add(hold);
-				nextStates.add(new LinkedList<Elevator.State>());
+				nextActions.add(new LinkedList<Elevator.Action>());
 			}
 			// allButtons = new lampState[numberOfFloors];
 			byte[] response = { UtilityInformation.CONFIG_CONFIRM_MODE, 1, -1 };
@@ -302,16 +302,16 @@ public class Elevator_Subsystem extends ServerPattern {
 		}
 
 		if (str.equals("open door")) {
-			addStateToQueue(currentElevatorToWork, Elevator.State.OPEN_DOOR);
+			addStateToQueue(currentElevatorToWork, Elevator.Action.OPEN_DOOR);
 		}
 		if (str.equals("close door")) {
-			addStateToQueue(currentElevatorToWork, Elevator.State.CLOSE_DOOR);
+			addStateToQueue(currentElevatorToWork, Elevator.Action.CLOSE_DOOR);
 		}
 		if (str.equals("go up")) {
-			addStateToQueue(currentElevatorToWork, Elevator.State.MOVE_UP);
+			addStateToQueue(currentElevatorToWork, Elevator.Action.MOVE_UP);
 		}
 		if (str.equals("go down")) {
-			addStateToQueue(currentElevatorToWork, Elevator.State.MOVE_DOWN);
+			addStateToQueue(currentElevatorToWork, Elevator.Action.MOVE_DOWN);
 		}
 		if (str.equals("stop")) {
 			allElevators.get(currentElevatorToWork).Stop();
@@ -329,18 +329,18 @@ public class Elevator_Subsystem extends ServerPattern {
 		}
 		if(str.equals("error")) {
 			System.out.print(currentElevatorToWork + " ");
-			addStateToQueue(currentElevatorToWork, Elevator.State.BROKEN);
+			addStateToQueue(currentElevatorToWork, Elevator.Action.BROKEN);
 		}
 		if(str.equals("door issue")) {
 			if (data[1] == UtilityInformation.ErrorType.DOOR_WONT_OPEN_ERROR.ordinal()) {
-				addStateToQueue(currentElevatorToWork, Elevator.State.DAMAGED_OPEN);
+				addStateToQueue(currentElevatorToWork, Elevator.Action.DAMAGED_OPEN);
 			} else if (data[1]== UtilityInformation.ErrorType.DOOR_WONT_CLOSE_ERROR.ordinal()) {
-				addStateToQueue(currentElevatorToWork, Elevator.State.DAMAGED_CLOSED);	
+				addStateToQueue(currentElevatorToWork, Elevator.Action.DAMAGED_CLOSED);	
 			}
 		}
 		if(str.equals("issue fixed")) {
 			System.out.print(currentElevatorToWork + " ");
-			addStateToQueue(currentElevatorToWork, Elevator.State.FIXED);
+			addStateToQueue(currentElevatorToWork, Elevator.Action.FIXED);
 		}
 
 	}
@@ -468,14 +468,14 @@ public class Elevator_Subsystem extends ServerPattern {
 		
 	}
 	
-	public synchronized void addStateToQueue(int elevatorNumber, Elevator.State stateToAdd) {
-		nextStates.get(elevatorNumber).add(stateToAdd);
+	public synchronized void addStateToQueue(int elevatorNumber, Elevator.Action stateToAdd) {
+		nextActions.get(elevatorNumber).add(stateToAdd);
 		
 		notifyAll();
 	}
 
-	public synchronized Elevator.State getNextStateForElevator(int elevatorNumber) {
-		while (nextStates.get(elevatorNumber).isEmpty()) {
+	public synchronized Elevator.Action getNextActionForElevator(int elevatorNumber) {
+		while (nextActions.get(elevatorNumber).isEmpty()) {
 			try {
 				wait();
 			} catch (InterruptedException e) {
@@ -484,10 +484,10 @@ public class Elevator_Subsystem extends ServerPattern {
 			}
 		}
 		
-		Elevator.State nextState = nextStates.get(elevatorNumber).remove();
+		Elevator.Action nextAction = nextActions.get(elevatorNumber).remove();
 		
 		notifyAll();
 		
-		return(nextState);
+		return(nextAction);
 	}
 }

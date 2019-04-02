@@ -42,7 +42,7 @@ public class Elevator implements Runnable {
 	 */	
 	// USED ENUMS:
 	// State machine states
-	enum State {
+	enum Action {
 		MOVE_UP,
 		MOVE_DOWN,
 		OPEN_DOOR,
@@ -54,12 +54,12 @@ public class Elevator implements Runnable {
 		FIXED
 	}
 	
-	private State currState;
+	private Action currAction;
 	
 	public Elevator(Elevator_Subsystem controller, int number) {
 		elevatorNumber = number;
 		this.controller = controller;
-		currState = State.WAITING;
+		currAction = Action.WAITING;
 	}
 	
 	public int getElevatorNumber() {return this.elevatorNumber;}
@@ -197,18 +197,18 @@ public class Elevator implements Runnable {
 	    controller.sendElevatorDoorFixedMessage(elevatorNumber);	    
 	}
 
-	public State getCurrState() {
-		return(currState);
+	public Action getCurrAction() {
+		return(currAction);
 	}
 
 	public boolean isInErrorState() {
-		return(currState.equals(State.BROKEN));
+		return(currAction.equals(Action.BROKEN));
 	}
 	
-	public void changeState(State newState) {
-		currState = newState;
+	public void changeAction(Action newAction) {
+		currAction = newAction;
 		
-		switch (currState) {
+		switch (currAction) {
 		case MOVE_UP:
 			move(UtilityInformation.ElevatorDirection.UP);
 			break;
@@ -233,18 +233,18 @@ public class Elevator implements Runnable {
 		case WAITING:
 			break;
 		default:
-			System.out.println("Error: Unknown State.");
+			System.out.println("Error: Unknown Action.");
 			System.exit(1);
 		}
 		
-		currState = State.WAITING;
+		currAction = Action.WAITING;
 	}
 
 	@Override
 	public void run() {		
 		while (true) {
-			State nextState = controller.getNextStateForElevator(elevatorNumber);
-			changeState(nextState);
+			Action nextAction = controller.getNextActionForElevator(elevatorNumber);
+			changeAction(nextAction);
 		}
 		
 	}
