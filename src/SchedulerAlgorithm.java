@@ -212,7 +212,11 @@ public class SchedulerAlgorithm {
                     nextFloor = getNextClosestFloorInDirection(elevatorNum, UtilityInformation.ElevatorDirection.UP);
                 }
             } else {                
-                nextFloor = getNextClosestFloorInDirection(elevatorNum, UtilityInformation.ElevatorDirection.STATIONARY);
+                nextFloor = getNextClosestFloorInDirection(elevatorNum, elevatorInfo.get(elevatorNum).getPreviousDir());
+                
+                if (nextFloor == -1) {
+                	nextFloor = getNextClosestFloorInDirection(elevatorNum, UtilityInformation.ElevatorDirection.STATIONARY);
+                }
             }
         }
 	    
@@ -465,6 +469,7 @@ public class SchedulerAlgorithm {
 	    
 	    // Current direction of the elevator
 	    public UtilityInformation.ElevatorDirection dir;
+	    public UtilityInformation.ElevatorDirection previousDir;
 	    
 	    /**
 	     * AlgorithmElevator
@@ -485,10 +490,15 @@ public class SchedulerAlgorithm {
 	        elevatorUsable = true;
 	        
 	        dir = UtilityInformation.ElevatorDirection.STATIONARY;
+	        previousDir = dir;
 
 	    }
 	    
-	    /**
+	    public UtilityInformation.ElevatorDirection getPreviousDir() {
+			return(previousDir);
+		}
+
+		/**
 	     * setDir
 	     * 
 	     * Sets the current direction of the elevator to the given value
@@ -498,8 +508,8 @@ public class SchedulerAlgorithm {
 	     * @return void
 	     */
 	    public void setDir(UtilityInformation.ElevatorDirection newDir) {
-            dir = newDir;
-            
+	    	previousDir = dir;
+            dir = newDir;            
         }
 
 	    /**
