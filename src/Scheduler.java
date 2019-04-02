@@ -454,8 +454,7 @@ public class Scheduler extends ServerPattern {
                     packet.getAddress(),
                     UtilityInformation.ELEVATOR_PORT_NUM);
         
-        if ((errorType == UtilityInformation.ErrorType.DOOR_WONT_OPEN_ERROR.ordinal()) || 
-            (errorType == UtilityInformation.ErrorType.DOOR_WONT_CLOSE_ERROR.ordinal())){
+        if (errorType == UtilityInformation.ErrorType.DOOR_STUCK_ERROR.ordinal()) {
             algor.pauseElevator(elevatorNum);
         } else if (errorType == UtilityInformation.ErrorType.ELEVATOR_STUCK_ERROR.ordinal()) {
             algor.stopUsingElevator(elevatorNum);

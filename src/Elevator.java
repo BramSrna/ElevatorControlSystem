@@ -45,8 +45,7 @@ public class Elevator implements Runnable {
 		OPEN_DOOR,
 		CLOSE_DOOR,
 		BROKEN,
-		DAMAGED_OPEN,
-		DAMAGED_CLOSED,
+		DAMAGED,
 		WAITING,
 		FIXED
 	}
@@ -173,7 +172,7 @@ public class Elevator implements Runnable {
 	 * 
 	 * @return None
 	 */
-	public void fixDoorStuckError(byte doorState) {
+	public void fixDoorStuckError() {
 	    // Run the loop until the door is fixed.
         Random r = new Random();
         boolean broken = true;
@@ -199,9 +198,9 @@ public class Elevator implements Runnable {
         }
     
 	    // Set the door to the fixed state
-	    if (doorState == UtilityInformation.ErrorType.DOOR_WONT_CLOSE_ERROR.ordinal()) {
+	    if (door == UtilityInformation.DoorState.OPEN) {
 	        changeDoorState(UtilityInformation.DoorState.CLOSE);
-	    } else if (doorState == UtilityInformation.ErrorType.DOOR_WONT_OPEN_ERROR.ordinal()) {
+	    } else if (door == UtilityInformation.DoorState.CLOSE) {
 	    	changeDoorState(UtilityInformation.DoorState.OPEN);
 	    } else {
 	        System.out.println("Error: Unknown error type in Elevator fixDoorStuckError.");
@@ -209,7 +208,9 @@ public class Elevator implements Runnable {
 	    }
 	    
 	    // Tell the controller that the door is fixed
-	    controller.sendElevatorDoorFixedMessage(elevatorNumber);	    
+	    controller.sendElevatorDoorFixedMessage(elevatorNumber);
+	    
+	    controller.sendFloorSensorMessage(elevatorNumber);
 	}
 
 	public Action getCurrAction() {
@@ -239,11 +240,8 @@ public class Elevator implements Runnable {
 		case BROKEN:
 			brokenElevator();
 			break;
-		case DAMAGED_OPEN:
-			fixDoorStuckError((byte) UtilityInformation.ErrorType.DOOR_WONT_OPEN_ERROR.ordinal());
-			break;
-		case DAMAGED_CLOSED:
-			fixDoorStuckError((byte) UtilityInformation.ErrorType.DOOR_WONT_CLOSE_ERROR.ordinal());
+		case DAMAGED:
+			fixDoorStuckError();
 			break;
 		case WAITING:
 			break;

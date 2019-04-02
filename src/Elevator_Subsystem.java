@@ -191,7 +191,7 @@ public class Elevator_Subsystem extends ServerPattern {
 			}
 		}
 		
-		if(check.equals("door wont open")|| check.equals("door wont close")) {
+		if(check.equals("door stuck")) {
 			currentState = State.ANALYZING_MESSAGE;
 			eventOccured(Event.DOOR_ISSUE, receivePacket, check, data);
 		}
@@ -332,10 +332,8 @@ public class Elevator_Subsystem extends ServerPattern {
 			addActionToQueue(currentElevatorToWork, Elevator.Action.BROKEN);
 		}
 		if(str.equals("door issue")) {
-			if (data[1] == UtilityInformation.ErrorType.DOOR_WONT_OPEN_ERROR.ordinal()) {
-				addActionToQueue(currentElevatorToWork, Elevator.Action.DAMAGED_OPEN);
-			} else if (data[1]== UtilityInformation.ErrorType.DOOR_WONT_CLOSE_ERROR.ordinal()) {
-				addActionToQueue(currentElevatorToWork, Elevator.Action.DAMAGED_CLOSED);	
+			if (data[1] == UtilityInformation.ErrorType.DOOR_STUCK_ERROR.ordinal()) {
+			    addActionToQueue(currentElevatorToWork, Elevator.Action.DAMAGED);	
 			}
 		}
 		if(str.equals("issue fixed")) {
@@ -434,13 +432,10 @@ public class Elevator_Subsystem extends ServerPattern {
 		
 		
 		// ITERATION 3 ASK THEM WHAT BYTE IS THE TYPE OF ERROR
-		else if( data[0] == UtilityInformation.ERROR_MESSAGE_MODE) {
-			if (data[1] == UtilityInformation.ErrorType.DOOR_WONT_CLOSE_ERROR.ordinal()) {	
-				System.out.println("Message from Elevator " + currentElevatorToWork + ": DOOR WONT CLOSE");
-				return "door wont close";
-			} else if(data[1] == UtilityInformation.ErrorType.DOOR_WONT_OPEN_ERROR.ordinal()) {
-				System.out.println("Message from Elevator " + currentElevatorToWork + ": DOOR WONT OPEN");
-				return "door wont open";
+		else if (data[0] == UtilityInformation.ERROR_MESSAGE_MODE) {
+			if (data[1] == UtilityInformation.ErrorType.DOOR_STUCK_ERROR.ordinal()) {	
+				System.out.println("Message from Elevator " + currentElevatorToWork + ": DOOR STUCK");
+				return "door stuck";
 			} else if(data[1] == UtilityInformation.ErrorType.ELEVATOR_STUCK_ERROR.ordinal()) {
 				System.out.println("Message from Elevator " + currentElevatorToWork + ": I AM STUCK");
 				return "elevator stuck";

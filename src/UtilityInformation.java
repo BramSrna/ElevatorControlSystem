@@ -18,7 +18,7 @@ public class UtilityInformation {
 	}
 
 	public enum ErrorType {
-		DOOR_WONT_CLOSE_ERROR, DOOR_WONT_OPEN_ERROR, ELEVATOR_STUCK_ERROR
+		DOOR_STUCK_ERROR, ELEVATOR_STUCK_ERROR
 	}
 	
 	public enum DoorState
