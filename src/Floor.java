@@ -20,6 +20,8 @@ public class Floor implements Runnable {
 	private ArrayList<Integer[]> serviceRequests;
 	
 	private long startTime;
+	
+	private long timeOfPreviousRequest;
 
 	/**
 	 * Floor
@@ -56,6 +58,8 @@ public class Floor implements Runnable {
 
 		upButton = UtilityInformation.ButtonState.UNPRESSED;
 		downButton = UtilityInformation.ButtonState.UNPRESSED;
+		
+		timeOfPreviousRequest = 0;
 	}
 
 	/**
@@ -379,7 +383,8 @@ public class Floor implements Runnable {
 	 */
 	public synchronized void sendRequest() {
 	    // Wait until the proper time to send the request
-		long timeToSleep = serviceRequests.get(0)[0];
+		long timeToSleep = serviceRequests.get(0)[0] - timeOfPreviousRequest;
+		timeOfPreviousRequest = serviceRequests.get(0)[0];
 
 		try {
 			Thread.sleep(timeToSleep);
