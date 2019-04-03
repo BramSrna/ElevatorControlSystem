@@ -93,7 +93,7 @@ public class Scheduler extends ServerPattern {
     }
     
     public void saveTimes(long startTime, long finishTime, byte mode) {
-	    frequencyTimes.get(UtilityInformation.CONFIG_MODE).add(startTime);
+	    frequencyTimes.get(mode).add(startTime);
 	    executionDurationTimes.get(mode).add(finishTime - startTime);
     }
 

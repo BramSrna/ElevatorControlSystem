@@ -379,8 +379,14 @@ public class Floor implements Runnable {
 	 */
 	public synchronized void sendRequest() {
 	    // Wait until the proper time to send the request
-	    while (System.currentTimeMillis() - startTime < serviceRequests.get(0)[0]) {
-	    }
+		long timeToSleep = serviceRequests.get(0)[0];
+
+		try {
+			Thread.sleep(timeToSleep);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	    
 	    Integer[] request = serviceRequests.get(0);
 	    
