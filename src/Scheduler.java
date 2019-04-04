@@ -381,6 +381,10 @@ public class Scheduler extends ServerPattern {
     		    changeDoorState(packet, UtilityInformation.DoorState.OPEN);
     		    sendElevatorInDirection(packet, UtilityInformation.ElevatorDirection.STATIONARY);
     		    algor.setStopSignalSent(elevatorNum, true);
+    		    
+    		    // Set the time in the requests
+                long updatedTime = System.nanoTime();
+                updateRequestTimes(algor.getRequests(elevatorNum), updatedTime);
 		    }
 		}
 
