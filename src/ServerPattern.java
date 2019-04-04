@@ -53,7 +53,6 @@ public abstract class ServerPattern {
 	    messagePriorities.put(UtilityInformation.FLOOR_SENSOR_MODE, 5);
 	    messagePriorities.put(UtilityInformation.SEND_DESTINATION_TO_ELEVATOR_MODE, 4);
 	    messagePriorities.put(UtilityInformation.FLOOR_REQUEST_MODE, 3);
-	    messagePriorities.put(UtilityInformation.ELEVATOR_STOPPED_MODE, 2);
         messagePriorities.put(UtilityInformation.ERROR_MESSAGE_MODE, 1);
         messagePriorities.put(UtilityInformation.FIX_ERROR_MODE, 0);
         messagePriorities.put(UtilityInformation.ELEVATOR_BUTTON_HIT_MODE, 0);

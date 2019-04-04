@@ -824,8 +824,6 @@ public class FloorSubsystem extends ServerPattern{
                 writer.println("TEARDOWN_MODE");
             } else if (i == 8) {
                 writer.println("CONFIG_CONFIRM_MODE");
-            } else if (i == 9) {
-                writer.println("ELEVATOR_STOPPED_MODE");
             } else if (i == 10) {
                 writer.println("ERROR_MESSAGE_MODE");
             } else if (i == 11) {
@@ -878,8 +876,6 @@ public class FloorSubsystem extends ServerPattern{
                 writer.println("TEARDOWN_MODE");
             } else if (i == 8) {
                 writer.println("CONFIG_CONFIRM_MODE");
-            } else if (i == 9) {
-                writer.println("ELEVATOR_STOPPED_MODE");
             } else if (i == 10) {
                 writer.println("ERROR_MESSAGE_MODE");
             } else if (i == 11) {

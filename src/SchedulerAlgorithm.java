@@ -126,6 +126,7 @@ public class SchedulerAlgorithm {
 	 */
 	private void addRequestToElevator(byte elevatorNum, Request request) {
 		elevatorInfo.get(elevatorNum).addRequest(request);
+		elevatorInfo.get(elevatorNum).setStopSignalSent(false);
 	}
 
 	/**
@@ -196,7 +197,9 @@ public class SchedulerAlgorithm {
 	private int determineNextFloor(byte elevatorNum) {
         int nextFloor = -1;
         
-	    if ((elevatorInfo.get(elevatorNum).getRequests().size() != 0) && (elevatorInfo.get(elevatorNum).isUsable())) {
+	    if (!elevatorInfo.get(elevatorNum).getStopElevator() && 
+	       (elevatorInfo.get(elevatorNum).getRequests().size() != 0) && 
+	       (elevatorInfo.get(elevatorNum).isUsable())) {
             UtilityInformation.ElevatorDirection currDir = elevatorInfo.get(elevatorNum).getDir();            
             
             if (currDir == UtilityInformation.ElevatorDirection.UP) {
@@ -452,6 +455,14 @@ public class SchedulerAlgorithm {
     public ArrayList<Request> getRequests(byte elevatorNum) {
         return(elevatorInfo.get(elevatorNum).getRequests());
     }
+    
+    public boolean getStopSignalSent(byte elevatorNum) {
+        return(elevatorInfo.get(elevatorNum).getStopSignalSent());
+    }
+    
+    public void setStopSignalSent(byte elevatorNum, boolean newVal) {
+        elevatorInfo.get(elevatorNum).setStopSignalSent(newVal);
+    }
 	    
     /**
      * AlgorithmElevator
@@ -476,6 +487,8 @@ public class SchedulerAlgorithm {
 	    public UtilityInformation.ElevatorDirection dir;
 	    public UtilityInformation.ElevatorDirection previousDir;
 	    
+	    public boolean stopSignalSent;
+	    
 	    /**
 	     * AlgorithmElevator
 	     * 
@@ -496,10 +509,20 @@ public class SchedulerAlgorithm {
 	        
 	        dir = UtilityInformation.ElevatorDirection.STATIONARY;
 	        previousDir = dir;
+	        
+	        stopSignalSent = false;
 
 	    }
 	    
-	    public UtilityInformation.ElevatorDirection getPreviousDir() {
+	    public void setStopSignalSent(boolean newVal) {
+            stopSignalSent = newVal;            
+        }
+
+        public boolean getStopSignalSent() {
+            return(stopSignalSent);
+        }
+
+        public UtilityInformation.ElevatorDirection getPreviousDir() {
 			return(previousDir);
 		}
 
@@ -690,6 +713,8 @@ public class SchedulerAlgorithm {
             
         }
 	}
+
+    
 
 
 }

@@ -39,7 +39,6 @@ public class UtilityInformation {
 	public final static byte SEND_DESTINATION_TO_ELEVATOR_MODE = 6;
 	public final static byte TEARDOWN_MODE = 7;
 	public final static byte CONFIG_CONFIRM_MODE = 8;
-	public final static byte ELEVATOR_STOPPED_MODE = 9;
 	public final static byte ERROR_MESSAGE_MODE = 10;
 	public final static byte FIX_ERROR_MODE = 11;
 	public final static byte FIX_DOOR_MODE = 12;
@@ -58,6 +57,7 @@ public class UtilityInformation {
 	public final static int CLOSE_DOOR_TIME = 1500;
 	public final static int TIME_UP_ONE_FLOOR = 5000;
 	public final static int TIME_DOWN_ONE_FLOOR = 5000;
+	public final static int TIME_STOP_AT_FLOOR = 2000;
 
 	// Valid ranges for the number of
 	// floors and number of elevators

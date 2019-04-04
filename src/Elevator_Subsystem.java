@@ -193,9 +193,11 @@ public class Elevator_Subsystem extends ServerPattern {
 		}
 		if (check.equals("go up") | check.equals("go down") | check.equals("stay")) {
 			currentState = State.CURRENTLY_MOVING;
+			
 			if (check.equals("stay")) {
 				eventOccured(Event.STOP_ELEVATOR, receivePacket, check, data);
 			}
+			
 			if (check.equals("go up") | check.equals("go down")) {
 				eventOccured(Event.ELEVATOR_MOVING, receivePacket, check, data);
 			}
@@ -332,12 +334,9 @@ public class Elevator_Subsystem extends ServerPattern {
 			addActionToQueue(currentElevatorToWork, Elevator.Action.MOVE_DOWN);
 		}
 		if (str.equals("stop")) {
-			allElevators.get(currentElevatorToWork).Stop();
 			allElevators.get(currentElevatorToWork).allButtons[destinationFloor] = UtilityInformation.LampState.OFF;
-			byte[] returnMessage = { UtilityInformation.ELEVATOR_STOPPED_MODE,
-					(byte) allElevators.get(currentElevatorToWork).currentFloor,
-					(byte) allElevators.get(currentElevatorToWork).elevatorNumber, -1 };
-			this.sendData(returnMessage, schedulerIP, schedulerPort);
+			
+			addActionToQueue(currentElevatorToWork, Elevator.Action.STOP);
 		}
 		// getting destination from scheduler for each input
 		if (str.equals("destination")) {
@@ -545,8 +544,6 @@ public class Elevator_Subsystem extends ServerPattern {
                 writer.println("TEARDOWN_MODE");
             } else if (i == 8) {
                 writer.println("CONFIG_CONFIRM_MODE");
-            } else if (i == 9) {
-                writer.println("ELEVATOR_STOPPED_MODE");
             } else if (i == 10) {
                 writer.println("ERROR_MESSAGE_MODE");
             } else if (i == 11) {
@@ -599,8 +596,6 @@ public class Elevator_Subsystem extends ServerPattern {
                 writer.println("TEARDOWN_MODE");
             } else if (i == 8) {
                 writer.println("CONFIG_CONFIRM_MODE");
-            } else if (i == 9) {
-                writer.println("ELEVATOR_STOPPED_MODE");
             } else if (i == 10) {
                 writer.println("ERROR_MESSAGE_MODE");
             } else if (i == 11) {

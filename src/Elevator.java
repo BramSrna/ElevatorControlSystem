@@ -43,6 +43,7 @@ public class Elevator implements Runnable {
 		MOVE_UP,
 		MOVE_DOWN,
 		OPEN_DOOR,
+		STOP,
 		CLOSE_DOOR,
 		BROKEN,
 		DAMAGED,
@@ -107,7 +108,13 @@ public class Elevator implements Runnable {
             }              
             
             currentFloor--;
-    	}        
+    	} else if (dir.equals(UtilityInformation.ElevatorDirection.STATIONARY)) {
+    	    try  { 
+                Thread.sleep(UtilityInformation.TIME_STOP_AT_FLOOR);
+            } catch (InterruptedException ie)  {
+
+            }  
+    	}
         
         controller.sendFloorSensorMessage(elevatorNumber);
         
@@ -241,6 +248,9 @@ public class Elevator implements Runnable {
 		case MOVE_DOWN:
 			move(UtilityInformation.ElevatorDirection.DOWN);
 			break;
+		case STOP:
+		    move(UtilityInformation.ElevatorDirection.STATIONARY);
+		    break;
 		case OPEN_DOOR:
 			changeDoorState(UtilityInformation.DoorState.OPEN);
 			break;

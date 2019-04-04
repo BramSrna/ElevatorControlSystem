@@ -20,7 +20,7 @@ public class Scheduler extends ServerPattern {
 	// External and internal events
 	enum Event {
 		MESSAGE_RECIEVED, CONFIG_MESSAGE, BUTTON_PUSHED_IN_ELEVATOR, FLOOR_SENSOR_ACTIVATED, FLOOR_REQUESTED,
-		MOVE_ELEVATOR, TEARDOWN, CONFIRM_CONFIG, ELEVATOR_STOPPED, ELEVATOR_ERROR, SEND_ELEVATOR_ERROR,
+		MOVE_ELEVATOR, TEARDOWN, CONFIRM_CONFIG, ELEVATOR_ERROR, SEND_ELEVATOR_ERROR,
 		FIX_ELEVATOR_ERROR, FIX_DOOR_ERROR
 	}
 
@@ -116,7 +116,12 @@ public class Scheduler extends ServerPattern {
                 eventOccured(Event.CONFIG_MESSAGE, packet);
                 break;
 		    case FLOOR_SENSOR_ACTIVATED:
-		        extractFloorReachedNumberAndGenerateResponseMessageAndActions(packet);		        
+		        extractFloorReachedNumberAndGenerateResponseMessageAndActions(packet);
+		        
+		        if(checkForFinish() == true) {
+                    sendAllRequestsFinishedMessage(packet);
+                }
+		        
 		        break;
 		    case FLOOR_REQUESTED:
 		        byte elevatorNum = extractFloorRequestedNumberAndGenerateResponseMessageAndActions(packet);
@@ -131,11 +136,6 @@ public class Scheduler extends ServerPattern {
 		        sendConfigConfirmMessage(packet);
                 eventOccured(Event.CONFIRM_CONFIG, packet);
                 break;
-		    case ELEVATOR_STOPPED:
-		    	if(checkForFinish() == true) {
-		    		sendAllRequestsFinishedMessage(packet);
-		    	}
-		        break;
 		    case ELEVATOR_ERROR:
 		        handleError(packet);
                 eventOccured(Event.SEND_ELEVATOR_ERROR, packet);
@@ -247,9 +247,6 @@ public class Scheduler extends ServerPattern {
 			
 		} else if (mode == UtilityInformation.CONFIG_CONFIRM_MODE) { // 8       
 			eventOccured(Event.CONFIRM_CONFIG, recievedPacket);
-			
-		} else if (mode == UtilityInformation.ELEVATOR_STOPPED_MODE) { // 9      
-			eventOccured(Event.ELEVATOR_STOPPED, recievedPacket);
 			
 		} else if (mode == UtilityInformation.ERROR_MESSAGE_MODE) {      
 			eventOccured(Event.ELEVATOR_ERROR, recievedPacket);
@@ -364,23 +361,27 @@ public class Scheduler extends ServerPattern {
 		byte elevatorNum = packet.getData()[2];
 
 		if (algor.somewhereToGo(elevatorNum)) {
-		    changeDoorState(packet, UtilityInformation.DoorState.CLOSE);
-
-			if (algor.whatDirectionShouldTravel(elevatorNum).equals(UtilityInformation.ElevatorDirection.DOWN)) {
-				sendElevatorInDirection(packet, UtilityInformation.ElevatorDirection.DOWN);
-			} else if (algor.whatDirectionShouldTravel(elevatorNum).equals(UtilityInformation.ElevatorDirection.UP)) {
-			    sendElevatorInDirection(packet, UtilityInformation.ElevatorDirection.UP);
-			} else {
-				if (packet.getData()[0] != UtilityInformation.ELEVATOR_STOPPED_MODE) {
-				    sendElevatorInDirection(packet, UtilityInformation.ElevatorDirection.STATIONARY);
-				    changeDoorState(packet, UtilityInformation.DoorState.OPEN);
-				}
-			}
+		    UtilityInformation.ElevatorDirection dir = algor.whatDirectionShouldTravel(elevatorNum);
+		    
+		    if (dir.equals(UtilityInformation.ElevatorDirection.STATIONARY)) {
+		        changeDoorState(packet, UtilityInformation.DoorState.OPEN);
+		    } else {
+		        changeDoorState(packet, UtilityInformation.DoorState.CLOSE);
+		    }
+		    
+		    sendElevatorInDirection(packet, dir);
+		    
+		    if (dir.equals(UtilityInformation.ElevatorDirection.STATIONARY)) {
+		        // Set the time in the requests
+                long updatedTime = System.nanoTime();
+                updateRequestTimes(algor.getRequests(elevatorNum), updatedTime);
+            }
 		} else {
-			if (packet.getData()[0] != UtilityInformation.ELEVATOR_STOPPED_MODE) {
-			    sendElevatorInDirection(packet, UtilityInformation.ElevatorDirection.STATIONARY);
-			    changeDoorState(packet, UtilityInformation.DoorState.OPEN);
-			}
+		    if (!algor.getStopSignalSent(elevatorNum)) {
+    		    changeDoorState(packet, UtilityInformation.DoorState.OPEN);
+    		    sendElevatorInDirection(packet, UtilityInformation.ElevatorDirection.STATIONARY);
+    		    algor.setStopSignalSent(elevatorNum, true);
+		    }
 		}
 
 		eventOccured(Event.MOVE_ELEVATOR, packet);
@@ -445,16 +446,6 @@ public class Scheduler extends ServerPattern {
 		byte floorNum = recievedPacket.getData()[1];
 		byte elevatorNum = recievedPacket.getData()[2];
 		algor.elevatorHasReachedFloor(floorNum, elevatorNum);
-
-		// Stop elevator if necessary
-		if (algor.getStopElevator(elevatorNum)) {
-		    sendElevatorInDirection(recievedPacket, UtilityInformation.ElevatorDirection.STATIONARY);
-			changeDoorState(recievedPacket, UtilityInformation.DoorState.OPEN);
-			
-			// Set the time in the requests
-			long updatedTime = System.nanoTime();
-			updateRequestTimes(algor.getRequests(elevatorNum), updatedTime);
-		}
 
 		// Continue moving elevator
 		moveToFloor(recievedPacket);
@@ -630,8 +621,6 @@ public class Scheduler extends ServerPattern {
                 writer.println("TEARDOWN_MODE");
             } else if (i == 8) {
                 writer.println("CONFIG_CONFIRM_MODE");
-            } else if (i == 9) {
-                writer.println("ELEVATOR_STOPPED_MODE");
             } else if (i == 10) {
                 writer.println("ERROR_MESSAGE_MODE");
             } else if (i == 11) {
@@ -694,8 +683,6 @@ public class Scheduler extends ServerPattern {
                 writer.println("TEARDOWN_MODE");
             } else if (i == 8) {
                 writer.println("CONFIG_CONFIRM_MODE");
-            } else if (i == 9) {
-                writer.println("ELEVATOR_STOPPED_MODE");
             } else if (i == 10) {
                 writer.println("ERROR_MESSAGE_MODE");
             } else if (i == 11) {
