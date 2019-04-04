@@ -125,8 +125,7 @@ public class SchedulerAlgorithm {
 	 * @return Byte The index in the list where the request was placed
 	 */
 	private void addRequestToElevator(byte elevatorNum, Request request) {
-		elevatorInfo.get(elevatorNum).addRequest(request);
-		elevatorInfo.get(elevatorNum).setStopSignalSent(false);
+		elevatorInfo.get(elevatorNum).addRequest(request);		
 	}
 
 	/**
@@ -510,7 +509,7 @@ public class SchedulerAlgorithm {
 	        dir = UtilityInformation.ElevatorDirection.STATIONARY;
 	        previousDir = dir;
 	        
-	        stopSignalSent = false;
+	        stopSignalSent = true;
 
 	    }
 	    

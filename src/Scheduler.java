@@ -125,7 +125,6 @@ public class Scheduler extends ServerPattern {
 		        break;
 		    case FLOOR_REQUESTED:
 		        byte elevatorNum = extractFloorRequestedNumberAndGenerateResponseMessageAndActions(packet);
-                currentState = State.READING_MESSAGE;
                 kickStartElevator(packet, elevatorNum);
                 break;
 		    case TEARDOWN:
@@ -341,15 +340,16 @@ public class Scheduler extends ServerPattern {
 	 * @return void
 	 */
 	protected void kickStartElevator(DatagramPacket packet, byte elevatorNum) {
-	    if (algor.getStopElevator(elevatorNum)) {
-            currentState = State.READING_MESSAGE;
+	    if (algor.getStopSignalSent(elevatorNum)) {
             byte[] newData = {UtilityInformation.FLOOR_SENSOR_MODE, 
                               algor.getCurrentFloor(elevatorNum),
                               elevatorNum,
                               -1 };
             packet.setData(newData);
-            eventOccured(Event.FLOOR_SENSOR_ACTIVATED, packet);
+            moveToFloor(packet);
         }
+	    
+	    algor.setStopSignalSent(elevatorNum, false);
 	}
 
 	/**
