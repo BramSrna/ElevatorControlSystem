@@ -824,13 +824,13 @@ public class FloorSubsystem extends ServerPattern{
                 writer.println("TEARDOWN_MODE");
             } else if (i == 8) {
                 writer.println("CONFIG_CONFIRM_MODE");
-            } else if (i == 10) {
+            } else if (i == 9) {
                 writer.println("ERROR_MESSAGE_MODE");
-            } else if (i == 11) {
+            } else if (i == 10) {
                 writer.println("FIX_ERROR_MODE");
-            } else if (i == 12) {
+            } else if (i == 11) {
                 writer.println("FIX_DOOR_MODE");
-            } else if (i == 13) {
+            } else if (i == 12) {
                 writer.println("ALL_REQUESTS_FINISHED_MODE");
             }
             
@@ -876,13 +876,13 @@ public class FloorSubsystem extends ServerPattern{
                 writer.println("TEARDOWN_MODE");
             } else if (i == 8) {
                 writer.println("CONFIG_CONFIRM_MODE");
-            } else if (i == 10) {
+            } else if (i == 9) {
                 writer.println("ERROR_MESSAGE_MODE");
-            } else if (i == 11) {
+            } else if (i == 10) {
                 writer.println("FIX_ERROR_MODE");
-            } else if (i == 12) {
+            } else if (i == 11) {
                 writer.println("FIX_DOOR_MODE");
-            } else if (i == 13) {
+            } else if (i == 12) {
                 writer.println("ALL_REQUESTS_FINISHED_MODE");
             }
             

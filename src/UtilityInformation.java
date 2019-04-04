@@ -39,10 +39,10 @@ public class UtilityInformation {
 	public final static byte SEND_DESTINATION_TO_ELEVATOR_MODE = 6;
 	public final static byte TEARDOWN_MODE = 7;
 	public final static byte CONFIG_CONFIRM_MODE = 8;
-	public final static byte ERROR_MESSAGE_MODE = 10;
-	public final static byte FIX_ERROR_MODE = 11;
-	public final static byte FIX_DOOR_MODE = 12;
-	public final static byte ALL_REQUESTS_FINISHED_MODE = 13;
+	public final static byte ERROR_MESSAGE_MODE = 9;
+	public final static byte FIX_ERROR_MODE = 10;
+	public final static byte FIX_DOOR_MODE = 11;
+	public final static byte ALL_REQUESTS_FINISHED_MODE = 12;
 
 	// Messages (End of Message Indicator)
 	public final static byte END_OF_MESSAGE = -1;
