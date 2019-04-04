@@ -643,4 +643,9 @@ public class Elevator_Subsystem extends ServerPattern {
 		
 		return(nextAction);
 	}
+
+
+    public int getNumFloors() {
+        return(numberOfFloors);
+    }
 }

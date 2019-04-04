@@ -605,6 +605,11 @@ public class FloorSubsystem extends ServerPattern{
 		        
 		        // Get the direction of the elevator
 		        UtilityInformation.ElevatorDirection dir = UtilityInformation.ElevatorDirection.values()[data[3]];
+		        
+		        if ((floorNum < 0) || (floorNum >= numFloors)) {
+		            System.out.println("Error: Invalid Floor Number");
+		            System.exit(1);
+		        }
 
 		        // Propagate the information through all Floor
 		        // objects in the FloorSubsystem

@@ -82,6 +82,11 @@ public class Elevator implements Runnable {
     	System.out.println(String.format("Elevator Moving %s One Floor", dir.toString()));
     	
     	if (dir.equals(UtilityInformation.ElevatorDirection.UP)) {
+    	    if ((currentFloor == controller.getNumFloors())) {
+    	        System.out.println("Error: Invalid Movement Instruction");
+                System.exit(1);
+    	    }
+    	    
     		try  { 
                 Thread.sleep(UtilityInformation.TIME_UP_ONE_FLOOR);
             } catch (InterruptedException ie)  {
@@ -90,6 +95,11 @@ public class Elevator implements Runnable {
             
             currentFloor++;
     	} else if (dir.equals(UtilityInformation.ElevatorDirection.DOWN)) {
+    	    if (currentFloor == 0) {
+    	        System.out.println("Error: Invalid Movement Instruction");
+                System.exit(1);
+    	    }
+    	    
     		try  { 
                 Thread.sleep(UtilityInformation.TIME_DOWN_ONE_FLOOR);
             } catch (InterruptedException ie)  {
