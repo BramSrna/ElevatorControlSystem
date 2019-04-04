@@ -83,12 +83,13 @@ public class Scheduler extends ServerPattern {
         while (true) {
             DatagramPacket nextReq = this.getNextRequest();
             
+            byte mode = nextReq.getData()[0];            
             messageRecieveTime = System.nanoTime();
             
             eventOccured(Event.MESSAGE_RECIEVED, nextReq);
             
             long finishTime = System.nanoTime();
-            saveTimes(messageRecieveTime, finishTime, nextReq.getData()[0]);
+            saveTimes(messageRecieveTime, finishTime, mode);
         }
     }
     
