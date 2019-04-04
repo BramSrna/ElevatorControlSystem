@@ -1,4 +1,7 @@
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -51,6 +54,9 @@ public class Elevator_Subsystem extends ServerPattern {
 	private int schedulerPort = 420;
 	
 	private ArrayList<LinkedList<Elevator.Action>> nextActions;
+	
+    private ArrayList<ArrayList<Long>> frequencyTimes;
+    private ArrayList<ArrayList<Long>> executionDurationTimes;
 
 	// USED ENUMS:
 	// State machine states
@@ -70,6 +76,16 @@ public class Elevator_Subsystem extends ServerPattern {
 	// General Constructor for Elevator Subsystem class.
 	public Elevator_Subsystem() {
 	    super(UtilityInformation.ELEVATOR_PORT_NUM, "Elevator_Subsystem");
+	    
+        frequencyTimes = new ArrayList<ArrayList<Long>>();      
+        for (int i = 0; i < 14; i++) {
+            frequencyTimes.add(new ArrayList<Long>());
+        }
+        
+        executionDurationTimes = new ArrayList<ArrayList<Long>>();
+        for (int i = 0; i < 14; i++) {
+            executionDurationTimes.add(new ArrayList<Long>());
+        }
 	    
 	    nextActions = new ArrayList<LinkedList<Elevator.Action>>();
 	    
@@ -140,7 +156,7 @@ public class Elevator_Subsystem extends ServerPattern {
 	 * messages matches with one of the valid modes (0,3,4,5) then an action is
 	 * performed, if not, it is considered invalid.
 	 */
-	public void receiveData() {
+	public DatagramPacket receiveData() {
 		receivePacket = this.getNextRequest();
 		byte data[] = receivePacket.getData();
 		
@@ -150,7 +166,7 @@ public class Elevator_Subsystem extends ServerPattern {
 			
 			// CHECK IF THE ELEVATOR CORRESPONDING TO THE REQUEST IS IN AN ERROR STATE
 			if(this.checkERROR(data)) {
-				return; // leave method if it is an error state	
+				return(receivePacket); // leave method if it is an error state	
 			} // If the message received while in error state is not the fixing message, then simply
 				// return and receive the next message (doing nothing)
 			
@@ -203,6 +219,8 @@ public class Elevator_Subsystem extends ServerPattern {
 			currentState = State.ANALYZING_MESSAGE;
 			eventOccured(Event.ISSUE_FIXED, receivePacket, check, data);
 		}
+		
+		return(receivePacket);
 	}
 
 	/*
@@ -427,6 +445,10 @@ public class Elevator_Subsystem extends ServerPattern {
 			System.out.println("Tear-Down Mode");
 			sendSocket.close();
 			super.teardown();
+			
+			printTimingInformation();
+			printFrequencyInformation();
+			
 			System.exit(0);
 		} 
 		
@@ -455,13 +477,149 @@ public class Elevator_Subsystem extends ServerPattern {
 	 */
 	public static void main(String[] args) {
 		Elevator_Subsystem elvSub = new Elevator_Subsystem();
-		// receive the config message
-		for(;;) {
-			elvSub.receiveData();
-			elvSub.allElevators.get(currentElevatorToWork).display();
-		}
+		elvSub.runElevatorSubsystem();
 		
 	}
+	
+	public void runElevatorSubsystem() {
+	 // receive the config message
+        for(;;) {
+            long startTime = System.nanoTime();
+            
+            DatagramPacket nextReq = receiveData();
+            
+            long finishTime = System.nanoTime();
+            saveTimes(startTime, finishTime, nextReq.getData()[0]);
+            
+            allElevators.get(currentElevatorToWork).display();
+        }
+	}
+	
+    public void saveTimes(long startTime, long finishTime, byte mode) {
+        frequencyTimes.get(mode).add(startTime);
+        executionDurationTimes.get(mode).add(finishTime - startTime);
+    }
+    
+    /**
+     * printTimingInformation
+     * 
+     * Prints all measured timing information.
+     * This includes:
+     *  Arrival Sensor Times
+     *  Elevator Button Times
+     *  Floor Button Times
+     *  
+     * @param   None
+     * 
+     * @return  void
+     */
+    private void printTimingInformation() {
+        PrintWriter writer = null;
+        
+        try {
+            writer = new PrintWriter("timing information/timing_elevator.txt", "UTF-8");
+        } catch (FileNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        
+        for (int i = 0; i < executionDurationTimes.size(); i++) {
+            if (i == 0) {
+                writer.println("CONFIG_MODE");
+            } else if (i == 1) {
+                writer.println("FLOOR_SENSOR_MODE");
+            } else if (i == 2) {
+                writer.println("FLOOR_REQUEST_MODE");
+            } else if (i == 3) {
+                writer.println("ELEVATOR_BUTTON_HIT_MODE");
+            } else if (i == 4) {
+                writer.println("ELEVATOR_DIRECTION_MODE");
+            } else if (i == 5) {
+                writer.println("ELEVATOR_DOOR_MODE");
+            } else if (i == 6) {
+                writer.println("SEND_DESTINATION_TO_ELEVATOR_MODE");
+            } else if (i == 7) {
+                writer.println("TEARDOWN_MODE");
+            } else if (i == 8) {
+                writer.println("CONFIG_CONFIRM_MODE");
+            } else if (i == 9) {
+                writer.println("ELEVATOR_STOPPED_MODE");
+            } else if (i == 10) {
+                writer.println("ERROR_MESSAGE_MODE");
+            } else if (i == 11) {
+                writer.println("FIX_ERROR_MODE");
+            } else if (i == 12) {
+                writer.println("FIX_DOOR_MODE");
+            } else if (i == 13) {
+                writer.println("ALL_REQUESTS_FINISHED_MODE");
+            }
+            
+            for (Long time : executionDurationTimes.get(i)) {
+                writer.println(time);
+            }
+            
+            writer.println("");
+        }
+        
+        writer.close();     
+    }
+    
+   private void printFrequencyInformation() {
+        PrintWriter writer = null;
+        
+        try {
+            writer = new PrintWriter("timing information/frequency_elevator.txt", "UTF-8");
+        } catch (FileNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        
+        for (int i = 0; i < frequencyTimes.size(); i++) {
+            if (i == 0) {
+                writer.println("CONFIG_MODE");
+            } else if (i == 1) {
+                writer.println("FLOOR_SENSOR_MODE");
+            } else if (i == 2) {
+                writer.println("FLOOR_REQUEST_MODE");
+            } else if (i == 3) {
+                writer.println("ELEVATOR_BUTTON_HIT_MODE");
+            } else if (i == 4) {
+                writer.println("ELEVATOR_DIRECTION_MODE");
+            } else if (i == 5) {
+                writer.println("ELEVATOR_DOOR_MODE");
+            } else if (i == 6) {
+                writer.println("SEND_DESTINATION_TO_ELEVATOR_MODE");
+            } else if (i == 7) {
+                writer.println("TEARDOWN_MODE");
+            } else if (i == 8) {
+                writer.println("CONFIG_CONFIRM_MODE");
+            } else if (i == 9) {
+                writer.println("ELEVATOR_STOPPED_MODE");
+            } else if (i == 10) {
+                writer.println("ERROR_MESSAGE_MODE");
+            } else if (i == 11) {
+                writer.println("FIX_ERROR_MODE");
+            } else if (i == 12) {
+                writer.println("FIX_DOOR_MODE");
+            } else if (i == 13) {
+                writer.println("ALL_REQUESTS_FINISHED_MODE");
+            }
+            
+            for (Long time : frequencyTimes.get(i)) {
+                writer.println(time);
+            }
+            
+            writer.println("");
+        }
+        
+        writer.close();     
+    }
 	
 	public synchronized void addActionToQueue(int elevatorNumber, Elevator.Action stateToAdd) {
 		nextActions.get(elevatorNumber).add(stateToAdd);

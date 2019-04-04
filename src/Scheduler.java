@@ -601,7 +601,7 @@ public class Scheduler extends ServerPattern {
 		PrintWriter writer = null;
         
         try {
-            writer = new PrintWriter("timing.txt", "UTF-8");
+            writer = new PrintWriter("timing information/timing_scheduler.txt", "UTF-8");
         } catch (FileNotFoundException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -665,7 +665,7 @@ public class Scheduler extends ServerPattern {
         PrintWriter writer = null;
         
         try {
-            writer = new PrintWriter("frequency.txt", "UTF-8");
+            writer = new PrintWriter("timing information/frequency_scheduler.txt", "UTF-8");
         } catch (FileNotFoundException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

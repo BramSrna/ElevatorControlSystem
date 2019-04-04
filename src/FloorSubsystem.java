@@ -3,6 +3,8 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -37,6 +39,9 @@ public class FloorSubsystem extends ServerPattern{
 	private InetAddress addressToSend;
 	
 	private ArrayList<Thread> floorThreads;
+	
+    private ArrayList<ArrayList<Long>> frequencyTimes;
+    private ArrayList<ArrayList<Long>> executionDurationTimes;
 
 	/**
 	 * FloorSubsystem
@@ -56,6 +61,16 @@ public class FloorSubsystem extends ServerPattern{
 	 */
 	public FloorSubsystem(int numFloors, int numElevators) {
 	    super(UtilityInformation.FLOOR_PORT_NUM, "FloorSubsystem");
+	    
+        frequencyTimes = new ArrayList<ArrayList<Long>>();      
+        for (int i = 0; i < 14; i++) {
+            frequencyTimes.add(new ArrayList<Long>());
+        }
+        
+        executionDurationTimes = new ArrayList<ArrayList<Long>>();
+        for (int i = 0; i < 14; i++) {
+            executionDurationTimes.add(new ArrayList<Long>());
+        }
 
 		floors = new ArrayList<Floor>();
 		floorThreads = new ArrayList<Thread>();
@@ -371,6 +386,9 @@ public class FloorSubsystem extends ServerPattern{
 		sendTeardownSignal();
 		super.teardown();
 		sendSocket.close();
+		
+		printTimingInformation();
+		printFrequencyInformation();
 	}
 	
 	/**
@@ -569,6 +587,8 @@ public class FloorSubsystem extends ServerPattern{
 	    while (run) {
 	        byte data[] = this.getNextRequest().getData();
 	        
+	        long startTime = System.nanoTime();
+	        
 	        byte mode = data[0];
 	        
 	        if (mode == UtilityInformation.ALL_REQUESTS_FINISHED_MODE) {
@@ -598,8 +618,16 @@ public class FloorSubsystem extends ServerPattern{
 	        	teardown();
 	        	System.exit(1);
 	        }
+	        
+	        long finishTime = System.nanoTime();
+            saveTimes(startTime, finishTime, mode);
 	    }
 	}
+	
+    public void saveTimes(long startTime, long finishTime, byte mode) {
+        frequencyTimes.get(mode).add(startTime);
+        executionDurationTimes.get(mode).add(finishTime - startTime);
+    }
 
 	/**
 	 * sendSignal
@@ -744,6 +772,127 @@ public class FloorSubsystem extends ServerPattern{
         }
         
         return(allRequests);
+    }
+    
+    /**
+     * printTimingInformation
+     * 
+     * Prints all measured timing information.
+     * This includes:
+     *  Arrival Sensor Times
+     *  Elevator Button Times
+     *  Floor Button Times
+     *  
+     * @param   None
+     * 
+     * @return  void
+     */
+    private void printTimingInformation() {
+        PrintWriter writer = null;
+        
+        try {
+            writer = new PrintWriter("timing information/timing_floor.txt", "UTF-8");
+        } catch (FileNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        
+        for (int i = 0; i < executionDurationTimes.size(); i++) {
+            if (i == 0) {
+                writer.println("CONFIG_MODE");
+            } else if (i == 1) {
+                writer.println("FLOOR_SENSOR_MODE");
+            } else if (i == 2) {
+                writer.println("FLOOR_REQUEST_MODE");
+            } else if (i == 3) {
+                writer.println("ELEVATOR_BUTTON_HIT_MODE");
+            } else if (i == 4) {
+                writer.println("ELEVATOR_DIRECTION_MODE");
+            } else if (i == 5) {
+                writer.println("ELEVATOR_DOOR_MODE");
+            } else if (i == 6) {
+                writer.println("SEND_DESTINATION_TO_ELEVATOR_MODE");
+            } else if (i == 7) {
+                writer.println("TEARDOWN_MODE");
+            } else if (i == 8) {
+                writer.println("CONFIG_CONFIRM_MODE");
+            } else if (i == 9) {
+                writer.println("ELEVATOR_STOPPED_MODE");
+            } else if (i == 10) {
+                writer.println("ERROR_MESSAGE_MODE");
+            } else if (i == 11) {
+                writer.println("FIX_ERROR_MODE");
+            } else if (i == 12) {
+                writer.println("FIX_DOOR_MODE");
+            } else if (i == 13) {
+                writer.println("ALL_REQUESTS_FINISHED_MODE");
+            }
+            
+            for (Long time : executionDurationTimes.get(i)) {
+                writer.println(time);
+            }
+            
+            writer.println("");
+        }
+        
+        writer.close();     
+    }
+    
+    private void printFrequencyInformation() {
+        PrintWriter writer = null;
+        
+        try {
+            writer = new PrintWriter("timing information/frequency_floor.txt", "UTF-8");
+        } catch (FileNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        
+        for (int i = 0; i < frequencyTimes.size(); i++) {
+            if (i == 0) {
+                writer.println("CONFIG_MODE");
+            } else if (i == 1) {
+                writer.println("FLOOR_SENSOR_MODE");
+            } else if (i == 2) {
+                writer.println("FLOOR_REQUEST_MODE");
+            } else if (i == 3) {
+                writer.println("ELEVATOR_BUTTON_HIT_MODE");
+            } else if (i == 4) {
+                writer.println("ELEVATOR_DIRECTION_MODE");
+            } else if (i == 5) {
+                writer.println("ELEVATOR_DOOR_MODE");
+            } else if (i == 6) {
+                writer.println("SEND_DESTINATION_TO_ELEVATOR_MODE");
+            } else if (i == 7) {
+                writer.println("TEARDOWN_MODE");
+            } else if (i == 8) {
+                writer.println("CONFIG_CONFIRM_MODE");
+            } else if (i == 9) {
+                writer.println("ELEVATOR_STOPPED_MODE");
+            } else if (i == 10) {
+                writer.println("ERROR_MESSAGE_MODE");
+            } else if (i == 11) {
+                writer.println("FIX_ERROR_MODE");
+            } else if (i == 12) {
+                writer.println("FIX_DOOR_MODE");
+            } else if (i == 13) {
+                writer.println("ALL_REQUESTS_FINISHED_MODE");
+            }
+            
+            for (Long time : frequencyTimes.get(i)) {
+                writer.println(time);
+            }
+            
+            writer.println("");
+        }
+        
+        writer.close();     
     }
 }
 
