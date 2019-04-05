@@ -533,7 +533,10 @@ public class SchedulerAlgorithm {
 	     * @return void
 	     */
 	    public void setDir(UtilityInformation.ElevatorDirection newDir) {
-	    	previousDir = dir;
+	        if (dir != UtilityInformation.ElevatorDirection.STATIONARY) {
+	            previousDir = dir;
+	        }
+	    	
             dir = newDir;            
         }
 
