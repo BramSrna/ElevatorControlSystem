@@ -90,7 +90,23 @@ public class Scheduler extends ServerPattern {
             
             long finishTime = System.nanoTime();
             saveTimes(messageRecieveTime, finishTime, mode);
+            
+            printInfo();
         }
+    }
+    
+    public void printInfo() {
+    	for (byte i = 0; i < numElevators; i++) {
+    		String toPrint = "";
+    		
+    		toPrint += String.format("Elevator %d: ", i);
+    		
+    		for (Request req : algor.getRequests(i)) {
+    			toPrint += String.format("Request: %d %d ", req.getSourceFloor(), req.getDestinationFloor());
+    		}
+    		
+    		System.out.println(toPrint);
+    	}
     }
     
     public void saveTimes(long startTime, long finishTime, byte mode) {
