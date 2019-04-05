@@ -1,5 +1,6 @@
 import java.awt.*;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -13,6 +14,9 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
 import javax.swing.*;
 
 public class FloorSubsystem extends ServerPattern{
@@ -728,6 +732,18 @@ public class FloorSubsystem extends ServerPattern{
 	 * @return void
 	 */
 	public static void main(String[] args) {
+		
+		//Play some music
+		try {
+	        AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new File("Music/Elevator_Music.wav").getAbsoluteFile());
+	        Clip clip = AudioSystem.getClip();
+	        clip.open(audioInputStream);
+	        clip.start();
+	    } catch(Exception ex) {
+	        System.out.println("Error with playing sound.");
+	        ex.printStackTrace();
+	    }
+		
 		UserInterface ui = new UserInterface();
 
 		// Get basic configuration information to start
