@@ -2,6 +2,8 @@ import java.awt.FileDialog;
 import java.awt.Frame;
 import java.util.Scanner;
 
+import javax.swing.JOptionPane;
+
 public class UserInterface {
 	// Current number of floors and elevatos
 	private int numFloors;
@@ -49,8 +51,6 @@ public class UserInterface {
 		minElevatorVal = UtilityInformation.MIN_NUM_ELEVATORS;
 		maxElevatorVal = UtilityInformation.MAX_NUM_ELEVATORS;
 		
-		// Initialize the Scanner
-		input = new Scanner(System.in);
 	}
 	
 	/**
@@ -84,11 +84,10 @@ public class UserInterface {
     	
     	// Get input from the user until a valid range is entered
     	while (!valid) {
-	    	System.out.print(String.format("Enter the number of elevators (%d to %d): ", 
-			    			 minElevatorVal, 
-			    			 maxElevatorVal));
 	    	
-	    	numElevators = input.nextInt();
+	    	numElevators = Integer.parseInt(JOptionPane.showInputDialog(String.format("Enter the number of elevators (%d to %d): ", 
+			    			 minElevatorVal, 
+			    			 maxElevatorVal)));
 	    	
 	    	// Check that the entered value is valid
 	    	if ((numElevators >= minElevatorVal) && (numElevators <= maxElevatorVal)) {
@@ -119,7 +118,9 @@ public class UserInterface {
 			    			 minFloorVal, 
 			    			 maxFloorVal));
 	    	
-	    	numFloors = input.nextInt();
+	    	numFloors = Integer.parseInt(JOptionPane.showInputDialog(String.format("Enter the number of floors (%d to %d): ", 
+	    			 minFloorVal, 
+	    			 maxFloorVal)));
 	    	
 	    	// Check that the entered value is valid
 	    	if ((numFloors >= minFloorVal) && (numFloors <= maxFloorVal)) {
@@ -176,7 +177,13 @@ public class UserInterface {
 			System.out.println(String.format("\t%d. Exit program.", exitChoice));
 			
 			// Get the choice from the user
-			int choice = input.nextInt();
+			int choice = Integer.parseInt(JOptionPane.showInputDialog(String.format("Please choose one of the following options:\n" +
+																					"\t%d. Enter a new number of elevators.\n" +
+																					"\t%d. Enter a new number of floors.\n" +
+																					"\t%d. Choose a new test file.\n" +
+																					"\t%d. Exit program", newNumElevatorsChoice,
+																					newNumFloorsChoice, newTestFileChoice,
+																					exitChoice)));
 			
 			valid = true;
 			

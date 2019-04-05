@@ -32,6 +32,8 @@ public class FloorSubsystem extends ServerPattern{
 	
 	private int requestCount;
 
+	private GUI gui;
+	
 	// List of existing floor objects
 	private ArrayList<Floor> floors;
 
@@ -78,6 +80,7 @@ public class FloorSubsystem extends ServerPattern{
 		this.setNumElevators(numElevators);
 		this.setNumFloors(numFloors);
 
+		gui = new GUI(this);
 		// Initialize the DatagramSocket
 		try {
 			sendSocket = new DatagramSocket();
@@ -520,6 +523,14 @@ public class FloorSubsystem extends ServerPattern{
 	 * @return None
 	 */
 	public synchronized void sendElevatorRequest(int sourceFloor, int destFloor, UtilityInformation.ElevatorDirection diRequest) {
+		
+		if(diRequest == UtilityInformation.ElevatorDirection.DOWN) {
+			gui.setDownButtonLit(numElevators, sourceFloor);
+		}else if (diRequest == UtilityInformation.ElevatorDirection.UP) {
+			gui.setUpButtonLit(numElevators, sourceFloor);
+		}
+		
+		
 		// Construct a message to send with data from given parameters
 		byte[] msg = new byte[REQUEST_SIZE];
 		msg[0] = UtilityInformation.FLOOR_REQUEST_MODE;
@@ -613,8 +624,9 @@ public class FloorSubsystem extends ServerPattern{
 
 		        // Propagate the information through all Floor
 		        // objects in the FloorSubsystem
+		        gui.updateFloorNum(numFloors, numElevators, floorNum, elevatorNum, dir);
 		        for (Floor currFloor : floors) {
-		            currFloor.updateElevatorLocation(elevatorNum, floorNum, dir);
+		            currFloor.updateElevatorLocation(elevatorNum, floorNum, dir, gui);
 		        }
 		        
 		        System.out.println(this.toString());
@@ -734,8 +746,10 @@ public class FloorSubsystem extends ServerPattern{
 
 			if (val == UserInterface.ReturnVals.RECONFIG) {
 				// If reconfing was received, resend the configuration method
+				floorController.gui.closeGUI();
 				floorController.setNumFloors(ui.getNumFloors());
 				floorController.setNumElevators(ui.getNumElevators());
+				floorController.gui = new GUI(floorController);
 				floorController.sendConfigurationSignal(floorController.getNumElevators(),
 						floorController.getNumFloors());
 			} else if (val == UserInterface.ReturnVals.NEW_TEST_FILE) {
@@ -899,34 +913,174 @@ public class FloorSubsystem extends ServerPattern{
 
 
 class GUI implements Runnable {
-	private JTextArea outputArea;
+
 	
+	private ArrayList<JLabel> upButtonArray;
+	private ArrayList<JLabel> downButtonArray;
+	private ArrayList<JLabel> lampArray;
+	private ArrayList<JLabel> directionArray;
 	
-	public GUI() {
-		JFrame mainFrame = new JFrame("Floor Debug Window");
+	private ImageIcon upUnlitIcon;
+	private ImageIcon downUnlitIcon;
+	private ImageIcon upLitIcon;
+	private ImageIcon downLitIcon;
+	
+	private ImageIcon upDirIcon;
+	private ImageIcon downDirIcon;
+	private ImageIcon stationaryIcon;
+	
+	private JFrame mainFrame;
+	private JFrame hiddenFrame;
+	
+	public GUI(FloorSubsystem sub) {
+		hiddenFrame = new JFrame("");
+		mainFrame = new JFrame("Floor Subsystem");
 		mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	
+		
+		mainFrame.setSize(1920, 1080);
+		mainFrame.setResizable(false);
+		
 		Container contentPane = mainFrame.getContentPane();
 		contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.Y_AXIS));
 		
-		JPanel debugPanel = new JPanel();
-		debugPanel.setLayout(new GridLayout(1, 1));
 		
-		outputArea = new JTextArea();
-		outputArea.setEditable(false);
-		JScrollPane scrollPane = new JScrollPane(outputArea); // May need to be a field
-		scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
 		
-		debugPanel.add(scrollPane);
+		JPanel floorPanel = new JPanel();
+		floorPanel.setLayout(new GridLayout(sub.getNumFloors(), 3 * sub.getNumElevators()));
 		
-		contentPane.add(debugPanel);
+		ImageIcon temp = new ImageIcon("Images/Up_Button_OFF.png");
+		Image upUnlit = temp.getImage().getScaledInstance(mainFrame.getWidth() / (3 * sub.getNumElevators()), 
+															mainFrame.getHeight() / (2 * sub.getNumFloors()), 
+															Image.SCALE_DEFAULT);
+		upUnlitIcon = new ImageIcon(upUnlit);
 		
-		mainFrame.setSize(800, 600);
-		mainFrame.setResizable(false);
+		
+		temp = new ImageIcon("Images/Down_Button_OFF.png");
+		Image downUnlit = temp.getImage().getScaledInstance(mainFrame.getWidth() / (3 * sub.getNumElevators()), 
+															mainFrame.getHeight() / (2 * sub.getNumFloors()), 
+															Image.SCALE_DEFAULT);
+		downUnlitIcon = new ImageIcon(downUnlit);
+		
+		
+		temp = new ImageIcon("Images/Up_Button_ON.png");
+		Image upLit = temp.getImage().getScaledInstance(mainFrame.getWidth() / (3 * sub.getNumElevators()), 
+														mainFrame.getHeight() / (2 * sub.getNumFloors()),  
+															Image.SCALE_DEFAULT);
+		upLitIcon = new ImageIcon(upLit);
+		
+		
+		temp = new ImageIcon("Images/Down_Button_ON.png");
+		Image downLit = temp.getImage().getScaledInstance(mainFrame.getWidth() / (3 * sub.getNumElevators()), 
+														mainFrame.getHeight() / (2 * sub.getNumFloors()), 
+														Image.SCALE_DEFAULT);
+		downLitIcon = new ImageIcon(downLit);
+		
+		
+		
+		
+		
+		temp = new ImageIcon("Images/Up_Direction.png");
+		Image upDir = temp.getImage().getScaledInstance(mainFrame.getWidth() / (3 * sub.getNumElevators()), 
+														mainFrame.getHeight() / sub.getNumFloors(), 
+														Image.SCALE_DEFAULT);
+		upDirIcon = new ImageIcon(upDir);
+		
+		
+		temp = new ImageIcon("Images/Stationary_Direction.png");
+		Image stationaryDir = temp.getImage().getScaledInstance(mainFrame.getWidth() / (3 * sub.getNumElevators()), 
+																mainFrame.getHeight() / sub.getNumFloors(), 
+														Image.SCALE_DEFAULT);
+		stationaryIcon = new ImageIcon(stationaryDir);
+		
+		
+		temp = new ImageIcon("Images/Down_Direction.png");
+		Image downDir = temp.getImage().getScaledInstance(mainFrame.getWidth() / (3 * sub.getNumElevators()), 
+															mainFrame.getHeight() / sub.getNumFloors(), 
+															Image.SCALE_DEFAULT);
+		downDirIcon = new ImageIcon(downDir);
+		
+		
+		ArrayList<JPanel> buttonPArray = new ArrayList<JPanel>();
+		upButtonArray = new ArrayList<JLabel>();
+		downButtonArray = new ArrayList<JLabel>();
+		
+		directionArray = new ArrayList<JLabel>();
+		lampArray = new ArrayList<JLabel>();
+		
+		for (int i = 0; i < sub.getNumFloors() * sub.getNumElevators(); i++) {
+
+			
+			buttonPArray.add(new JPanel(new GridLayout(2, 1)));
+			directionArray.add(new JLabel(stationaryIcon));
+			lampArray.add(new JLabel("0", SwingConstants.CENTER));
+
+			upButtonArray.add(new JLabel(upUnlitIcon));
+			downButtonArray.add(new JLabel(downUnlitIcon));
+			
+			
+			buttonPArray.get(i).add(upButtonArray.get(i));
+			buttonPArray.get(i).add(downButtonArray.get(i));
+			
+			
+			floorPanel.add(buttonPArray.get(i));
+			floorPanel.add(directionArray.get(i));
+			floorPanel.add(lampArray.get(i));
+		}
+		
+		
+		
+		
+		contentPane.add(floorPanel);
+		
+		hiddenFrame.pack();
 		mainFrame.pack();
+		hiddenFrame.setVisible(false);
 		mainFrame.setVisible(true);
 	}
+	
+	public void closeGUI() {
+		mainFrame.dispose();
+	}
+	
+	public void setUpButtonLit(int totalElevators, int sourceFloor) {
+		for (int i = 0; i < totalElevators; i++) {
+			upButtonArray.get((sourceFloor * totalElevators)  + i).setIcon(upLitIcon);
+		}
+	}
+	
+	public void setDownButtonLit(int totalElevators, int sourceFloor) {
+		for (int i = 0; i < totalElevators; i++) {
+			downButtonArray.get((sourceFloor * totalElevators)  + i).setIcon(downLitIcon);
+		}
+	}
+	
+	
+	
+	public void setUpButtonUnlit(int totalElevators, int floor, int elevator) {
+		upButtonArray.get((floor * totalElevators)  + elevator).setIcon(upUnlitIcon);
+	}
 
+	public void setDownButtonUnlit(int totalElevators, int floor, int elevator) {
+		downButtonArray.get((floor * totalElevators)  + elevator).setIcon(downUnlitIcon);
+	}
+	
+	
+	
+	public void updateFloorNum(int totalFloors, int totalElevators, int floor, int elevator, UtilityInformation.ElevatorDirection dir) {
+		for (int i = 0; i < totalFloors; i++ ) {
+			lampArray.get((i * totalElevators) + elevator).setText(Integer.toString(floor));
+			
+			if (dir == UtilityInformation.ElevatorDirection.UP) {
+				directionArray.get((i * totalElevators) + elevator).setIcon(upDirIcon);
+			}else if (dir == UtilityInformation.ElevatorDirection.DOWN) {
+				directionArray.get((i * totalElevators) + elevator).setIcon(downDirIcon);
+			}else {
+				directionArray.get((i * totalElevators) + elevator).setIcon(stationaryIcon);
+			}
+		}
+	}
+	
+	
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
