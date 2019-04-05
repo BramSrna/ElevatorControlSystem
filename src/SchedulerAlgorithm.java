@@ -51,16 +51,26 @@ public class SchedulerAlgorithm {
 	 */
 	private byte determineElevatorToGiveRequest(Request request) {
 	    byte chosenElevator = -1;
+	    
 	    int shortestTime = -1;
+	    int smallestQueue = -1;
+	    
 	    int time;
+	    int queue;
 
 		// Add destination to closest elevator
 		for (byte i = 0; i < elevatorInfo.size(); i++) {
-			time = howLongUntilRequestWouldBeServed(i, request);
-			
-			if (((shortestTime == -1) || (time < shortestTime)) && elevatorInfo.get(i).isUsable()) {
-				chosenElevator = i;
-				shortestTime = time;
+			if (elevatorInfo.get(i).isUsable()) {
+			    time = howLongUntilRequestWouldBeServed(i, request);
+	            queue = elevatorInfo.get(i).howManyMoreActiveRequests();
+	            
+    			if (((shortestTime == -1) || 
+    			    ((time < shortestTime) && (queue <= smallestQueue)) || 
+    			     (queue < smallestQueue))) {
+    				chosenElevator = i;
+    				shortestTime = time;
+    				smallestQueue = queue;
+    			}
 			}
 		}
 
@@ -85,26 +95,11 @@ public class SchedulerAlgorithm {
 		
 		int sourceFloor = req.getSourceFloor();
 		
-		int diff = 0;
+		int diff = Math.abs(sourceFloor - currFloor);
 		
-		if (dir.equals(UtilityInformation.ElevatorDirection.UP)) {
-			if (sourceFloor > currFloor) {
-				diff = sourceFloor - currFloor;
-			} else if (sourceFloor < currFloor) {
-				diff = (nextFloor - currFloor) + (nextFloor - sourceFloor);
-			}
-		} else if (dir.equals(UtilityInformation.ElevatorDirection.DOWN)) {
-			if (sourceFloor < currFloor) {
-				diff = currFloor - sourceFloor;
-			} else if (sourceFloor > currFloor) {
-				diff = (currFloor - nextFloor) + (sourceFloor - nextFloor);
-			}
-		} else {
-			if (sourceFloor > currFloor) {
-				diff = sourceFloor - currFloor;
-			} else if (sourceFloor < currFloor) {
-				diff = currFloor - sourceFloor;
-			}
+		if ((dir.equals(UtilityInformation.ElevatorDirection.UP) && (sourceFloor < currFloor)) || 
+		    (dir.equals(UtilityInformation.ElevatorDirection.DOWN) && (sourceFloor > currFloor))) {
+			diff = Math.abs((nextFloor - currFloor)) + Math.abs((nextFloor - sourceFloor));
 		}
 		
 		return(diff * UtilityInformation.TIME_UP_ONE_FLOOR);
@@ -427,6 +422,8 @@ public class SchedulerAlgorithm {
 		elevatorInfo.get(elevatorNum).setUsable(false);
 
 		elevatorInfo.get(elevatorNum).setStopElevator(true);
+		
+		elevatorInfo.get(elevatorNum).setDir(UtilityInformation.ElevatorDirection.STATIONARY);
 	}
 
 	/**
@@ -440,6 +437,7 @@ public class SchedulerAlgorithm {
 	 */
 	public void resumeUsingElevator(byte elevatorNum) {
 		elevatorInfo.get(elevatorNum).setUsable(true);
+		elevatorInfo.get(elevatorNum).setStopElevator(false);
 	}
 	
 	/**

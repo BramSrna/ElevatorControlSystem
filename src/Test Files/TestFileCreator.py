@@ -7,12 +7,12 @@ startMs = 453
 
 hourStep = 0
 minStep = 0
-secStep = 6
+secStep = 7
 msStep = 0
 
 numFloors = 22
 
-numRequests = 20
+numRequests = 10
 
 groundWeight = 0.5
 
