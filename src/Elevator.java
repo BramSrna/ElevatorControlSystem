@@ -23,23 +23,23 @@ import java.util.Random;
  */
 public class Elevator implements Runnable {
 	// The elevator car number
-	int elevatorNumber;
+	private int elevatorNumber;
 	// The current floor the elevator is on
-	int currentFloor = 0;
+	private int currentFloor = 0;
 	
 	private UtilityInformation.DoorState door = UtilityInformation.DoorState.CLOSE;
 	
 	// The lamps indicate the floor(s) which will be visited by the elevator
-	UtilityInformation.LampState[] allButtons;
+	private UtilityInformation.LampState[] allButtons;
 	
-	Elevator_Subsystem controller;
+	private Elevator_Subsystem controller;
 	
 	/*
 	 * General Constructor for Elevator Class
 	 */	
 	// USED ENUMS:
 	// State machine states
-	enum Action {
+	public enum Action {
 		MOVE_UP,
 		MOVE_DOWN,
 		OPEN_DOOR,
@@ -53,10 +53,15 @@ public class Elevator implements Runnable {
 	
 	private Action currAction;
 	
-	public Elevator(Elevator_Subsystem controller, int number) {
+	public Elevator(Elevator_Subsystem controller, int number, int numFloors) {
 		elevatorNumber = number;
 		this.controller = controller;
 		currAction = Action.WAITING;
+		
+        allButtons = new UtilityInformation.LampState[numFloors];
+        for (int k = 0; k < numFloors; k++) {
+            allButtons[k] = UtilityInformation.LampState.OFF; // currently making everything OFF
+        }
 	}
 	
 	public int getElevatorNumber() {return this.elevatorNumber;}
@@ -230,14 +235,42 @@ public class Elevator implements Runnable {
 	    controller.sendFloorSensorMessage(elevatorNumber);
 	}
 
+	/**
+	 * getCurrAction
+	 * 
+	 * Returns the current action being executed
+	 * 
+	 * @param  None
+	 * 
+	 * @return Action  The current action being executed
+	 */
 	public Action getCurrAction() {
 		return(currAction);
 	}
 
+	/**
+	 * isInErrorState
+	 * 
+	 * Returns whether or not the elevator is currently in an error state
+	 * 
+	 * @param  None
+	 * 
+	 * @return boolean True if elevator is currently in an error state
+	 *                 False otherwise
+	 */
 	public boolean isInErrorState() {
 		return(currAction.equals(Action.BROKEN));
 	}
 	
+	/**
+	 * changeAction
+	 * 
+	 * Changes the currently executing action to the given action type.
+	 *
+	 * @param newAction    The new action for the elevator to execute
+	 * 
+	 * @return void
+	 */
 	public void changeAction(Action newAction) {
 		currAction = newAction;
 		
@@ -273,6 +306,19 @@ public class Elevator implements Runnable {
 		currAction = Action.WAITING;
 	}
 
+	/**
+	 * run
+	 * 
+	 * override
+	 * 
+	 * Infinitely repeats the following:
+	 *     Get the next action for the elevator from the controller
+	 *     Execute the retrieved action
+	 *     
+	 * @param  None
+	 * 
+	 * @return void
+	 */
 	@Override
 	public void run() {		
 		while (true) {
@@ -281,5 +327,13 @@ public class Elevator implements Runnable {
 		}
 		
 	}
+
+    public void turnOffDestButton(int destinationFloor) {
+        allButtons[destinationFloor] = UtilityInformation.LampState.OFF; 
+    }
+    
+    public void turnOnDestButton(int destinationFloor) {
+        allButtons[destinationFloor] = UtilityInformation.LampState.ON; 
+    }
 	
 }

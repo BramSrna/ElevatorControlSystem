@@ -126,7 +126,7 @@ public class Floor implements Runnable {
     public void updateElevatorLocation(int elevatorShaftNum, 
 							    	   int floorNum, 
 							    	   UtilityInformation.ElevatorDirection direction,
-							    	   GUI gui) {
+							    	   FloorSubsystemGUI gui) {
     	// If the elevator is at this floor
     	// Set the arrival lamp and
     	// check if this is the floor that the elevator shaft is stopping at

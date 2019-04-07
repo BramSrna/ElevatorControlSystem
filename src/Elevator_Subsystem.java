@@ -32,7 +32,7 @@ import java.util.*;
  */
 public class Elevator_Subsystem extends ServerPattern {
 	// ArrayList containing all the elevators being used by an instance of the system.
-	ArrayList<Elevator> allElevators = new ArrayList<>();
+	public ArrayList<Elevator> allElevators = new ArrayList<>();
 	
 	// The number of elevators and floors, initialized to 0
 	// These are set during the initial config
@@ -46,8 +46,8 @@ public class Elevator_Subsystem extends ServerPattern {
 	private static byte currentElevatorToWork = 0;
 
 	// Datagram Packets and Sockets for sending and receiving data
-	DatagramPacket sendPacket, receivePacket;
-	DatagramSocket sendSocket;
+	private DatagramPacket sendPacket, receivePacket;
+	private DatagramSocket sendSocket;
 
 	// Information for System
 	private InetAddress schedulerIP;
@@ -60,18 +60,18 @@ public class Elevator_Subsystem extends ServerPattern {
 
 	// USED ENUMS:
 	// State machine states
-	enum State {
+	public enum State {
 		ANALYZING_MESSAGE, CURRENTLY_MOVING, ARRIVE_AT_FLOOR
 	}
 
 	// All events taking place in the elevator
-	enum Event {
+	public enum Event {
 		CONFIG_RECIEVED, BUTTON_PUSHED_IN_ELEVATOR, ELEVATOR_MOVING, STOP_ELEVATOR, UPDATE_DEST, OPEN_DOOR, 
 		CLOSE_DOOR, ISSUE_OCCURING, ISSUE_FIXED, DOOR_ISSUE
 	}
 
 	// Start off stationary
-	static State currentState = State.ANALYZING_MESSAGE;
+	public static State currentState = State.ANALYZING_MESSAGE;
 
 	// General Constructor for Elevator Subsystem class.
 	public Elevator_Subsystem() {
@@ -302,11 +302,7 @@ public class Elevator_Subsystem extends ServerPattern {
 
 			// Based on the config message, set up the elevators and their lights.
 			for (int i = 0; i < numberOfElevators; i++) {
-				Elevator hold = new Elevator(this, i);
-				hold.allButtons = new UtilityInformation.LampState[numberOfFloors];
-				for (int k = 0; k < numberOfFloors; k++) {
-					hold.allButtons[k] = UtilityInformation.LampState.OFF; // currently making everything OFF
-				}
+				Elevator hold = new Elevator(this, i, numberOfFloors);
 				// add to elevator subsystem ArrayList of elevators
 				allElevators.add(hold);
 				nextActions.add(new LinkedList<Elevator.Action>());
@@ -334,15 +330,14 @@ public class Elevator_Subsystem extends ServerPattern {
 			addActionToQueue(currentElevatorToWork, Elevator.Action.MOVE_DOWN);
 		}
 		if (str.equals("stop")) {
-			allElevators.get(currentElevatorToWork).allButtons[destinationFloor] = UtilityInformation.LampState.OFF;
-			
+			allElevators.get(currentElevatorToWork).turnOffDestButton(destinationFloor);
 			addActionToQueue(currentElevatorToWork, Elevator.Action.STOP);
 		}
 		// getting destination from scheduler for each input
 		if (str.equals("destination")) {
 			destinationFloor = data[1];
 			currentElevatorToWork = data[2];
-			allElevators.get(currentElevatorToWork).allButtons[destinationFloor] = UtilityInformation.LampState.ON;
+			allElevators.get(currentElevatorToWork).turnOnDestButton(destinationFloor);
 		}
 		if(str.equals("error")) {
 			System.out.print(currentElevatorToWork + " ");
@@ -392,8 +387,8 @@ public class Elevator_Subsystem extends ServerPattern {
 	 */
     public void sendFloorSensorMessage(int elevatorNum) {
         byte[] returnMessage = { UtilityInformation.FLOOR_SENSOR_MODE,
-                (byte) allElevators.get(elevatorNum).currentFloor,
-                (byte) allElevators.get(elevatorNum).elevatorNumber, -1 };
+                (byte) allElevators.get(elevatorNum).getCurrentFloor(),
+                (byte) allElevators.get(elevatorNum).getElevatorNumber(), -1 };
         this.sendData(returnMessage, schedulerIP, schedulerPort);
     }
 
@@ -480,6 +475,22 @@ public class Elevator_Subsystem extends ServerPattern {
 		
 	}
 	
+	/**
+	 * runElevatorSubsystem
+	 * 
+	 * Runs the subsystem
+	 * Repeats the following loop indefinitely:
+	 *     Start Timer
+	 *     Receive packet
+	 *     Handle Packet
+	 *     Stop Timer
+	 *     Save Time
+	 *     Display current information
+	 *     
+	 * @input  None
+	 * 
+	 * @return void
+	 */
 	public void runElevatorSubsystem() {
 	 // receive the config message
         for(;;) {
@@ -494,6 +505,17 @@ public class Elevator_Subsystem extends ServerPattern {
         }
 	}
 	
+	/**
+	 * saveTimes
+	 * 
+	 * Save the given timing information for the given message type.
+	 * 
+	 * @param startTime    Start time of request handler
+	 * @param finishTime   End Time of request handler
+	 * @param mode The mode of the message being handled
+	 * 
+	 * @return void
+	 */
     public void saveTimes(long startTime, long finishTime, byte mode) {
         frequencyTimes.get(mode).add(startTime);
         executionDurationTimes.get(mode).add(finishTime - startTime);
@@ -503,10 +525,7 @@ public class Elevator_Subsystem extends ServerPattern {
      * printTimingInformation
      * 
      * Prints all measured timing information.
-     * This includes:
-     *  Arrival Sensor Times
-     *  Elevator Button Times
-     *  Floor Button Times
+     * This includes the execution times of handlers for all message types
      *  
      * @param   None
      * 
@@ -564,7 +583,17 @@ public class Elevator_Subsystem extends ServerPattern {
         writer.close();     
     }
     
-   private void printFrequencyInformation() {
+    /**
+     * printFrequencyInformation
+     * 
+     * Prints all measured timing information.
+     * This includes the frequency times of handlers for all message types
+     *  
+     * @param   None
+     * 
+     * @return  void
+     */
+    private void printFrequencyInformation() {
         PrintWriter writer = null;
         
         try {
@@ -616,12 +645,36 @@ public class Elevator_Subsystem extends ServerPattern {
         writer.close();     
     }
 	
-	public synchronized void addActionToQueue(int elevatorNumber, Elevator.Action stateToAdd) {
-		nextActions.get(elevatorNumber).add(stateToAdd);
+    /**
+     * addActionToQueue
+     * 
+     * synchronized
+     * 
+     * Adds the given action type to the queue for the given elevator
+     * 
+     * @param elevatorNumber    Number of elevator to add the action for
+     * @param stateToAdd        Next action to add to queue
+     * 
+     * @return  void
+     */
+	public synchronized void addActionToQueue(int elevatorNumber, Elevator.Action actionToAdd) {
+		nextActions.get(elevatorNumber).add(actionToAdd);
 		
 		notifyAll();
 	}
 
+	/**
+	 * getNextActionForElevator
+	 * 
+	 * synchronized
+	 * 
+	 * Returns the next action in the queue for the given elevator.
+	 * Waits until an action is available,
+	 * 
+	 * @param elevatorNumber   Elevator number to get the next action for
+	 * 
+	 * @return Action  The next action for the elevator
+	 */
 	public synchronized Elevator.Action getNextActionForElevator(int elevatorNumber) {
 		while (nextActions.get(elevatorNumber).isEmpty()) {
 			try {
@@ -639,8 +692,22 @@ public class Elevator_Subsystem extends ServerPattern {
 		return(nextAction);
 	}
 
-
+	/**
+	 * getNumFloors
+	 * 
+	 * Returns the number of floors that the subsystem is configured to handle.
+	 * 
+	 * @param  None
+	 * 
+	 * @return int Number of floors
+	 */
     public int getNumFloors() {
         return(numberOfFloors);
+    }
+    
+    public void teardown() {
+        sendPacket = null;
+        receivePacket = null;
+        sendSocket.close();
     }
 }

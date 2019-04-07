@@ -22,9 +22,6 @@ public class ElevatorSubsystemTests {
         host.teardown();
         host = null;
         
-        elevatorSubsystem.sendPacket = null;
-        elevatorSubsystem.receivePacket = null;
-        elevatorSubsystem.sendSocket.close();
         elevatorSubsystem.teardown();
         elevatorSubsystem = null;
     }
