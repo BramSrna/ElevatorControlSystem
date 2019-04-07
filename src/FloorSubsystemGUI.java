@@ -204,12 +204,13 @@ public class FloorSubsystemGUI implements Runnable {
      * 
      * @param totalElevators    The number of elevators in the system
      * @param sourceFloor       The floor to light
-     * @param elevator          The number of the elevator shaft to unlight
      * 
      * @return  void
      */ 
-    public void setUpButtonUnlit(int totalElevators, int floor, int elevator) {
-        upButtonArray.get((floor * totalElevators)  + elevator).setIcon(upUnlitIcon);
+    public void setUpButtonUnlit(int totalElevators, int floor) {
+        for (int i = 0; i < totalElevators; i++) {
+            upButtonArray.get((floor * totalElevators)  + i).setIcon(upUnlitIcon);
+        }
     }
 
     /**
@@ -219,12 +220,13 @@ public class FloorSubsystemGUI implements Runnable {
      * 
      * @param totalElevators    The number of elevators in the system
      * @param sourceFloor       The floor to light
-     * @param elevator          The number of the elevator shaft to unlight
      * 
      * @return  void
      */ 
-    public void setDownButtonUnlit(int totalElevators, int floor, int elevator) {
-        downButtonArray.get((floor * totalElevators)  + elevator).setIcon(downUnlitIcon);
+    public void setDownButtonUnlit(int totalElevators, int floor) {
+        for (int i = 0; i < totalElevators; i++) {
+            downButtonArray.get((floor * totalElevators)  + i).setIcon(downUnlitIcon);
+        }
     }
     
     /**

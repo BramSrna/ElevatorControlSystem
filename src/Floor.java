@@ -132,8 +132,10 @@ public class Floor implements Runnable {
     		(direction == UtilityInformation.ElevatorDirection.STATIONARY)) {
     		// Turn off up/down buttons if the elevator is stopping at this floor
 			arrivalLamp.set(elevatorShaftNum, UtilityInformation.LampState.ON);
-			gui.setDownButtonUnlit(numElevatorShafts, getFloorNumber(), elevatorShaftNum);
-			gui.setUpButtonUnlit(numElevatorShafts, getFloorNumber(), elevatorShaftNum);
+			
+			gui.setDownButtonUnlit(numElevatorShafts, getFloorNumber());
+			gui.setUpButtonUnlit(numElevatorShafts, getFloorNumber());
+			
 			downButton = UtilityInformation.ButtonState.UNPRESSED;
 			upButton = UtilityInformation.ButtonState.UNPRESSED;
     	} else {

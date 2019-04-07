@@ -1,6 +1,5 @@
 import java.awt.FileDialog;
 import java.awt.Frame;
-import java.util.Scanner;
 
 import javax.swing.JOptionPane;
 
@@ -19,8 +18,6 @@ public class UserInterface {
 	
 	// Path to the current test file being run
 	private String pathToTestFile;
-	
-	private Scanner input;
 	
 	// Return values for options the user selected
 	public enum ReturnVals {
@@ -168,14 +165,7 @@ public class UserInterface {
 		boolean valid = false;
 		
 		// Loop until a valid value is chosen
-		while (!valid) {
-			// Display the menu
-			System.out.println("Please choose one of the following options:");
-			System.out.println(String.format("\t%d. Enter a new number of elevators.", newNumElevatorsChoice));
-			System.out.println(String.format("\t%d. Enter a new number of floors.", newNumFloorsChoice));
-			System.out.println(String.format("\t%d. Choose a new test file.", newTestFileChoice));
-			System.out.println(String.format("\t%d. Exit program.", exitChoice));
-			
+		while (!valid) {			
 			// Get the choice from the user
 			int choice = Integer.parseInt(JOptionPane.showInputDialog(String.format("Please choose one of the following options:\n" +
 																					"\t%d. Enter a new number of elevators.\n" +
@@ -203,7 +193,7 @@ public class UserInterface {
 				return(ReturnVals.NEW_TEST_FILE);
 			} else if (choice == exitChoice) {
 				// Exit program
-				input.close();
+				//input.close();
 				System.out.println("Exiting. Thank you for using the program!");
 				return(ReturnVals.TEARDOWN);
 			} else {
