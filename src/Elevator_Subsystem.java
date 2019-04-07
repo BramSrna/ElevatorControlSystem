@@ -51,7 +51,6 @@ public class Elevator_Subsystem extends ServerPattern {
 
 	// Information for System
 	private InetAddress schedulerIP;
-	private int schedulerPort = 420;
 	
 	private ArrayList<LinkedList<Elevator.Action>> nextActions;
 	
@@ -118,7 +117,7 @@ public class Elevator_Subsystem extends ServerPattern {
 	 * @param port the port number on the destination computer
 	 */
 	public void sendData(byte[] data, InetAddress IP, int port) {
-		sendPacket = new DatagramPacket(data, data.length, IP, schedulerPort);
+		sendPacket = new DatagramPacket(data, data.length, IP, UtilityInformation.SCHEDULER_PORT_NUM);
 		System.out.println("Elevator: Sending packet:");
 		System.out.println("To host: " + sendPacket.getAddress());
 		System.out.println("Destination host port: " + sendPacket.getPort());
@@ -356,7 +355,7 @@ public class Elevator_Subsystem extends ServerPattern {
 	 */
 	public void sendElevatorDoorFixedMessage(int elevatorNum) {
 	    byte[] issConf = {UtilityInformation.FIX_DOOR_MODE, (byte) elevatorNum, -1};
-        this.sendData(issConf, schedulerIP, schedulerPort);
+        this.sendData(issConf, schedulerIP, UtilityInformation.SCHEDULER_PORT_NUM);
 	}
 	
 	/**
@@ -375,7 +374,7 @@ public class Elevator_Subsystem extends ServerPattern {
         byte[] returnMessage = { UtilityInformation.FLOOR_SENSOR_MODE,
                 (byte) allElevators.get(elevatorNum).getCurrentFloor(),
                 (byte) allElevators.get(elevatorNum).getElevatorNumber(), -1 };
-        this.sendData(returnMessage, schedulerIP, schedulerPort);
+        this.sendData(returnMessage, schedulerIP, UtilityInformation.SCHEDULER_PORT_NUM);
     }
 
 	/*
@@ -726,7 +725,7 @@ public class Elevator_Subsystem extends ServerPattern {
         }
         // allButtons = new lampState[numberOfFloors];
         byte[] response = { UtilityInformation.CONFIG_CONFIRM_MODE, 1, -1 };
-        this.sendData(response, schedulerIP, schedulerPort);
+        this.sendData(response, schedulerIP, UtilityInformation.SCHEDULER_PORT_NUM);
         
         for (Elevator ele : allElevators) {
             Thread t = new Thread(ele);

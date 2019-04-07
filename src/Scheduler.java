@@ -6,6 +6,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
@@ -35,6 +36,9 @@ public class Scheduler extends ServerPattern {
 	
 	private ArrayList<ArrayList<Long>> frequencyTimes;
 	private ArrayList<ArrayList<Long>> executionDurationTimes;
+	
+	private InetAddress floorIP;
+	private InetAddress elevatorIP;
 
 	/**
 	 * Scheduler
@@ -68,6 +72,20 @@ public class Scheduler extends ServerPattern {
 			e1.printStackTrace();
 			System.exit(1);
 		}
+		
+		try {
+            floorIP = InetAddress.getLocalHost();
+        } catch (UnknownHostException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+		
+		try {
+            elevatorIP = InetAddress.getLocalHost();
+        } catch (UnknownHostException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
 	}
 	
 	/**
@@ -230,7 +248,7 @@ public class Scheduler extends ServerPattern {
 		byte[] message = {UtilityInformation.ALL_REQUESTS_FINISHED_MODE,
 						  UtilityInformation.END_OF_MESSAGE};
 		
-		sendMessage(message, message.length, packet.getAddress(), UtilityInformation.FLOOR_PORT_NUM);
+		sendMessage(message, message.length, floorIP, UtilityInformation.FLOOR_PORT_NUM);
 	}
 
 	/**
@@ -303,7 +321,7 @@ public class Scheduler extends ServerPattern {
      * @param packet
      */
     protected void sendConfigConfirmMessage(DatagramPacket packet) {
-        sendMessage(packet.getData(), packet.getData().length, packet.getAddress(), UtilityInformation.FLOOR_PORT_NUM);
+        sendMessage(packet.getData(), packet.getData().length, floorIP, UtilityInformation.FLOOR_PORT_NUM);
 
     }
 
@@ -316,7 +334,7 @@ public class Scheduler extends ServerPattern {
     protected void sendConfigPacketToElevator(DatagramPacket configPacket) {
         System.out.println("Sending config file to Elevator...\n");
         setNumElevators(configPacket.getData()[1]);
-        sendMessage(configPacket.getData(), configPacket.getData().length, configPacket.getAddress(),
+        sendMessage(configPacket.getData(), configPacket.getData().length, elevatorIP,
                 UtilityInformation.ELEVATOR_PORT_NUM);
     }
 
@@ -357,7 +375,7 @@ public class Scheduler extends ServerPattern {
                     				   elevatorDestinations.iterator().next(), 
                     				   elevatorNum, 
                     				   UtilityInformation.END_OF_MESSAGE };
-			sendMessage(destinationFloor, destinationFloor.length, recievedPacket.getAddress(),
+			sendMessage(destinationFloor, destinationFloor.length, elevatorIP,
 					UtilityInformation.ELEVATOR_PORT_NUM);
 		}
 
@@ -447,8 +465,8 @@ public class Scheduler extends ServerPattern {
                           UtilityInformation.END_OF_MESSAGE};
         
         System.out.println(String.format("Sending elevator %s... \n", direction.toString()));
-        sendMessage(message, message.length, packet.getAddress(), UtilityInformation.ELEVATOR_PORT_NUM);
-        sendMessage(message, message.length, packet.getAddress(), UtilityInformation.FLOOR_PORT_NUM);
+        sendMessage(message, message.length, elevatorIP, UtilityInformation.ELEVATOR_PORT_NUM);
+        sendMessage(message, message.length, floorIP, UtilityInformation.FLOOR_PORT_NUM);
         
         elevatorDirection.set(elevatorNum, direction);
         
@@ -474,7 +492,7 @@ public class Scheduler extends ServerPattern {
                             (byte) state.ordinal(), 
                             elevatorNum,
                             UtilityInformation.END_OF_MESSAGE};
-        sendMessage(closeDoor, closeDoor.length, packet.getAddress(), UtilityInformation.ELEVATOR_PORT_NUM);
+        sendMessage(closeDoor, closeDoor.length, elevatorIP, UtilityInformation.ELEVATOR_PORT_NUM);
 	}
 
 	/**
@@ -505,7 +523,7 @@ public class Scheduler extends ServerPattern {
 	    byte elevatorNum = packet.getData()[2];
         sendMessage(packet.getData(), 
                     packet.getData().length, 
-                    packet.getAddress(),
+                    elevatorIP,
                     UtilityInformation.ELEVATOR_PORT_NUM);
         
         if (errorType == UtilityInformation.ErrorType.DOOR_STUCK_ERROR.ordinal()) {
@@ -538,7 +556,7 @@ public class Scheduler extends ServerPattern {
 	 */
 	private void handleElevatorFixMessage(DatagramPacket receivedPacket) {
 		byte elevatorNum = receivedPacket.getData()[2];
-		sendMessage(receivedPacket.getData(), receivedPacket.getData().length, receivedPacket.getAddress(),
+		sendMessage(receivedPacket.getData(), receivedPacket.getData().length, elevatorIP,
 				UtilityInformation.ELEVATOR_PORT_NUM);
 		algor.resumeUsingElevator(elevatorNum);
 	}
@@ -608,7 +626,7 @@ public class Scheduler extends ServerPattern {
      */
     private void sendTearDownMessage(DatagramPacket packet) {
         byte[] tearDown = { UtilityInformation.TEARDOWN_MODE, UtilityInformation.END_OF_MESSAGE };
-        sendMessage(tearDown, tearDown.length, packet.getAddress(), UtilityInformation.ELEVATOR_PORT_NUM);
+        sendMessage(tearDown, tearDown.length, elevatorIP, UtilityInformation.ELEVATOR_PORT_NUM);
         System.out.println("\n\nTEARING DOWN!\n\n");
         socketTearDown();
         printTimingInformation();

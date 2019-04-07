@@ -40,7 +40,7 @@ public class FloorSubsystem extends ServerPattern{
 	private ArrayList<Floor> floors;
 
 	// Address to send messages to
-	private InetAddress addressToSend;
+	private InetAddress schedulerIP;
 	
 	private ArrayList<Thread> floorThreads;
 	
@@ -94,7 +94,7 @@ public class FloorSubsystem extends ServerPattern{
 
 		// Set the address to send to
 		try {
-			addressToSend = InetAddress.getLocalHost();
+			schedulerIP = InetAddress.getLocalHost();
 		} catch (UnknownHostException e) {
 			System.out.println("Error: Unable to get local address.");
 			e.printStackTrace();
@@ -466,7 +466,7 @@ public class FloorSubsystem extends ServerPattern{
 
 		// Send the signal
 		System.out.println("Sending teardown signal...");
-		sendSignal(msg, UtilityInformation.SCHEDULER_PORT_NUM, addressToSend);
+		sendSignal(msg, UtilityInformation.SCHEDULER_PORT_NUM, schedulerIP);
 		System.out.println("Teardown signal sent...");
 	}
 
@@ -497,7 +497,7 @@ public class FloorSubsystem extends ServerPattern{
 
 		// Send the signal
 		System.out.println("Sending configuration signal...");
-		sendSignal(msg, UtilityInformation.SCHEDULER_PORT_NUM, addressToSend);
+		sendSignal(msg, UtilityInformation.SCHEDULER_PORT_NUM, schedulerIP);
 		System.out.println("Configuration signal sent...");
 
 		// Wait for a confirmation from the Scheduler before commencing the program
@@ -543,7 +543,7 @@ public class FloorSubsystem extends ServerPattern{
 
 		// Send the signal
 		System.out.println("Sending elevator request...");
-		sendSignal(msg, UtilityInformation.SCHEDULER_PORT_NUM, addressToSend);
+		sendSignal(msg, UtilityInformation.SCHEDULER_PORT_NUM, schedulerIP);
 		System.out.println("Elevator request sent...");
 		
 		requestCount -= 1;
@@ -572,7 +572,7 @@ public class FloorSubsystem extends ServerPattern{
 	    
         // Send the signal
         System.out.println("Sending error occurs message...");
-        sendSignal(msg, UtilityInformation.SCHEDULER_PORT_NUM, addressToSend);
+        sendSignal(msg, UtilityInformation.SCHEDULER_PORT_NUM, schedulerIP);
         System.out.println("Error occurs message sent...");
         
         requestCount -= 1;
