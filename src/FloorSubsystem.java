@@ -1,4 +1,3 @@
-import java.awt.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -17,7 +16,6 @@ import java.util.Arrays;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
-import javax.swing.*;
 
 public class FloorSubsystem extends ServerPattern{
 	// Sockets and packets used for UDP
@@ -645,6 +643,17 @@ public class FloorSubsystem extends ServerPattern{
 	    }
 	}
 	
+	/**
+     * saveTimes
+     * 
+     * Save the given timing information for the given message type.
+     * 
+     * @param startTime    Start time of request handler
+     * @param finishTime   End Time of request handler
+     * @param mode The mode of the message being handled
+     * 
+     * @return void
+     */
     public void saveTimes(long startTime, long finishTime, byte mode) {
         frequencyTimes.get(mode).add(startTime);
         executionDurationTimes.get(mode).add(finishTime - startTime);
@@ -816,10 +825,7 @@ public class FloorSubsystem extends ServerPattern{
      * printTimingInformation
      * 
      * Prints all measured timing information.
-     * This includes:
-     *  Arrival Sensor Times
-     *  Elevator Button Times
-     *  Floor Button Times
+     * This includes the execution times of handlers for all message types
      *  
      * @param   None
      * 
@@ -877,6 +883,16 @@ public class FloorSubsystem extends ServerPattern{
         writer.close();     
     }
     
+    /**
+     * printFrequencyInformation
+     * 
+     * Prints all measured timing information.
+     * This includes the frequency times of handlers for all message types
+     *  
+     * @param   None
+     * 
+     * @return  void
+     */
     private void printFrequencyInformation() {
         PrintWriter writer = null;
         

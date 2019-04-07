@@ -11,16 +11,20 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
 public class FloorSubsystemGUI implements Runnable {
+    // Arraylists to hold JLables for all icon types
     private ArrayList<JLabel> upButtonArray;
     private ArrayList<JLabel> downButtonArray;
     private ArrayList<JLabel> lampArray;
     private ArrayList<JLabel> directionArray;
     
+    // Icons
+    // Icons used for floor request buttons
     private ImageIcon upUnlitIcon;
     private ImageIcon downUnlitIcon;
     private ImageIcon upLitIcon;
     private ImageIcon downLitIcon;
     
+    // Icons used for elevator direction
     private ImageIcon upDirIcon;
     private ImageIcon downDirIcon;
     private ImageIcon stationaryIcon;
@@ -28,6 +32,20 @@ public class FloorSubsystemGUI implements Runnable {
     private JFrame mainFrame;
     private JFrame hiddenFrame;
     
+    /**
+     * FloorSubsystemGUI
+     * 
+     * Constructor
+     * 
+     * Creates a new FloorSubsystemGUI.
+     * Initializes the frames and sets sizes.
+     * Retrieves and scales all icons.
+     * Adds everything to the frames.
+     * 
+     * @param sub   FloorSubsystem that the GUI is displaying
+     * 
+     * @return  None
+     */
     public FloorSubsystemGUI(FloorSubsystem sub) {
         hiddenFrame = new JFrame("");
         mainFrame = new JFrame("Floor Subsystem");
@@ -134,34 +152,94 @@ public class FloorSubsystemGUI implements Runnable {
         mainFrame.setVisible(true);
     }
     
+    /**
+     * closeGUI
+     * 
+     * Closes the gui and disposes the frames
+     * 
+     * @param   None
+     * 
+     * @return  void
+     */
     public void closeGUI() {
         mainFrame.dispose();
     }
     
+    /**
+     * setUpButtonLit
+     * 
+     * Lights the up button for the given floors
+     * 
+     * @param totalElevators    The number of elevators in the system
+     * @param sourceFloor   The floor to light
+     * 
+     * @return  void
+     */
     public void setUpButtonLit(int totalElevators, int sourceFloor) {
         for (int i = 0; i < totalElevators; i++) {
             upButtonArray.get((sourceFloor * totalElevators)  + i).setIcon(upLitIcon);
         }
     }
     
+    /**
+     * setDownButtonLit
+     * 
+     * Lights the down button for the given floors
+     * 
+     * @param totalElevators    The number of elevators in the system
+     * @param sourceFloor   The floor to light
+     * 
+     * @return  void
+     */
     public void setDownButtonLit(int totalElevators, int sourceFloor) {
         for (int i = 0; i < totalElevators; i++) {
             downButtonArray.get((sourceFloor * totalElevators)  + i).setIcon(downLitIcon);
         }
     }
     
-    
-    
+    /**
+     * setUpButtonUnlit
+     * 
+     * Unlights the up button for the given floor and elevator
+     * 
+     * @param totalElevators    The number of elevators in the system
+     * @param sourceFloor       The floor to light
+     * @param elevator          The number of the elevator shaft to unlight
+     * 
+     * @return  void
+     */ 
     public void setUpButtonUnlit(int totalElevators, int floor, int elevator) {
         upButtonArray.get((floor * totalElevators)  + elevator).setIcon(upUnlitIcon);
     }
 
+    /**
+     * setDownButtonUnlit
+     * 
+     * Unlights the down button for the given floor and elevator
+     * 
+     * @param totalElevators    The number of elevators in the system
+     * @param sourceFloor       The floor to light
+     * @param elevator          The number of the elevator shaft to unlight
+     * 
+     * @return  void
+     */ 
     public void setDownButtonUnlit(int totalElevators, int floor, int elevator) {
         downButtonArray.get((floor * totalElevators)  + elevator).setIcon(downUnlitIcon);
     }
     
-    
-    
+    /**
+     * updateFloorNum
+     * 
+     * Updates the floow number of the given elevator to the given floor.
+     * 
+     * @param totalFloors       Number of floors in the system
+     * @param totalElevators    Number of elevators in the system
+     * @param floor             Floor number that the elevator is on
+     * @param elevator          Number of elevator being updated
+     * @param dir               Direction that the elevator is travelling
+     * 
+     * @return  void
+     */
     public void updateFloorNum(int totalFloors, int totalElevators, int floor, int elevator, UtilityInformation.ElevatorDirection dir) {
         for (int i = 0; i < totalFloors; i++ ) {
             lampArray.get((i * totalElevators) + elevator).setText(Integer.toString(floor));
@@ -176,7 +254,17 @@ public class FloorSubsystemGUI implements Runnable {
         }
     }
     
-    
+    /**
+     * run
+     * 
+     * Override
+     * 
+     * Runs the GUI
+     * 
+     * @param   None
+     * 
+     * @return  void
+     */
     @Override
     public void run() {
         // TODO Auto-generated method stub

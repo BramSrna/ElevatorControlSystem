@@ -64,6 +64,7 @@ public class Elevator implements Runnable {
         }
 	}
 	
+	// getters for private variables
 	public int getElevatorNumber() {return this.elevatorNumber;}
 	public int getCurrentFloor() {return this.currentFloor;}
 	public UtilityInformation.DoorState getDoorState() {return this.door;}
@@ -328,10 +329,28 @@ public class Elevator implements Runnable {
 		
 	}
 
+	/**
+	 * turnOffDestButton
+	 * 
+	 * Turns off the destination button corresponding to the given destination
+	 * 
+	 * @param destinationFloor Number of button to turn off
+	 * 
+	 * @return void
+	 */
     public void turnOffDestButton(int destinationFloor) {
         allButtons[destinationFloor] = UtilityInformation.LampState.OFF; 
     }
     
+    /**
+     * turnOnDestButton
+     * 
+     * Turns on the destination button corresponding to the given destination
+     * 
+     * @param destinationFloor Number of button to turn on
+     * 
+     * @return void
+     */
     public void turnOnDestButton(int destinationFloor) {
         allButtons[destinationFloor] = UtilityInformation.LampState.ON; 
     }

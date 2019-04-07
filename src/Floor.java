@@ -19,8 +19,6 @@ public class Floor implements Runnable {
 	
 	private ArrayList<Integer[]> serviceRequests;
 	
-	private long startTime;
-	
 	private long timeOfPreviousRequest;
 
 	/**
@@ -425,9 +423,7 @@ public class Floor implements Runnable {
 	 * @return None
 	 */
     @Override
-    public void run() {
-        startTime = System.currentTimeMillis();
-        
+    public void run() {        
         while (serviceRequests.size() > 0) {
             this.sendRequest();
         }

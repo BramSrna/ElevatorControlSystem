@@ -437,8 +437,7 @@ public class Elevator_Subsystem extends ServerPattern {
 			return "destination";
 		} else if (data[0] == UtilityInformation.TEARDOWN_MODE) {
 			System.out.println("Tear-Down Mode");
-			sendSocket.close();
-			super.teardown();
+			teardown();
 			
 			printTimingInformation();
 			printFrequencyInformation();
@@ -705,6 +704,15 @@ public class Elevator_Subsystem extends ServerPattern {
         return(numberOfFloors);
     }
     
+    /**
+     * teardown
+     * 
+     * Tears down the Elevator subsystem object
+     * 
+     * @param   None
+     * 
+     * @return  void
+     */
     public void teardown() {
         sendPacket = null;
         receivePacket = null;

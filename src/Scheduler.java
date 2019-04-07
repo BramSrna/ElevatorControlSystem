@@ -13,12 +13,12 @@ import java.util.LinkedHashSet;
 public class Scheduler extends ServerPattern {
 
 	// State machine
-	enum State {
+	public enum State {
 		START, WAITING, READING_MESSAGE, RESPONDING_TO_MESSAGE, END
 	}
 
 	// External and internal events
-	enum Event {
+	public enum Event {
 		MESSAGE_RECIEVED, CONFIG_MESSAGE, BUTTON_PUSHED_IN_ELEVATOR, FLOOR_SENSOR_ACTIVATED, FLOOR_REQUESTED,
 		MOVE_ELEVATOR, TEARDOWN, CONFIRM_CONFIG, ELEVATOR_ERROR, SEND_ELEVATOR_ERROR,
 		FIX_ELEVATOR_ERROR, FIX_DOOR_ERROR
@@ -95,6 +95,15 @@ public class Scheduler extends ServerPattern {
         }
     }
     
+    /**
+     * printInfo
+     * 
+     * Prints the requests currently assigned to each elevator
+     * 
+     * @param   None
+     * 
+     * @return  void
+     */
     public void printInfo() {
     	for (byte i = 0; i < numElevators; i++) {
     		String toPrint = "";
@@ -109,6 +118,17 @@ public class Scheduler extends ServerPattern {
     	}
     }
     
+    /**
+     * saveTimes
+     * 
+     * Save the given timing information for the given message type.
+     * 
+     * @param startTime    Start time of request handler
+     * @param finishTime   End Time of request handler
+     * @param mode The mode of the message being handled
+     * 
+     * @return void
+     */
     public void saveTimes(long startTime, long finishTime, byte mode) {
 	    frequencyTimes.get(mode).add(startTime);
 	    executionDurationTimes.get(mode).add(finishTime - startTime);
@@ -600,10 +620,7 @@ public class Scheduler extends ServerPattern {
      * printTimingInformation
      * 
      * Prints all measured timing information.
-     * This includes:
-     *  Arrival Sensor Times
-     *  Elevator Button Times
-     *  Floor Button Times
+     * This includes the execution times of handlers for all message types
      *  
      * @param   None
      * 
@@ -671,7 +688,17 @@ public class Scheduler extends ServerPattern {
         writer.close();   	
 	}
 	
-   private void printFrequencyInformation() {
+    /**
+     * printFrequencyInformation
+     * 
+     * Prints all measured timing information.
+     * This includes the frequency times of handlers for all message types
+     *  
+     * @param   None
+     * 
+     * @return  void
+     */
+    private void printFrequencyInformation() {
         PrintWriter writer = null;
         
         try {

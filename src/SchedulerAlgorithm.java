@@ -1,6 +1,5 @@
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
-import java.util.Random;
 
 public class SchedulerAlgorithm {	
 	private ArrayList<AlgorithmElevator> elevatorInfo;
@@ -453,10 +452,29 @@ public class SchedulerAlgorithm {
         return(elevatorInfo.get(elevatorNum).getRequests());
     }
     
+    /**
+     * getStopSignalSent
+     * 
+     * Returns the given elevator's value for stopSignalSent
+     * 
+     * @param elevatorNum   The number of the elevator to check
+     * 
+     * @return  boolean Current value for stopSignalSent
+     */
     public boolean getStopSignalSent(byte elevatorNum) {
         return(elevatorInfo.get(elevatorNum).getStopSignalSent());
     }
     
+    /**
+     * setStopSignalSent
+     * 
+     * Sets the value of stopSignalSent in the given elevator to the given value
+     * 
+     * @param elevatorNum   Number of the elevator to change
+     * @param newVal    The new value for stopSignalSent
+     * 
+     * @return  void
+     */
     public void setStopSignalSent(byte elevatorNum, boolean newVal) {
         elevatorInfo.get(elevatorNum).setStopSignalSent(newVal);
     }
@@ -511,14 +529,41 @@ public class SchedulerAlgorithm {
 
 	    }
 	    
+	    /**
+	     * setStopSignalSent
+	     * 
+	     * Sets the value of stopSignalSent to the given value
+	     * 
+	     * @param newVal   New value for stopSignalSent
+	     * 
+	     * @return void
+	     */
 	    public void setStopSignalSent(boolean newVal) {
             stopSignalSent = newVal;            
         }
 
+	    /**
+	     * getStopSignalSent
+	     * 
+	     * Returns the value of stopSignalSent
+	     * 
+	     * @param  None
+	     * 
+	     * @return boolean Current value of stopSignalSent
+	     */
         public boolean getStopSignalSent() {
             return(stopSignalSent);
         }
 
+        /**
+         * getPreviousDir
+         * 
+         * Returns the previous direction that the elevator was travelling in
+         * 
+         * @param   None
+         * 
+         * @return  ElevatorDirection   The previous direction of the elevator
+         */
         public UtilityInformation.ElevatorDirection getPreviousDir() {
 			return(previousDir);
 		}
