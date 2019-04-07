@@ -5,17 +5,22 @@ import org.junit.jupiter.api.*;
 
 public class ElevatorTests {
 	private Elevator elevator;
+	private Elevator_Subsystem controller;
 	    
     @BeforeEach
     void setUp() throws Exception {
-        Elevator_Subsystem controller = new Elevator_Subsystem();
+        int numFloors = 10;
         
-        elevator = new Elevator(controller, 0, 10); //Elevator #0
+        controller = new Elevator_Subsystem();
+        controller.configSubsystem(numFloors, 1);
+        
+        elevator = new Elevator(controller, 0, numFloors); //Elevator #0
     }
     
     @AfterEach
     void tearDown() throws Exception {
         elevator = null;
+        controller.teardown();
     }
 
     /**
@@ -34,7 +39,7 @@ public class ElevatorTests {
 		int previousFloor = elevator.getCurrentFloor();
 		elevator.move(UtilityInformation.ElevatorDirection.UP);
 		
-		assertEquals(previousFloor + 1,elevator.getCurrentFloor());
+		assertEquals(previousFloor + 1, elevator.getCurrentFloor());
 	}
 	
     /**
@@ -51,9 +56,14 @@ public class ElevatorTests {
 	{
 		//The elevator's floor number before moving
 		int previousFloor = elevator.getCurrentFloor();
+		
+		// Move up first so that the move is not invalid
+		elevator.move(UtilityInformation.ElevatorDirection.UP);
+		assertEquals(previousFloor + 1, elevator.getCurrentFloor());
+		
 		elevator.move(UtilityInformation.ElevatorDirection.DOWN);
 		
-		assertEquals(previousFloor - 1,elevator.getCurrentFloor());
+		assertEquals(previousFloor, elevator.getCurrentFloor());
 	}
 
     /**

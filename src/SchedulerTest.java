@@ -134,7 +134,7 @@ class SchedulerTest {
 
 		scheduler.setNumElevators((byte) 1);
 
-		byte[] buf = new byte[] { 1, 2, 3, 4, -1 };
+		byte[] buf = new byte[] { 1, 2, 0, 4, -1 };
 		DatagramPacket packet = new DatagramPacket(buf, buf.length, InetAddress.getLocalHost(),
 				UtilityInformation.ELEVATOR_PORT_NUM);
 
@@ -163,7 +163,7 @@ class SchedulerTest {
 
 		scheduler.setNumElevators((byte) 1);
 
-		byte[] buf = new byte[] { 1, 2, 3, -1 };
+		byte[] buf = new byte[] {1, 2, 0, -1 };
 		DatagramPacket packet = new DatagramPacket(buf, buf.length, InetAddress.getLocalHost(),
 				UtilityInformation.ELEVATOR_PORT_NUM);
 

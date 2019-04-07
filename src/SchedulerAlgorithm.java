@@ -751,8 +751,8 @@ public class SchedulerAlgorithm {
             
             toReturn += String.format("Elevator number: %d", elevatorNum);
             toReturn += String.format(" Current Floor: %d", currFloor);
-            toReturn += String.format(" Elevator Usable: %d", elevatorUsable);
-            toReturn += String.format(" Elevator Stopped: %d", stopElevator);
+            toReturn += String.format(" Elevator Usable: %s", Boolean.toString(elevatorUsable));
+            toReturn += String.format(" Elevator Stopped: %s", Boolean.toString(stopElevator));
             
             return(toReturn);
             

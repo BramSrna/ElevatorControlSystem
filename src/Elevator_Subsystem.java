@@ -299,22 +299,8 @@ public class Elevator_Subsystem extends ServerPattern {
 		if (str.equals("config")) {
 			numberOfElevators = data[1];
 			numberOfFloors = data[2];
-
-			// Based on the config message, set up the elevators and their lights.
-			for (int i = 0; i < numberOfElevators; i++) {
-				Elevator hold = new Elevator(this, i, numberOfFloors);
-				// add to elevator subsystem ArrayList of elevators
-				allElevators.add(hold);
-				nextActions.add(new LinkedList<Elevator.Action>());
-			}
-			// allButtons = new lampState[numberOfFloors];
-			byte[] response = { UtilityInformation.CONFIG_CONFIRM_MODE, 1, -1 };
-			this.sendData(response, schedulerIP, schedulerPort);
 			
-			for (Elevator ele : allElevators) {
-				Thread t = new Thread(ele);
-				t.start();
-			}
+			configSubsystem(numberOfFloors, numberOfElevators);
 		}
 
 		if (str.equals("open door")) {
@@ -717,5 +703,34 @@ public class Elevator_Subsystem extends ServerPattern {
         sendPacket = null;
         receivePacket = null;
         sendSocket.close();
+        super.teardown();
+    }
+    
+    /**
+     * configSubsystem
+     * 
+     * Configures the subsystem to use the given number of floors and elevators.
+     * 
+     * @param numFloors     New number of floors for the system
+     * @param numElevators  New number of elevators for the system
+     * 
+     * @return  void
+     */
+    public void configSubsystem(int numFloors, int numElevators) {
+        // Based on the config message, set up the elevators and their lights.
+        for (int i = 0; i < numElevators; i++) {
+            Elevator hold = new Elevator(this, i, numFloors);
+            // add to elevator subsystem ArrayList of elevators
+            allElevators.add(hold);
+            nextActions.add(new LinkedList<Elevator.Action>());
+        }
+        // allButtons = new lampState[numberOfFloors];
+        byte[] response = { UtilityInformation.CONFIG_CONFIRM_MODE, 1, -1 };
+        this.sendData(response, schedulerIP, schedulerPort);
+        
+        for (Elevator ele : allElevators) {
+            Thread t = new Thread(ele);
+            t.start();
+        }
     }
 }
