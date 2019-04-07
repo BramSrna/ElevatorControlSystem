@@ -11,7 +11,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
 public class FloorSubsystemGUI implements Runnable {
-    // Arraylists to hold JLables for all icon types
+    // Array lists to hold JLables for all icon types
     private ArrayList<JLabel> upButtonArray;
     private ArrayList<JLabel> downButtonArray;
     private ArrayList<JLabel> lampArray;
