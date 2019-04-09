@@ -1,0 +1,21 @@
+<?xml version="1.0" ?>
+<!--GENERATED FILE, PLEASE DO NOT EDIT!!!--><EXT object="elevatorcontrolsystem_modelio project" version="4">
+  <OBJECT>
+    <ID name="elevatorcontrolsystem_modelio project" mc="Standard.Package" uid="29cc69f8-abbe-46de-99b7-3b777b04deaa"/>
+    <PID name="ElevatorControlSystem_Modelio Project" mc="Standard.Project" uid="e460118d-f53c-4a1c-8576-cb61bb9e2fca"/>
+    <ATTRIBUTES>
+      <ATT name="IsInstantiable">false</ATT>
+      <ATT name="IsAbstract">false</ATT>
+      <ATT name="IsLeaf">false</ATT>
+      <ATT name="IsRoot">false</ATT>
+      <ATT name="Visibility">Public</ATT>
+      <ATT name="Name"><![CDATA[elevatorcontrolsystem_modelio project]]></ATT>
+      <ATT name="status">1970354901745664</ATT>
+    </ATTRIBUTES>
+    <DEPENDENCIES>
+      <COMP relation="OwnedBehavior">
+        <COMPID name="Interaction" mc="Standard.Interaction" uid="6d23f3e0-d06c-49a5-a820-348ec6c344be"/>
+      </COMP>
+    </DEPENDENCIES>
+  </OBJECT>
+</EXT>

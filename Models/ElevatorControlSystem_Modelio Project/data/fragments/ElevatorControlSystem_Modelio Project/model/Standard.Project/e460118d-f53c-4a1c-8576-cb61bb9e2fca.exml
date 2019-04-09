@@ -1,0 +1,20 @@
+<?xml version="1.0" ?>
+<!--GENERATED FILE, PLEASE DO NOT EDIT!!!--><EXT object="ElevatorControlSystem_Modelio Project" version="4">
+  <OBJECT>
+    <ID name="ElevatorControlSystem_Modelio Project" mc="Standard.Project" uid="e460118d-f53c-4a1c-8576-cb61bb9e2fca"/>
+    <ATTRIBUTES>
+      <ATT name="ProjectContext"></ATT>
+      <ATT name="ProjectDescr"></ATT>
+      <ATT name="Name"><![CDATA[ElevatorControlSystem_Modelio Project]]></ATT>
+      <ATT name="status">1970354901745664</ATT>
+    </ATTRIBUTES>
+    <DEPENDENCIES>
+      <COMP relation="Model">
+        <COMPID name="elevatorcontrolsystem_modelio project" mc="Standard.Package" uid="29cc69f8-abbe-46de-99b7-3b777b04deaa"/>
+      </COMP>
+      <COMP relation="DiagramRoot">
+        <COMPID name="ElevatorControlSystem_Modelio Project" mc="Infrastructure.DiagramSet" uid="a0515628-f4b1-4411-8ab1-5fbb4b6c00f4"/>
+      </COMP>
+    </DEPENDENCIES>
+  </OBJECT>
+</EXT>
