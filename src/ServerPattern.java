@@ -46,14 +46,14 @@ public abstract class ServerPattern {
 	    messagePriorities.put(UtilityInformation.ALL_REQUESTS_FINISHED_MODE, 11);
 	    messagePriorities.put(UtilityInformation.FIX_DOOR_MODE, 10);
 	    messagePriorities.put(UtilityInformation.CONFIG_CONFIRM_MODE, 9);
-	    messagePriorities.put(UtilityInformation.CONFIG_MODE, 8);
-	    messagePriorities.put(UtilityInformation.TEARDOWN_MODE, 7);
-	    messagePriorities.put(UtilityInformation.ELEVATOR_DOOR_MODE, 6);
-	    messagePriorities.put(UtilityInformation.ELEVATOR_DIRECTION_MODE, 5);
+	    messagePriorities.put(UtilityInformation.ERROR_MESSAGE_MODE, 8);
+	    messagePriorities.put(UtilityInformation.CONFIG_MODE, 7);
+	    messagePriorities.put(UtilityInformation.TEARDOWN_MODE, 6);
+	    messagePriorities.put(UtilityInformation.ELEVATOR_DOOR_MODE, 5);	    
 	    messagePriorities.put(UtilityInformation.FLOOR_SENSOR_MODE, 4);
-	    messagePriorities.put(UtilityInformation.SEND_DESTINATION_TO_ELEVATOR_MODE, 3);
+	    messagePriorities.put(UtilityInformation.ELEVATOR_DIRECTION_MODE, 3);
 	    messagePriorities.put(UtilityInformation.FLOOR_REQUEST_MODE, 2);
-        messagePriorities.put(UtilityInformation.ERROR_MESSAGE_MODE, 1);
+	    messagePriorities.put(UtilityInformation.SEND_DESTINATION_TO_ELEVATOR_MODE, 1);
         messagePriorities.put(UtilityInformation.FIX_ERROR_MODE, 0);
         messagePriorities.put(UtilityInformation.ELEVATOR_BUTTON_HIT_MODE, 0);
         
