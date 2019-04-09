@@ -1,8 +1,12 @@
 import java.awt.Container;
 import java.awt.GridLayout;
 import java.awt.Image;
+import java.io.File;
 import java.util.ArrayList;
 
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -14,7 +18,7 @@ public class FloorSubsystemGUI implements Runnable {
     // Array lists to hold JLables for all icon types
     private ArrayList<JLabel> upButtonArray;
     private ArrayList<JLabel> downButtonArray;
-    private ArrayList<JLabel> lampArray;
+    private ArrayList<JLabel> floorNumArray;
     private ArrayList<JLabel> directionArray;
     
     // Icons
@@ -29,6 +33,7 @@ public class FloorSubsystemGUI implements Runnable {
     private ImageIcon downDirIcon;
     private ImageIcon stationaryIcon;
     
+    //GUI Frames
     private JFrame mainFrame;
     private JFrame hiddenFrame;
     
@@ -47,6 +52,22 @@ public class FloorSubsystemGUI implements Runnable {
      * @return  None
      */
     public FloorSubsystemGUI(FloorSubsystem sub) {
+    	
+    	
+    	//Play some music
+    	try {
+    		AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new File("Music/Elevator_Music.wav").getAbsoluteFile());
+   	        Clip clip = AudioSystem.getClip();
+   	        clip.open(audioInputStream);
+   	        clip.start();
+ 	    } catch(Exception ex) {
+            System.out.println("Error with playing sound.");
+   	        ex.printStackTrace();
+   	    }
+    	
+    	
+    	
+    	//Create the main GUI window and a hidden window to be able to use dispose without exiting the JVM
         hiddenFrame = new JFrame("");
         mainFrame = new JFrame("Floor Subsystem");
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -54,14 +75,18 @@ public class FloorSubsystemGUI implements Runnable {
         mainFrame.setSize(1920, 1080);
         mainFrame.setResizable(false);
         
+        //Create content pane to populate the GUI
         Container contentPane = mainFrame.getContentPane();
         contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.Y_AXIS));
         
         
-        
+        // Make a panel to hold each floors elevators in a row
         JPanel floorPanel = new JPanel();
-        floorPanel.setLayout(new GridLayout(sub.getNumFloors(), 3 * sub.getNumElevators()));
+        // Each elevator needs 3 columns for representation
+        floorPanel.setLayout(new GridLayout(sub.getNumFloors(), 3 * sub.getNumElevators())); 
         
+        
+        // Load and scale elevator request button icons to the their given space
         ImageIcon temp = new ImageIcon("Images/Up_Button_OFF.png");
         Image upUnlit = temp.getImage().getScaledInstance(mainFrame.getWidth() / (3 * sub.getNumElevators()), 
                                                             mainFrame.getHeight() / (2 * sub.getNumFloors()), 
@@ -92,7 +117,7 @@ public class FloorSubsystemGUI implements Runnable {
         
         
         
-        
+        // Load and scale elevator direction icons to their given space
         temp = new ImageIcon("Images/Up_Direction.png");
         Image upDir = temp.getImage().getScaledInstance(mainFrame.getWidth() / (3 * sub.getNumElevators()), 
                                                         mainFrame.getHeight() / sub.getNumFloors(), 
@@ -114,38 +139,42 @@ public class FloorSubsystemGUI implements Runnable {
         downDirIcon = new ImageIcon(downDir);
         
         
+        // Initialize arraylists of GUI items
         ArrayList<JPanel> buttonPArray = new ArrayList<JPanel>();
         upButtonArray = new ArrayList<JLabel>();
         downButtonArray = new ArrayList<JLabel>();
         
         directionArray = new ArrayList<JLabel>();
-        lampArray = new ArrayList<JLabel>();
+        floorNumArray = new ArrayList<JLabel>();
         
+        //Loop for the amount of elevators on all floors to populate them
         for (int i = 0; i < sub.getNumFloors() * sub.getNumElevators(); i++) {
 
             
-            buttonPArray.add(new JPanel(new GridLayout(2, 1)));
+            buttonPArray.add(new JPanel(new GridLayout(2, 1))); //Create a panel to position a up button and down button
+            // Set default button states, positions, and directions off elevators
             directionArray.add(new JLabel(stationaryIcon));
-            lampArray.add(new JLabel("0", SwingConstants.CENTER));
+            floorNumArray.add(new JLabel("0", SwingConstants.CENTER));
 
             upButtonArray.add(new JLabel(upUnlitIcon));
             downButtonArray.add(new JLabel(downUnlitIcon));
             
-            
+            //Populate the button panel
             buttonPArray.get(i).add(upButtonArray.get(i));
             buttonPArray.get(i).add(downButtonArray.get(i));
             
-            
+            //Populate the dedicated area for each elevator on each floor
             floorPanel.add(buttonPArray.get(i));
             floorPanel.add(directionArray.get(i));
-            floorPanel.add(lampArray.get(i));
+            floorPanel.add(floorNumArray.get(i));
         }
         
         
         
-        
+        //Add final florr panel with all GUI elements to the frame's content Pane
         contentPane.add(floorPanel);
         
+        // Force the GUI to fit all elements into the window and display to user
         hiddenFrame.pack();
         mainFrame.pack();
         hiddenFrame.setVisible(false);
@@ -155,7 +184,7 @@ public class FloorSubsystemGUI implements Runnable {
     /**
      * closeGUI
      * 
-     * Closes the gui and disposes the frames
+     * Closes the gui and disposes just the main frame
      * 
      * @param   None
      * 
@@ -232,7 +261,7 @@ public class FloorSubsystemGUI implements Runnable {
     /**
      * updateFloorNum
      * 
-     * Updates the floow number of the given elevator to the given floor.
+     * Updates the floor number of the given elevator to the given floor.
      * 
      * @param totalFloors       Number of floors in the system
      * @param totalElevators    Number of elevators in the system
@@ -244,8 +273,10 @@ public class FloorSubsystemGUI implements Runnable {
      */
     public void updateFloorNum(int totalFloors, int totalElevators, int floor, int elevator, UtilityInformation.ElevatorDirection dir) {
         for (int i = 0; i < totalFloors; i++ ) {
-            lampArray.get((i * totalElevators) + elevator).setText(Integer.toString(floor));
+        	//Set the text to the new floor number for that elevator shaft across all floors
+        	floorNumArray.get((i * totalElevators) + elevator).setText(Integer.toString(floor));
             
+        	//Set the directional display direction for that elevator shaft across all floors
             if (dir == UtilityInformation.ElevatorDirection.UP) {
                 directionArray.get((i * totalElevators) + elevator).setIcon(upDirIcon);
             }else if (dir == UtilityInformation.ElevatorDirection.DOWN) {

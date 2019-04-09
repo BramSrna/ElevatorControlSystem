@@ -1,5 +1,5 @@
 import java.io.BufferedReader;
-import java.io.File;
+
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -13,9 +13,6 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
 
 public class FloorSubsystem extends ServerPattern{
 	// Sockets and packets used for UDP
@@ -82,6 +79,7 @@ public class FloorSubsystem extends ServerPattern{
 		this.setNumElevators(numElevators);
 		this.setNumFloors(numFloors);
 
+		// Initialize GUI
 		gui = new FloorSubsystemGUI(this);
 		// Initialize the DatagramSocket
 		try {
@@ -526,6 +524,7 @@ public class FloorSubsystem extends ServerPattern{
 	 */
 	public synchronized void sendElevatorRequest(int sourceFloor, int destFloor, UtilityInformation.ElevatorDirection diRequest) {
 		
+		//Light the gui's elevator request button according to the request
 		if(diRequest == UtilityInformation.ElevatorDirection.DOWN) {
 			gui.setDownButtonLit(numElevators, sourceFloor);
 		}else if (diRequest == UtilityInformation.ElevatorDirection.UP) {
@@ -742,16 +741,7 @@ public class FloorSubsystem extends ServerPattern{
 	 */
 	public static void main(String[] args) {
 		
-		//Play some music
-		try {
-	        AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new File("Music/Elevator_Music.wav").getAbsoluteFile());
-	        Clip clip = AudioSystem.getClip();
-	        clip.open(audioInputStream);
-	        clip.start();
-	    } catch(Exception ex) {
-	        System.out.println("Error with playing sound.");
-	        ex.printStackTrace();
-	    }
+		
 		
 		UserInterface ui = new UserInterface();
 
@@ -770,7 +760,8 @@ public class FloorSubsystem extends ServerPattern{
 			UserInterface.ReturnVals val = ui.displayMenu();
 
 			if (val == UserInterface.ReturnVals.RECONFIG) {
-				// If reconfing was received, resend the configuration method
+				// If reconfig was received, resend the configuration method, close the old gui, and create a new gui
+				// the new configuration
 				floorController.gui.closeGUI();
 				
 				floorController.setNumFloors(ui.getNumFloors());
